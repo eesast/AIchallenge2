@@ -4,4 +4,4 @@
 
 class Equipment:
     def __init__(self, arg):
-        __arg = arg
+        self.__arg = arg
