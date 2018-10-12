@@ -1,4 +1,17 @@
 #ignore pycharm configuration files
+
+# platform
+/platform/linux/*
+!/platform/linux/include
+!/platform/linux/src
+!/platform/linux/*.cpp
+!/platform/linux/*.h
+!/platform/linux/*.py
+!/platform/linux/CMakeLists.txt
+!/platform/linux/*/*.cpp
+
+# logic
 /logic/.idea
 /logic/__pycache__
 /logic/allclass/__pycache__
+
