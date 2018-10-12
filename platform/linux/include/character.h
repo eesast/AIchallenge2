@@ -1,7 +1,7 @@
 #ifndef CHARACTER_H
 #define CHARACTER_H
 
-#include "object.h"
+#include "obj.h"
 
 enum class VOCATION_TYPE
 {

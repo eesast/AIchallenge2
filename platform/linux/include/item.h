@@ -1,7 +1,7 @@
 #ifndef ITEM_H
 #define ITEM_H
 
-#include "object.h"
+#include "obj.h"
 
 enum class ITEM_NAME
 {
