@@ -11,4 +11,8 @@ struct Position
     double x, y;
 };
 
+const int MAX_PLAYER = 64;
+const int TIMEOUT = 50;
+const int MAX_TURN = 100;
+
 #endif // !CONSTANT_H

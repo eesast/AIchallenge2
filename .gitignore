@@ -1,16 +1,14 @@
 #ignore pycharm configuration files
 
 # platform
-/platform/*
+/platform/build
+/platform/.vscode
+/platform/__pycache__
+/platform/linux-only/.vscode
+/platform/linux-only/build
+/platform/linux-only/__pycache__
 /platform-linux-1.0/*
-!/platform/include
-!/platform/src
-!/platform/*.cpp
-!/platform/*.h
-!/platform/*.py
-!/platform/CMakeLists.txt
-!/platform/linux-only/include
-!/platform/linux-only/src
+
 
 # logic
 /logic/.idea
