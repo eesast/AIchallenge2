@@ -4,35 +4,30 @@
 #include "item.h"
 #include "character.h"
 
-Pycalling *pGameLogic = nullptr;
-
 void PlayGame()
 {
 }
 
-
-
 int main()
 {
-    int playerCount;
+    int player_count;
     int turn = 0;
 
     std::cout << "input the number of players:";
-    std::cin >> playerCount;
-    if (playerCount > MAX_PLAYER)
+    std::cin >> player_count;
+    if (player_count > MAX_PLAYER)
     {
-        playerCount = MAX_PLAYER;
+        player_count = MAX_PLAYER;
         std::cerr << "The maxinum number of players is " << MAX_PLAYER << ".Will use " << MAX_PLAYER << " instead." << std::endl;
     }
-    manager.init(playerCount);
-    for (int i = 0; i < playerCount; i++)
+    manager.init(player_count);
+    for (int i = 0; i < player_count; i++)
     {
         manager.register_AI(i, &PlayGame);
     }
-    for (pGameLogic = new Pycalling("GameLogic", "game_main"); turn++ < MAX_TURN; pGameLogic->DoLoop())
+    for (logic.init("GameLogic", "game_main"); turn++ < MAX_TURN; logic.do_loop())
     {
         manager.run();
     }
-    delete pGameLogic;
     return 0;
 }
