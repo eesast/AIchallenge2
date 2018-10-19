@@ -4,9 +4,13 @@
 /platform/build
 /platform/.vscode
 /platform/__pycache__
+/platform/.vs
 /platform/linux-only/.vscode
 /platform/linux-only/build
 /platform/linux-only/__pycache__
+/platform/win-only/build
+/platform/win-only/__pycache__
+/platform/win-only/build
 /platform-linux-1.0/*
 
 
