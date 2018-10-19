@@ -8,6 +8,8 @@
 
 `for_interface.md`：计划提供给界面组的阅读文件
 
+`for_platform.md`：给平台组的对接文件。
+
 `data.ini`：有可能会考虑将各种可设置的数据文件存放于此
 
 （待补充）

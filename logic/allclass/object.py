@@ -14,6 +14,8 @@ class Object(object):
         self.position = (None, None)
         self.shape = shape
         self.move_speed = None
+
+        # remember: for security, direction use unit vector
         self.move_direction = None  # record which direction it's heading of
         self.face_direction = None  # record which direction it's facing
 

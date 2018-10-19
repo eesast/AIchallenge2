@@ -10,7 +10,12 @@ def main():
 
     # start the loop
     while game.alive_teams() > 1:   # fight until there is only one team alive
-        pass
+        # first get information from platform
+
+        # then refresh game
+        game.refresh()
+
+        # emit information to platform
 
     # report the final result
 
