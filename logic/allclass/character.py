@@ -43,8 +43,10 @@ class Character(Object):                # the base class of all characters
         self.land_position = None  # it means where he want to land
 
     @staticmethod
-    def load_data():
-        with open("data.ini") as file:
+    def load_data(parent_path="./"):
+        if parent_path[-1] != '/':
+            parent_path += '/'
+        with open(parent_path + DATA_FILE_NAME) as file:
             file_data = file.readlines()
             for line in file_data:
                 if line[0] == '#':    # judge if this is comment

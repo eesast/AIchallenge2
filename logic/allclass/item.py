@@ -20,7 +20,7 @@ class Item(Object):   # class for each weapon and goods
         pass
 
     @staticmethod
-    def load_data():
+    def load_data(parent_path="./"):
         pass
 
     # enum all props' name

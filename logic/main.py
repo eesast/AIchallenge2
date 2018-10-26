@@ -3,10 +3,29 @@
 from gamemain import *
 
 
-def main():
-    # initialize the game
+# use a global variable to manage the whole game
+game = GameMain()
 
-    game = GameMain()
+
+def game_init():
+    # here initialize the game and return the airplane
+    return game.generate_route()
+
+
+def parachute(information):
+    # here game gets all players' information and jump aim, return first turn's information
+    return game.parachute(information)
+
+
+def game_main(commands):
+    game.unwrap_commands(commands)
+    return game.refresh()
+
+
+def main():
+    # this function is just to debug for logic
+    game.generate_route()
+    game.parachute(None)
 
     # start the loop
     while game.alive_teams() > 1:   # fight until there is only one team alive

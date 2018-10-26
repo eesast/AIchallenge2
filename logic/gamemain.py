@@ -6,10 +6,10 @@ from random import randrange
 
 class GameMain:
     # if not specified, platform needn't this class's members
-    def __init__(self):
+    def __init__(self, file_path="./"):
         # first load some module data here
-        character.Character.load_data()
-        item.Item.load_data()
+        character.Character.load_data(file_path)
+        item.Item.load_data(file_path)
 
         # it's more like a define instead of an initialization
         self.map_size = 1000
@@ -17,12 +17,18 @@ class GameMain:
         self.map_items = [[[] for i in range(16)] for j in range(16)]  # try to divide map into 256 parts
         self.all_players = []
         self.number_to_player = {}  # use a number to find a player
+        self.__start_position, self.__over_position = None, None
 
         # here load map data
-        self.load_map()
+        self.__load_map(file_path)
+        return
 
-        # deal with parachuting
-        self.parachute()
+    def initialize(self):
+        # if platform has trouble in initializing the global variable, I will use it instead
+        pass
+
+    def unwrap_commands(self, commands):
+        # here unwrap all players' commands
         return
 
     def refresh(self):      # refresh a new frame according to the orders
@@ -96,9 +102,11 @@ class GameMain:
 
         # 8. update player's view, cd and etc
         update()
+
+        # what to return is a vital question for platform
         return
 
-    def load_map(self):
+    def __load_map(self, parent_path="./"):
         pass
 
     def alive_teams(self):
@@ -113,9 +121,7 @@ class GameMain:
                     continue
         return alive_count
 
-    # jump from airplane before start fighting
-    def parachute(self):
-
+    def generate_route(self):
         # a function to get random position for airplane's route
         def random_route():
             # a random method to get an elegant route
@@ -145,9 +151,16 @@ class GameMain:
                 # if parameter isn't in the right range, it may work, although not supposed to
                 return get_position((parameter + 4 * length) % (4 * length))
             return position.Position(x, y)
+        # first get two position for the air route
+        self.__start_position, self.__over_position = random_route()
+        # for debug, but it also can be used in  if needed
+        print("the route's start position is", self.__start_position, "and its over position is", self.__over_position)
+        return self.__start_position, self.__over_position
 
+    # jump from airplane before start fighting
+    def parachute(self, information):
         # a function to process position data from platform
-        def pre_process():
+        def unwrap():
             # here I get all players information and players' aim positions via data from platform
             # I hope platform can finish this part :D
             pass
@@ -155,23 +168,16 @@ class GameMain:
         def get_pedal(aim_position):
             # these formulas are transformed from internet, I hope they're right
             aim_x, aim_y = aim_position.x, aim_position.y
-            A = position.delta_y(start_position, over_position)
-            B = - position.delta_x(start_position, over_position)
-            C = - position.cross_product(start_position, over_position)
+            A = position.delta_y(self.__start_position, self.__over_position)
+            B = - position.delta_x(self.__start_position, self.__over_position)
+            C = - position.cross_product(self.__start_position, self.__over_position)
             x = (B * B * aim_x - A * B * aim_y-A * C) / (A * A + B * B)
             y = (A * A * aim_y - A * B * aim_y - B * C) / (A * A + B * B)
             return position.Position(x, y)
 
-        # first get two position for the air route
-        start_position, over_position = random_route()
-        # for debug, but it also can be used in  if needed
-        print("the route's start position is", start_position, "and its over position is", over_position)
-
-        # emit information to platform
-
-        # waiting for response
         aim_positions = []
-        pre_process()
+        # here unwrap players' information and their land positions
+        unwrap()
         # supposing I get teams * 4 positions
 
         # debug: test positions
@@ -187,11 +193,12 @@ class GameMain:
             player.land_position = pos
             player.jump_position = get_pedal(pos)
             player.status = character.Character.ON_PLANE
-            player.move_direction = (over_position - start_position).unitize()
+            player.move_direction = (self.__over_position - self.__start_position).unitize()
             player.move_speed = character.Character.AIRPLANE_SPEED
             player.move_cd = player.jump_position.length() / player.move_speed
         # now everything down, main operation starts
-        return
+        # return first turn's information
+        return self.refresh()
 
 
 if __name__ == '__main__':
