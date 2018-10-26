@@ -111,6 +111,7 @@ void Controller::send_demand()
         return;
     auto playerID = get_playerID_by_thread();
     //send demand
+    std::cout << "aaaa" << std::endl;
 }
 
 

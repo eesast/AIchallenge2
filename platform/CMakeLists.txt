@@ -5,6 +5,8 @@ set(CMAKE_MINOR_VERSION 1)
 
 set(CMAKE_BUILD_TYPE Debug)
 
+add_subdirectory(${PROJECT_SOURCE_DIR}/player-only/AI)
+
 IF(WIN32)
 find_package(Python3 REQUIRED)
 ELSEIF(UNIX)

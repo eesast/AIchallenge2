@@ -3,17 +3,16 @@
 #include "pycalling.h"
 #include "item.h"
 #include "character.h"
-
-void PlayGame()
-{
-    Sleep(10);
-}
+#include "api.h"
 
 int main()
 {
     int player_count;
     int turn = 0;
-
+    auto h = LoadLibrary("AI");
+    auto play_game = (Controller::AI_Func)GetProcAddress(h, "play_game");
+    auto bind_api = (void(*)(void(*func)(Position)))GetProcAddress(h, "bind_api");
+    bind_api(jump);
     std::cout << "input the number of players:";
     std::cin >> player_count;
     if (player_count > MAX_PLAYER)
@@ -24,11 +23,12 @@ int main()
     manager.init(player_count);
     for (int i = 0; i < player_count; i++)
     {
-        manager.register_AI(i, &PlayGame);
+        manager.register_AI(i, play_game);
     }
     for (logic.init("GameLogic", "game_main"); turn++ < MAX_TURN; logic.do_loop())
     {
         manager.run();
     }
+    FreeLibrary(h);
     return 0;
 }
