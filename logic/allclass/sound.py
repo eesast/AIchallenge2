@@ -30,7 +30,7 @@ class Sound:
         return False
 
     @staticmethod
-    def __load_data__():
+    def __load_data__(parent_path="./"):
         # load SPEED
         pass
 

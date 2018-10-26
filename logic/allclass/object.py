@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 
 
+# here define file name
+DATA_FILE_NAME = "data.ini"
+
+
 class Object(object):
     # all objects in the map, including players, should be its subclass instead of object
 
