@@ -32,6 +32,14 @@
 
 由于不同工作路径下的文件路径差异，我给所有文件路径设置了一个父路径值，具体的使用、调试等后期再说，现在暂且可以忽略这个问题。
 
+## 对接格式
+
+`game_init`:逻辑传给平台`(start_position, over_position)`,其中两个`position`的格式均为`(int, int)`。
+
+`parachute`:逻辑传给平台所有队伍选手的信息，中间包含队伍编号、角色编号、职业信息、跳伞坐标，格式为`{team_number:{player_number:{'vocation': vocation_number, 'position': (x, y)},...},...}`，其中`team_number`和`player_number`由平台钦定一系列编号数字，`vocation_number`是参考自`character.py`的职业枚举值。逻辑将回传第一回合的信息，信息格式与后面一致，见下。
+
+`game_main`:逻辑传给选手所有玩家指令信息，格式为`{team_number:{player_number:{,...},...},...}`其中`team_number`和`player_number`应当是与前面钦定的一致的编号，后面是(此处待续)
+
 
 
 ## 变量表

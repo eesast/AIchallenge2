@@ -6,8 +6,8 @@ from .object import *
 class Character(Object):                # the base class of all characters
     # static variables
     all_data = []                       # save all data from setting file
-    AIRPLANE_SPEED = 100                  # flying speed, will load from file
-    JUMPING_SPEED = 10                   # jumping speed, also load from file
+    AIRPLANE_SPEED = 5                  # flying speed, will load from file
+    JUMPING_SPEED = 1                   # jumping speed, also load from file
 
     # enum for vocation
     MEDIC = 0
@@ -27,8 +27,8 @@ class Character(Object):                # the base class of all characters
     def __init__(self, vocation):
         super().__init__(Object.CIRCLE)
         # define some variables
-        self.__heal_point_limit = 100.  # max HP
-        self.heal_point = 0.            # current HP
+        self.__heal_point_limit = 100.                  # max HP
+        self.heal_point = self.__heal_point_limit       # current HP
         self.bag = []
         self.status = self.RELAX
 
