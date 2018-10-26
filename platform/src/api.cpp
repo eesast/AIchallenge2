@@ -1,6 +1,6 @@
 #include"api.h"
 
-void jump(Position a)
+void parachute(VOCATION_TYPE role[4], Position landing_points[4])
 {
-    manager.send_demand();
+    manager.parachute(role, landing_points);
 }

@@ -5,30 +5,33 @@
 #include "character.h"
 #include "api.h"
 
-int main()
+std::pair<Position, Position> route;
+
+
+int main(int argc, char *argv[])
 {
-    int player_count;
+    //argv[1] is the number of player_count, argv[2] is the current file.
+    int player_count = atoi(argv[1]);
     int turn = 0;
-    auto h = LoadLibrary("AI");
-    auto play_game = (Controller::AI_Func)GetProcAddress(h, "play_game");
-    auto bind_api = (void(*)(void(*func)(Position)))GetProcAddress(h, "bind_api");
-    bind_api(jump);
-    std::cout << "input the number of players:";
-    std::cin >> player_count;
+    std::cout << "input the number of players=" << player_count;
     if (player_count > MAX_PLAYER)
     {
         player_count = MAX_PLAYER;
         std::cerr << "The maxinum number of players is " << MAX_PLAYER << ".Will use " << MAX_PLAYER << " instead." << std::endl;
     }
+    auto h = LoadLibrary("AI");
     manager.init(player_count);
     for (int i = 0; i < player_count; i++)
     {
-        manager.register_AI(i, play_game);
+        auto play_game = (AI_Func)GetProcAddress(h, "play_game");
+        auto bind_api = (void(*)(Parachute_Func))GetProcAddress(h, "bind_api");
+        auto receive = (Recv_Func)GetProcAddress(h, "receive");
+        bind_api(parachute);
+        manager.register_AI(i, play_game, receive);
     }
-    for (logic.init("GameLogic", "game_main"); turn++ < MAX_TURN; logic.do_loop())
-    {
-        manager.run();
-    }
+    route = logic.init();
+    manager.run();
+    logic.parachute(manager.get_parachute_commands());
     FreeLibrary(h);
     return 0;
 }

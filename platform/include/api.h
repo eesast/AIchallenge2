@@ -3,6 +3,7 @@
 
 #include"controller.h"
 #include"constant.h"
-void jump(Position a);
+#include"character.h"
+void parachute(VOCATION_TYPE role[4], Position landing_points[4]);
 
 #endif
