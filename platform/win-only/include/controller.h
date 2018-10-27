@@ -45,7 +45,7 @@ public:
     //parameter is the same as WINAPI CreateThread
     void run();
 
-    void parachute(VOCATION_TYPE role[4], Position landing_points[4]);
+    void parachute(VOCATION_TYPE role[MEMBER_COUNT], Position landing_points[MEMBER_COUNT]);
     std::map<int, COMMAND_PARACHUTE> get_parachute_commands();
     void register_AI(int playerID, AI_Func pfunc, Recv_Func precv);
 private:

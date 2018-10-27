@@ -16,7 +16,7 @@
 extern "C"
 {
     PLAYERAI_API void __cdecl receive(bool is_parachute, int num, ...);
-    PLAYERAI_API void bind_api(void(*func)(VOCATION_TYPE[4], Position[4]));
+    PLAYERAI_API void bind_api(void(*func)(VOCATION_TYPE[MEMBER_COUNT], Position[MEMBER_COUNT]));
     PLAYERAI_API void play_game();
 }
 

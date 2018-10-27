@@ -28,6 +28,6 @@ struct COMMAND_PARACHUTE
 
 using Recv_Func = void(*)(bool, int, ...);
 using AI_Func = void(*)();
-using Parachute_Func = void(*)(VOCATION_TYPE[4], Position[4]);
+using Parachute_Func = void(*)(VOCATION_TYPE[MEMBER_COUNT], Position[MEMBER_COUNT]);
 
 #endif

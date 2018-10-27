@@ -1,12 +1,12 @@
 #include <iostream>
+#include"constant.h"
 #include "controller.h"
-#include "pycalling.h"
 #include "item.h"
 #include "character.h"
 #include "api.h"
+#include "pycalling.h"
 
 std::pair<Position, Position> route;
-
 
 int main(int argc, char *argv[])
 {

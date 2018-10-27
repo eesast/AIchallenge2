@@ -8,14 +8,15 @@ from json import *
 game = GameMain()
 
 
-def game_init():
+def game_init(data_dir):
     # here give the parent path and load the data and return the airplane
-    game.load_data("./")    # for platform: here input dictionary path
+    game.load_data(data_dir)    # for platform: here input dictionary path
     return game.generate_route()
 
 
 def parachute(information):
     # here game gets all players' information and jump aim, return first turn's information
+    print('parachute:'+str(information))
     return game.parachute(information)
 
 

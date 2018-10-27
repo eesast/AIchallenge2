@@ -31,6 +31,8 @@ void Controller::init(int player_count, DWORD used_core_count)
 
 Controller::~Controller()
 {
+    if (!_is_init)
+        return;
     for (int i = 0; i < _player_count; i++)
     {
         if (_info[i].state != AI_STATE::UNUSED)
@@ -111,7 +113,7 @@ void Controller::run()
     }
 }
 
-void Controller::parachute(VOCATION_TYPE role[4], Position landing_points[4])
+void Controller::parachute(VOCATION_TYPE role[MEMBER_COUNT], Position landing_points[MEMBER_COUNT])
 {
     if (!_is_init)
         return;
@@ -174,6 +176,8 @@ DWORD WINAPI thread_func(LPVOID lpParameter)
 std::map<int,COMMAND_PARACHUTE> Controller::get_parachute_commands()
 {
     std::map<int, COMMAND_PARACHUTE> c;
+    if (!_is_init)
+        return c;
     for (int i = 0; i < MAX_PLAYER; i++)
     {
         if (!_commands[i].empty())

@@ -67,23 +67,27 @@ std::pair<Position, Position> Pycalling::init()
         std::cin.get();
         exit(1);
     }
-    Py_DECREF(mod);
+    Py_XDECREF(mod);
 
     //parachute
-    auto route = PyObject_CallObject(_game_init, nullptr);
+    auto data_dir = Py_BuildValue("(s)", DATA_PATH);
+    auto route = PyObject_CallObject(_game_init, data_dir);
     auto start_pos = PyTuple_GetItem(route, 0);
     auto over_pos = PyTuple_GetItem(route, 1);
     auto route_c = std::make_pair(
         Position{ PyFloat_AsDouble(PyObject_GetAttrString(start_pos,"x")),PyFloat_AsDouble(PyObject_GetAttrString(start_pos,"y")) },
         Position{ PyFloat_AsDouble(PyObject_GetAttrString(over_pos,"x")),PyFloat_AsDouble(PyObject_GetAttrString(over_pos,"y")) }); //memory leak in PyObject_GetAttrString
 
-    Py_DECREF(route);
+    Py_XDECREF(route);
+    Py_XDECREF(data_dir);
     _is_init = true;
     return route_c;
 }
 
 void Pycalling::parachute(std::map<int, COMMAND_PARACHUTE> m)
 {
+    if (!_is_init)
+        return;
     //package:{0:{"role":[0,1,2,3],"landing_points":(x,y)},1:...}
     auto all = PyDict_New();
     for (auto& var : m)
@@ -91,29 +95,31 @@ void Pycalling::parachute(std::map<int, COMMAND_PARACHUTE> m)
         auto team = PyDict_New();
         for (int i = 0; i < MEMBER_COUNT; i++)
         {
-            auto each = Py_BuildValue("{s:f,s:(f,f)}", "vocation", var.second.role[i], "position", var.second.landing_points[i].x, var.second.landing_points[i].y);
-            auto role_id = PyLong_FromLong(i);
+            auto each = Py_BuildValue("{s:i,s:(f,f)}", "vocation", var.second.role[i], "position", var.second.landing_points[i].x, var.second.landing_points[i].y);
+            auto role_id = PyLong_FromLong(i + MEMBER_COUNT * var.first);
             PyDict_SetItem(team, role_id, each);
-            Py_DECREF(role_id);
-            Py_DECREF(each);
+            Py_XDECREF(role_id);
+            Py_XDECREF(each);
         }
         auto id = PyLong_FromLong(var.first);
         PyDict_SetItem(all, id, team);
-        Py_DECREF(id);
-        Py_DECREF(team);
+        Py_XDECREF(id);
+        Py_XDECREF(team);
     }
     auto arg = PyTuple_Pack(1, all);
     auto state = PyObject_CallObject(_parachute, arg);
-    Py_DECREF(arg);
-    Py_DECREF(all);
+    Py_XDECREF(arg);
+    Py_XDECREF(all);
     return; //waiting for logic
 }
 
 Pycalling::~Pycalling()
 {
-    Py_DECREF(_game_main);
-    Py_DECREF(_game_init);
-    Py_DECREF(_parachute);
+    if (!_is_init)
+        return;
+    Py_XDECREF(_game_main);
+    Py_XDECREF(_game_init);
+    Py_XDECREF(_parachute);
     Py_Finalize();
 }
 Pycalling::Pycalling()

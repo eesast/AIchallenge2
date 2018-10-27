@@ -9,7 +9,13 @@
 
 #include"platform.h"
 
-
+//path for finding main.py and data.ini
+const char * const LOGIC_PATH = R"(C:\\Users\\zhang\\Desktop\\AIchallenge2\\logic\\)";
+const char * const DATA_PATH = R"(C:\Users\zhang\Desktop\AIchallenge2\logic\)";
+const char * const MODULE_NAME = "main";
+const char * const MAIN_FUNC_NAME = "game_main";
+const char * const INIT_FUNC_NAME = "game_init";
+const char * const PARACHUTE_FUNC_NAME = "parachute";
 
 #define logic (Pycalling::get_instance())
 
@@ -29,22 +35,16 @@ public:
     void parachute(std::map<int, COMMAND_PARACHUTE>m);
     void do_loop();
 
-    //path for finding main.py
-    const char *LOGIC_PATH = R"(C:\\Users\\zhang\\Desktop\\AIchallenge2\\logic)";
 
-    const char *MODULE_NAME = "main";
-    const char *MAIN_FUNC_NAME = "game_main";
-    const char *INIT_FUNC_NAME = "game_init";
-    const char *PARACHUTE_FUNC_NAME = "parachute";
 private:
     Pycalling();
     bool _is_init = false;
     static Pycalling _instance;
 
     //PYTHON API
-    PyObject *_game_init;
-    PyObject *_game_main;
-    PyObject *_parachute;
+    PyObject *_game_init = nullptr;
+    PyObject *_game_main = nullptr;
+    PyObject *_parachute = nullptr;
 
 };
 

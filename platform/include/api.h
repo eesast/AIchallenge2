@@ -4,6 +4,6 @@
 #include"controller.h"
 #include"constant.h"
 #include"character.h"
-void parachute(VOCATION_TYPE role[4], Position landing_points[4]);
+void parachute(VOCATION_TYPE role[MEMBER_COUNT], Position landing_points[MEMBER_COUNT]);
 
 #endif
