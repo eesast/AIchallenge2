@@ -26,6 +26,7 @@ def game_main(commands):
 
 def main():
     # this function is just to debug for logic
+    object.PRINT_DEBUG = 999
     file = open("./debug/input.txt", 'r', encoding='utf-8')
     game.generate_route()
     information_tem = load(file)
@@ -40,7 +41,8 @@ def main():
     game.parachute(information)
 
     # start the loop
-    while game.alive_teams() > 1:   # fight until there is only one team alive
+    # fight until there is only one team alive or be overtime
+    while game.alive_teams() > 1 and game.anti_infinite_loop():
         # first get information from platform
 
         # then refresh game

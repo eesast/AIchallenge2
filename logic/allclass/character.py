@@ -15,6 +15,7 @@ class Character(Object):                # the base class of all characters
     SIGNALMAN = 2
     HACK = 3
     SNIPER = 4
+    VOCATION_COUNT = 5  # an important number to save how many vocations in total
 
     # enum for status
     RELAX = 0

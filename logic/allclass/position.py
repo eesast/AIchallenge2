@@ -49,8 +49,9 @@ class Position:     # this is a class for position and reload some operator
 
     def unitize(self, other_position=0):
         if other_position == 0:     # without other position, unitize itself and return self
-            self.x = self.x / self.length()
-            self.y = self.y / self.length()
+            length = self.length()
+            self.x = self.x / length
+            self.y = self.y / length
             return self
         else:   # else return the unitization(not misspelling) of other position
             return other_position / self.length()

@@ -74,7 +74,9 @@ class GameMain:
                     if player.move_cd:
                         player.move_cd -= 1
                     if player.move_cd == 0:
+
                         if player.is_flying():
+                            # this is change from flying to jumping
                             player.status = character.Character.JUMPING
                             player.position = player.jump_position
                             player.move_direction = (player.land_position - player.jump_position).unitize()
@@ -83,6 +85,7 @@ class GameMain:
                                                  player.move_speed + 1)
                             player.face_direction = player.move_direction
                         elif player.is_jumping():
+                            # jump to the land, and then relax
                             player.status = character.Character.RELAX
                             player.position = player.land_position
                             player.move_direction = None
@@ -187,19 +190,37 @@ class GameMain:
                 self.all_players.append(new_team)
                 self.number_to_team[team_number] = new_team
                 for player_number, player_information in team_information.items():
+                    chosen_vocation = []
                     if not isinstance(player_information, dict):
                         raise Exception("wrong team_information!")
                     if not isinstance(team_number, int):
                         raise Exception("wrong team_number!")
-                    new_player = character.Character(player_information['vocation'])
+                    new_vocation = player_information['vocation']
+
+                    # first judge if this vocation is legal
+                    if not 0 <= new_vocation <= character.Character.VOCATION_COUNT:
+                        if object.PRINT_DEBUG:
+                            print("number", player_number, "choose illegal vocation", new_vocation)
+                        new_vocation = 0
+                    # then ensure it hasn't been chosen, or I will give one
+                    while new_vocation in chosen_vocation:
+                        if object.PRINT_DEBUG:
+                            print("number", player_number, "choose repeated vocation", new_vocation, end='')
+                            print("(this log maybe repeated during trying to adjust vocation )")
+                        new_vocation = (new_vocation + 1) % character.Character.VOCATION_COUNT
+
+                    new_player = character.Character(new_vocation)
                     new_player.land_position = position.Position(player_information['position'])
-                    if not new_player.land_position.good(self.map_size):    # for illegal aim, auto fall in the end
+                    if not new_player.land_position.good(self.map_size):  # for illegal aim, auto fall in the end
+                        if object.PRINT_DEBUG:
+                            print("number", player_number, "choose illegal aim", new_player.land_position)
                         new_player.land_position = self.__over_position
+                    new_player.number = player_number
                     new_team.append(new_player)
                     self.number_to_player[player_number] = new_player
             return
 
-        def get_pedal(aim_position):
+        def get_pedal(aim_position, number=-1):
             # these formulas are transformed from internet, I hope they're right
             aim_x, aim_y = aim_position.x, aim_position.y
             A = position.delta_y(self.__start_position, self.__over_position)
@@ -208,25 +229,26 @@ class GameMain:
             x = (B * B * aim_x - A * B * aim_y - A * C) / (A * A + B * B)
             y = (A * A * aim_y - A * B * aim_y - B * C) / (A * A + B * B)
             aim = position.Position(x, y)
+            # if the pedal isn't in the map, player must jump at begin or end
             if x < 0 or y < 0 or x > self.map_size or y > self.map_size:
+                if object.PRINT_DEBUG >= 2:
+                    print(number, "aimed", aim_position, "pedal is", aim, end='')
                 aim = self.__start_position if aim.distance2(self.__start_position) < \
                                                aim.distance2(self.__over_position) else self.__over_position
+                if object.PRINT_DEBUG >= 2:
+                    print("now it has been adjusted to", aim)
             return aim
 
         # here unwrap players' information and their land positions
         unwrap()
-        # supposing I get teams * 4 positions
 
-        # debug: test positions
-        # well, I haven't test yet
-        # debug code over
-
+        # I just got teams information for the first time, now save them
         for team in self.all_players:
             for player in team:
                 if not isinstance(player, character.Character):
                     raise Exception("wrong object for dict number_to_player, get a", type(player))
                 # I hope it's a pointer, otherwise it's a huge bug
-                player.jump_position = get_pedal(player.land_position)
+                player.jump_position = get_pedal(player.land_position, player.number)
                 player.status = character.Character.ON_PLANE
                 player.move_direction = (self.__over_position - self.__start_position).unitize()
                 player.position = self.__start_position
@@ -236,6 +258,11 @@ class GameMain:
         # now everything down, main operation starts
         # return first turn's information
         return self.refresh()
+
+    def anti_infinite_loop(self):
+        # the game can hold no more than half an hour
+        # later, we will design poison circle, but now I can just use enforcement measure
+        return self.__turn < 20 * 60 * 30
 
 
 if __name__ == '__main__':

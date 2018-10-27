@@ -2,8 +2,13 @@
 # -*- coding: utf-8 -*-
 
 
-# here define file name
+#   here define file name
 DATA_FILE_NAME = "data.ini"
+
+#   here define a debug level variable to debug print-oriented
+PRINT_DEBUG = 1
+#   level 1: only print illegal information
+#   level 2: also print some adjustment
 
 
 class Object(object):
@@ -18,6 +23,7 @@ class Object(object):
         self.position = (None, None)
         self.shape = shape
         self.move_speed = None
+        self.number = -1
 
         # remember: for security, direction use unit vector
         self.move_direction = None  # record which direction it's heading of
