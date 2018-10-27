@@ -5,7 +5,12 @@ from math import *
 
 class Position:     # this is a class for position and reload some operator
     def __init__(self, x=0., y=0.):
-        self.x, self.y = x, y
+        if isinstance(x, Position):
+            self.x, self.y = x.x, x.y
+        elif isinstance(x, tuple):
+            self.x, self.y = x[0], x[1]
+        else:
+            self.x, self.y = x, y
 
     def __add__(self, other_position):
         return Position(self.x + other_position.x, self.y + other_position.y)
@@ -44,11 +49,17 @@ class Position:     # this is a class for position and reload some operator
 
     def unitize(self, other_position=0):
         if other_position == 0:     # without other position, unitize itself and return self
-            self.x = self.x / self.length()
-            self.y = self.y / self.length()
+            length = self.length()
+            self.x = self.x / length
+            self.y = self.y / length
             return self
         else:   # else return the unitization(not misspelling) of other position
             return other_position / self.length()
+
+    def good(self, size_x, size_y=0):
+        if size_y == 0:
+            size_y = size_x
+        return 0 <= self.x <= size_x and 0 <= self.y <= size_y
 
 
 def delta_y(position1, position2):
