@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*
 from gamemain import *
+from json import *
 
 
 # use a global variable to manage the whole game
@@ -8,7 +9,8 @@ game = GameMain()
 
 
 def game_init():
-    # here initialize the game and return the airplane
+    # here give the parent path and load the data and return the airplane
+    game.load_data("./")    # for platform: here input dictionary path
     return game.generate_route()
 
 
@@ -24,11 +26,23 @@ def game_main(commands):
 
 def main():
     # this function is just to debug for logic
+    object.PRINT_DEBUG = 999
+    file = open("./debug/input.txt", 'r', encoding='utf-8')
     game.generate_route()
-    game.parachute(None)
+    information_tem = load(file)
+    information = {}
+    for key, value in information_tem.items():
+        new_value = {}
+        for key2, value2 in value.items():
+            value2["position"] = (value2["position"][0], value2["position"][1])
+            new_value[int(key2)] = value2
+        information[int(key)] = new_value
+    print(information)
+    game.parachute(information)
 
     # start the loop
-    while game.alive_teams() > 1:   # fight until there is only one team alive
+    # fight until there is only one team alive or be overtime
+    while game.alive_teams() > 1 and game.anti_infinite_loop():
         # first get information from platform
 
         # then refresh game
@@ -37,7 +51,7 @@ def main():
         # emit information to platform
 
     # report the final result
-
+    print("game over")
     return
 
 

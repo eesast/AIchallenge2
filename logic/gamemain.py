@@ -6,32 +6,40 @@ from random import randrange
 
 class GameMain:
     # if not specified, platform needn't this class's members
-    def __init__(self, file_path="./"):
-        # first load some module data here
-        character.Character.load_data(file_path)
-        item.Item.load_data(file_path)
+    def __init__(self):
 
         # it's more like a define instead of an initialization
         self.map_size = 1000
         self.die_order = []  # save the player's dying order
         self.map_items = [[[] for i in range(16)] for j in range(16)]  # try to divide map into 256 parts
-        self.all_players = []
+        self.all_players = []  # save all player's information
+        self.all_bullets = []
+        self.all_sounds = []
+        self.all_items = []
+
+        self.number_to_team = {}  # use a number to find a team
         self.number_to_player = {}  # use a number to find a player
         self.__start_position, self.__over_position = None, None
+        self.__turn = 0
+
+        return
+
+    def load_data(self, file_path="./"):
+        # use this instead of __init__ for platform to
+
+        # first load some module data here
+        character.Character.load_data(file_path)
+        item.Item.load_data(file_path)
 
         # here load map data
         self.__load_map(file_path)
-        return
-
-    def initialize(self):
-        # if platform has trouble in initializing the global variable, I will use it instead
         pass
 
     def unwrap_commands(self, commands):
         # here unwrap all players' commands
         return
 
-    def refresh(self):      # refresh a new frame according to the orders
+    def refresh(self):  # refresh a new frame according to the orders
         def instructions():
             # I need instruction API to finish legality detection
             pass
@@ -66,19 +74,25 @@ class GameMain:
                     if player.move_cd:
                         player.move_cd -= 1
                     if player.move_cd == 0:
+
                         if player.is_flying():
+                            # this is change from flying to jumping
                             player.status = character.Character.JUMPING
                             player.position = player.jump_position
                             player.move_direction = (player.land_position - player.jump_position).unitize()
                             player.move_speed = character.Character.JUMPING_SPEED
-                            player.move_cd = (player.land_position - player.jump_position).length() / player.move_speed
+                            player.move_cd = int((player.land_position - player.jump_position).length() /
+                                                 player.move_speed + 1)
+                            player.face_direction = player.move_direction
                         elif player.is_jumping():
+                            # jump to the land, and then relax
                             player.status = character.Character.RELAX
                             player.position = player.land_position
                             player.move_direction = None
                             player.move_speed = 0
 
             pass
+
         # 1. judge and operate players' instructions
         instructions()
 
@@ -102,6 +116,8 @@ class GameMain:
 
         # 8. update player's view, cd and etc
         update()
+
+        self.__turn = self.__turn + 1
 
         # what to return is a vital question for platform
         return
@@ -151,6 +167,7 @@ class GameMain:
                 # if parameter isn't in the right range, it may work, although not supposed to
                 return get_position((parameter + 4 * length) % (4 * length))
             return position.Position(x, y)
+
         # first get two position for the air route
         self.__start_position, self.__over_position = random_route()
         # for debug, but it also can be used in  if needed
@@ -162,43 +179,90 @@ class GameMain:
         # a function to process position data from platform
         def unwrap():
             # here I get all players information and players' aim positions via data from platform
-            # I hope platform can finish this part :D
-            pass
+            if not isinstance(information, dict):
+                raise Exception("wrong information!")
+            for team_number, team_information in information.items():
+                if not isinstance(team_information, dict):
+                    raise Exception("wrong team_information!")
+                if not isinstance(team_number, int):
+                    raise Exception("wrong team_number!")
+                new_team = []
+                self.all_players.append(new_team)
+                self.number_to_team[team_number] = new_team
+                for player_number, player_information in team_information.items():
+                    chosen_vocation = []
+                    if not isinstance(player_information, dict):
+                        raise Exception("wrong team_information!")
+                    if not isinstance(team_number, int):
+                        raise Exception("wrong team_number!")
+                    new_vocation = player_information['vocation']
 
-        def get_pedal(aim_position):
+                    # first judge if this vocation is legal
+                    if not 0 <= new_vocation <= character.Character.VOCATION_COUNT:
+                        if object.PRINT_DEBUG:
+                            print("number", player_number, "choose illegal vocation", new_vocation)
+                        new_vocation = 0
+                    # then ensure it hasn't been chosen, or I will give one
+                    while new_vocation in chosen_vocation:
+                        if object.PRINT_DEBUG:
+                            print("number", player_number, "choose repeated vocation", new_vocation, end='')
+                            print("(this log maybe repeated during trying to adjust vocation )")
+                        new_vocation = (new_vocation + 1) % character.Character.VOCATION_COUNT
+
+                    new_player = character.Character(new_vocation)
+                    new_player.land_position = position.Position(player_information['position'])
+                    if not new_player.land_position.good(self.map_size):  # for illegal aim, auto fall in the end
+                        if object.PRINT_DEBUG:
+                            print("number", player_number, "choose illegal aim", new_player.land_position)
+                        new_player.land_position = self.__over_position
+                    new_player.number = player_number
+                    new_team.append(new_player)
+                    self.number_to_player[player_number] = new_player
+            return
+
+        def get_pedal(aim_position, number=-1):
             # these formulas are transformed from internet, I hope they're right
             aim_x, aim_y = aim_position.x, aim_position.y
             A = position.delta_y(self.__start_position, self.__over_position)
             B = - position.delta_x(self.__start_position, self.__over_position)
-            C = - position.cross_product(self.__start_position, self.__over_position)
-            x = (B * B * aim_x - A * B * aim_y-A * C) / (A * A + B * B)
+            C = position.cross_product(self.__start_position, self.__over_position)
+            x = (B * B * aim_x - A * B * aim_y - A * C) / (A * A + B * B)
             y = (A * A * aim_y - A * B * aim_y - B * C) / (A * A + B * B)
-            return position.Position(x, y)
+            aim = position.Position(x, y)
+            # if the pedal isn't in the map, player must jump at begin or end
+            if x < 0 or y < 0 or x > self.map_size or y > self.map_size:
+                if object.PRINT_DEBUG >= 2:
+                    print(number, "aimed", aim_position, "pedal is", aim, end='')
+                aim = self.__start_position if aim.distance2(self.__start_position) < \
+                                               aim.distance2(self.__over_position) else self.__over_position
+                if object.PRINT_DEBUG >= 2:
+                    print("now it has been adjusted to", aim)
+            return aim
 
-        aim_positions = []
         # here unwrap players' information and their land positions
         unwrap()
-        # supposing I get teams * 4 positions
 
-        # debug: test positions
-        # well, I haven't test yet
-        # debug code over
-
-        player_number = 0
-        for pos in aim_positions:
-            player = self.number_to_player[player_number]
-            if not isinstance(player, character.Character):
-                raise Exception("wrong object for dict number_to_player, get a", type(player))
-            # I hope it's a pointer, otherwise it's a huge bug
-            player.land_position = pos
-            player.jump_position = get_pedal(pos)
-            player.status = character.Character.ON_PLANE
-            player.move_direction = (self.__over_position - self.__start_position).unitize()
-            player.move_speed = character.Character.AIRPLANE_SPEED
-            player.move_cd = player.jump_position.length() / player.move_speed
+        # I just got teams information for the first time, now save them
+        for team in self.all_players:
+            for player in team:
+                if not isinstance(player, character.Character):
+                    raise Exception("wrong object for dict number_to_player, get a", type(player))
+                # I hope it's a pointer, otherwise it's a huge bug
+                player.jump_position = get_pedal(player.land_position, player.number)
+                player.status = character.Character.ON_PLANE
+                player.move_direction = (self.__over_position - self.__start_position).unitize()
+                player.position = self.__start_position
+                player.move_speed = character.Character.AIRPLANE_SPEED
+                player.move_cd = int(player.jump_position.length() / player.move_speed + 1)
+                player.face_direction = player.move_direction
         # now everything down, main operation starts
         # return first turn's information
         return self.refresh()
+
+    def anti_infinite_loop(self):
+        # the game can hold no more than half an hour
+        # later, we will design poison circle, but now I can just use enforcement measure
+        return self.__turn < 20 * 60 * 30
 
 
 if __name__ == '__main__':
