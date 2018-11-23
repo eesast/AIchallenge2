@@ -1,5 +1,7 @@
 #ignore pycharm configuration files
 
+/.vscode
+
 # platform
 /platform/build
 /platform/.vscode
