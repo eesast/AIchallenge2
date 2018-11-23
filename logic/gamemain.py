@@ -16,6 +16,7 @@ class GameMain:
         self.all_bullets = []
         self.all_sounds = []
         self.all_items = []
+        self.all_info = []  # save all information for platform
 
         self.number_to_team = {}  # use a number to find a team
         self.number_to_player = {}  # use a number to find a player
@@ -119,8 +120,8 @@ class GameMain:
 
         self.__turn = self.__turn + 1
 
-        # what to return is a vital question for platform
-        return
+        # here return everything as i mention in the related files
+        return self.all_info
 
     def __load_map(self, parent_path="./"):
         pass
@@ -170,6 +171,7 @@ class GameMain:
 
         # first get two position for the air route
         self.__start_position, self.__over_position = random_route()
+
         # for debug, but it also can be used in  if needed
         print("the route's start position is", self.__start_position, "and its over position is", self.__over_position)
         return self.__start_position, self.__over_position
@@ -233,8 +235,8 @@ class GameMain:
             if x < 0 or y < 0 or x > self.map_size or y > self.map_size:
                 if object.PRINT_DEBUG >= 2:
                     print(number, "aimed", aim_position, "pedal is", aim, end='')
-                aim = self.__start_position if aim.distance2(self.__start_position) < \
-                                               aim.distance2(self.__over_position) else self.__over_position
+                aim = self.__start_position if aim.distance2(self.__start_position) < aim.distance2(
+                    self.__over_position) else self.__over_position
                 if object.PRINT_DEBUG >= 2:
                     print("now it has been adjusted to", aim)
             return aim
@@ -255,6 +257,8 @@ class GameMain:
                 player.move_speed = character.Character.AIRPLANE_SPEED
                 player.move_cd = int(player.jump_position.length() / player.move_speed + 1)
                 player.face_direction = player.move_direction
+                # meanwhile deal with information list
+                self.all_info.append(info.Information(player))
         # now everything down, main operation starts
         # return first turn's information
         return self.refresh()

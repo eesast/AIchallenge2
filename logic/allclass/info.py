@@ -5,7 +5,7 @@ from .character import *
 
 class Information:
     def __init__(self, player):
-        if not isinstance(Character, player):
+        if not isinstance(player, Character):
             raise Exception("wrong player type!")
         self.player = player
         self.vision = []
