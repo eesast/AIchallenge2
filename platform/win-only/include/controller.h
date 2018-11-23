@@ -4,6 +4,7 @@
 #include"platform.h"
 #include<Windows.h>
 #include<mutex>
+#include"communication_platform.pb.h"
 
 #define manager (Controller::get_instance())
 
@@ -23,7 +24,7 @@ class Controller
         AI_STATE state = AI_STATE::UNUSED;
         std::mutex mtx;    //guarantee security of STL used in playerAPI
     };
-    
+
 
 
 public:
@@ -45,10 +46,17 @@ public:
     //parameter is the same as WINAPI CreateThread
     void run();
 
+    bool controller_receive(bool is_parachute, const std::string & data);
+
+
+
+
     void parachute(VOCATION_TYPE role[MEMBER_COUNT], Position landing_points[MEMBER_COUNT]);
     std::map<int, COMMAND_PARACHUTE> get_parachute_commands();
     void register_AI(int playerID, AI_Func pfunc, Recv_Func precv);
 private:
+    std::string _serialize_route();
+
     int get_playerID_by_thread();
 
     //singleton
@@ -70,5 +78,7 @@ private:
 };
 
 DWORD WINAPI thread_func(LPVOID lpParameter);
+
+bool controller_receive(bool is_parachute, const std::string data);
 
 #endif // !CONTROLLER_H

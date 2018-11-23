@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package platform;
+package comm_player;
 
 message PolarPosition {
     //use the system of polar coordinates
@@ -12,6 +12,14 @@ message XYPosition {
     //use the system of rectangular coordinates
     double x=1;
     double y=2;
+}
+
+enum Vocation {
+    MEDIC = 0;
+    ENGINEER = 1;
+    SIGNALMAN = 2;
+    HACK = 3;
+    SNIPER = 4;
 }
 
 message Object {
@@ -43,20 +51,14 @@ message Item {
 }
 
 enum PlayerState {
-    RELAX = 0;
+    RELAXING = 0;
     ON_PLANE = 1;
     JUMPING = 2;
     MOVING = 3;
     SHOOTING = 4;
-    PICKUP = 5;
+    PICKINGUP = 5;
 }
-enum Vocation {
-    MEDIC = 0;
-    ENGINEER = 1;
-    SIGNALMAN = 2;
-    HACK = 3;
-    SNIPER = 4;
-}
+
 message SelfInfo {
     //complete info of self
     int32 heal_point=1;
@@ -89,6 +91,7 @@ message Sound {
 
 message PlayerInfo {
     //all info that send to each player per turn
+    int32 player_ID=6;
     SelfInfo self_info=1;
     repeated Object objects=2;
     repeated Item items=3;
@@ -99,4 +102,30 @@ message PlayerInfo {
 message TeamInfo {
     //4 PlayerInfo in general
     repeated PlayerInfo infos=1;
+}
+
+enum CommandType {
+    MOVE=0;
+    SHOOT=1;
+    PICKUP=2;
+    RADIO=3;
+}
+
+message Command {
+    CommandType command_type=1;
+    int32 target_ID=2;
+    double move_angle=3;
+    double view_angle=4;
+    int32 parameter=5;
+    int32 player_ID=6;
+}
+
+message Route {
+    XYPosition start_pos=1;
+    XYPosition over_pos=2;
+}
+
+message Parachute {
+    repeated Vocation types=1;
+    repeated XYPosition landing_points=2;
 }

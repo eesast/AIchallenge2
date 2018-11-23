@@ -24,10 +24,10 @@ int main(int argc, char *argv[])
     for (int i = 0; i < player_count; i++)
     {
         auto play_game = (AI_Func)GetProcAddress(h, "play_game");
-        auto bind_api = (void(*)(Parachute_Func))GetProcAddress(h, "bind_api");
-        auto receive = (Recv_Func)GetProcAddress(h, "receive");
-        bind_api(parachute);
-        manager.register_AI(i, play_game, receive);
+        auto bind_api = (void(*)(Player_Send_Func))GetProcAddress(h, "bind_api");
+        auto player_receive = (Recv_Func)GetProcAddress(h, "player_receive");
+        bind_api(&controller_receive);
+        manager.register_AI(i, play_game, player_receive);
     }
     route = logic.init();
     manager.run();

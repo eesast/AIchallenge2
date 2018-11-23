@@ -26,8 +26,8 @@ struct COMMAND_PARACHUTE
     }
 };
 
-using Recv_Func = void(*)(bool, int, ...);
+using Recv_Func = void(*)(bool, const std::string);
 using AI_Func = void(*)();
-using Parachute_Func = void(*)(VOCATION_TYPE[MEMBER_COUNT], Position[MEMBER_COUNT]);
+using Player_Send_Func = bool(*)(bool, const std::string);
 
 #endif

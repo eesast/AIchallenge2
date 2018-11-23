@@ -37,6 +37,7 @@ Controller::~Controller()
     {
         if (_info[i].state != AI_STATE::UNUSED)
         {
+            _info[i].mtx.unlock();
             TerminateThread(_info[i].handle, 0);
             CloseHandle(_info[i].handle);
         }
@@ -79,7 +80,7 @@ void Controller::run()
         {
             _info[offset + i].mtx.unlock();
             _info[offset + i].state = AI_STATE::ACTIVE;
-            (*_recv_func[offset + i])(true, 2, route.first, route.second);
+            (*_recv_func[offset + i])(true, _serialize_route());
             ResumeThread(_info[offset + i].handle);
         }
         DWORD threadNumber = (_player_count - offset >= static_cast<int>(_used_core_count) ? _used_core_count : static_cast<DWORD>(_player_count - offset));
@@ -111,6 +112,17 @@ void Controller::run()
             }
         }
     }
+}
+
+bool Controller::controller_receive(bool is_parachute, const std::string & data)
+{
+    if (is_parachute)
+    {
+        comm_platform::Parachute recv;
+        recv.ParseFromString(data);
+        std::cout << recv.DebugString() << std::endl;
+    }
+    return false;
 }
 
 void Controller::parachute(VOCATION_TYPE role[MEMBER_COUNT], Position landing_points[MEMBER_COUNT])
@@ -173,6 +185,11 @@ DWORD WINAPI thread_func(LPVOID lpParameter)
     return 0;
 }
 
+bool controller_receive(bool is_parachute, const std::string data)
+{
+    return manager.controller_receive(is_parachute, data);
+}
+
 std::map<int,COMMAND_PARACHUTE> Controller::get_parachute_commands()
 {
     std::map<int, COMMAND_PARACHUTE> c;
@@ -186,4 +203,14 @@ std::map<int,COMMAND_PARACHUTE> Controller::get_parachute_commands()
         }
     }
     return c;
+}
+
+std::string Controller::_serialize_route()
+{
+    comm_platform::Route sender;
+    sender.mutable_start_pos()->set_x(route.first.x);
+    sender.mutable_start_pos()->set_y(route.first.y);
+    sender.mutable_over_pos()->set_x(route.second.x);
+    sender.mutable_over_pos()->set_y(route.second.y);
+    return sender.SerializeAsString();
 }
