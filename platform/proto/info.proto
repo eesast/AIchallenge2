@@ -82,15 +82,9 @@ message OtherInfo {
 }
 
 message Sound {
-    enum SoundType {
-        FOOTSTEP_SOUND = 0;
-        GUN_SOUND = 1;
-        RADIO_VOICE = 2;
-    }
     int32 sender_ID=1;
     int32 time_delay=2;
-    SoundType type=3;
-    int32 parameter=4;
+    int32 parameter=3;
 }
 
 message PlayerInfo {
