@@ -8,9 +8,9 @@ from json import *
 game = GameMain()
 
 
-def game_init():
+def game_init(file_path="./"):
     # here give the parent path and load the data and return the airplane
-    game.load_data("./")    # for platform: here input dictionary path
+    game.load_data(file_path)    # for platform: here input dictionary path
     return game.generate_route()
 
 
