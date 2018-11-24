@@ -1,5 +1,5 @@
-//playerAI.h must be above api.h!
-#include"playerAI.h"
+#include"base.h"
+#include"./../../include/api.h"
 
 void parachute(VOCATION_TYPE role[MEMBER_COUNT], Position landing_points[MEMBER_COUNT])
 {
@@ -28,10 +28,10 @@ void parachute(VOCATION_TYPE role[MEMBER_COUNT], Position landing_points[MEMBER_
         pos->set_x(landing_points[i].x);
         pos->set_y(landing_points[i].y);
     }
-    std::cout << "AI:"<<sender.DebugString() << std::endl;
+    std::cout << "AI:" << sender.DebugString() << std::endl;
     player_send(true, sender.SerializeAsString());
 }
-void shoot(int player_ID,int weapon_ID, double shoot_angle, int parameter)
+void shoot(int player_ID, int weapon_ID, double shoot_angle, int parameter)
 {
     comm_player::Command sender;
     sender.set_command_type(comm_player::CommandType::SHOOT);

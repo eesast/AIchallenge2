@@ -21,23 +21,26 @@ void Controller::init(int player_count, DWORD used_core_count)
         _used_core_count = used_core_count;
     }
     _waiting_thread = new HANDLE[_used_core_count];
-    for (int i = 0; i < MAX_PLAYER; i++)
-    {
-        _player_func[i] = nullptr;
-        _recv_func[i] = nullptr;
-    }
     _is_init = true;
+}
+
+bool Controller::_check_init()
+{
+    if (!_is_init)
+    {
+        std::cerr << "Manager is not initialised,please check codes." << std::endl;
+    }
+    return _is_init;
 }
 
 Controller::~Controller()
 {
-    if (!_is_init)
+    if (!_check_init())
         return;
     for (int i = 0; i < _player_count; i++)
     {
         if (_info[i].state != AI_STATE::UNUSED)
         {
-            _info[i].mtx.unlock();
             TerminateThread(_info[i].handle, 0);
             CloseHandle(_info[i].handle);
         }
@@ -48,7 +51,7 @@ Controller::~Controller()
 
 void Controller::run()
 {
-    if (!_is_init)
+    if (!_check_init())
         return;
     for (int offset = 0; offset < _player_count; offset += _used_core_count)
     {
@@ -69,7 +72,6 @@ void Controller::run()
                     system("pause");
                     exit(1);
                 }
-                _info[offset + i].mtx.lock();
                 _info[offset + i].state = AI_STATE::SUSPENDED;
                 //CPU control, choose the core which the thread uses. When the used core number is less than that CPU actually has, using core with higher ID firstly 
                 SetThreadAffinityMask(_info[offset + i].handle, (static_cast<DWORD_PTR>(1) << ((_total_core_count - _used_core_count) + i)));
@@ -78,9 +80,8 @@ void Controller::run()
         }
         for (int i = 0; i < static_cast<int>(_used_core_count) && offset + i < _player_count; i++)
         {
-            _info[offset + i].mtx.unlock();
             _info[offset + i].state = AI_STATE::ACTIVE;
-            (*_recv_func[offset + i])(true, _serialize_route());
+            (*_info[offset + i].recv_func)(true, _serialize_route());
             ResumeThread(_info[offset + i].handle);
         }
         DWORD threadNumber = (_player_count - offset >= static_cast<int>(_used_core_count) ? _used_core_count : static_cast<DWORD>(_player_count - offset));
@@ -92,7 +93,6 @@ void Controller::run()
                 GetExitCodeThread(_info[offset + i].handle, &exitCode);
                 if (exitCode == STILL_ACTIVE)
                 {
-                    _info[offset + i].mtx.lock();
                     _info[offset + i].state = AI_STATE::SUSPENDED;
                     SuspendThread(_info[offset + i].handle);
                 }
@@ -114,20 +114,34 @@ void Controller::run()
     }
 }
 
-bool Controller::controller_receive(bool is_parachute, const std::string & data)
+bool Controller::receive(bool is_jumping, const std::string & data)
 {
-    if (is_parachute)
+    if (!_check_init())
+        return false;
+    if (is_jumping)
     {
         comm_platform::Parachute recv;
         recv.ParseFromString(data);
         std::cout << recv.DebugString() << std::endl;
     }
-    return false;
+    else
+    {
+
+    }
+    return true;
+}
+
+void Controller::send(int playerID, bool is_jumping, const std::string & data)
+{
+    if (!_check_init())
+        return;
+    _info[playerID].recv_func(is_jumping, data);
+    return;
 }
 
 void Controller::parachute(VOCATION_TYPE role[MEMBER_COUNT], Position landing_points[MEMBER_COUNT])
 {
-    if (!_is_init)
+    if (!_check_init())
         return;
     auto playerID = get_playerID_by_thread();
     COMMAND_PARACHUTE c;
@@ -141,17 +155,17 @@ void Controller::parachute(VOCATION_TYPE role[MEMBER_COUNT], Position landing_po
 }
 
 
-void Controller::register_AI(int playerID, AI_Func pfunc,Recv_Func precv)
+void Controller::register_AI(int playerID, AI_Func pfunc, Recv_Func precv)
 {
-    if (!_is_init)
+    if (!_check_init())
         return;
-    _player_func[playerID] = pfunc;
-    _recv_func[playerID] = precv;
+    _info[playerID].player_func = pfunc;
+    _info[playerID].recv_func = precv;
 }
 
 int Controller::get_playerID_by_thread()
 {
-    if (!_is_init)
+    if (!_check_init())
         return -1;
     auto threadID = GetCurrentThreadId();
     for (int i = _now_offset; i < _now_offset + static_cast<int>(_used_core_count) && i < _player_count; i++)
@@ -178,22 +192,22 @@ Controller::Controller()
 DWORD WINAPI thread_func(LPVOID lpParameter)
 {
     auto playerID = manager.get_playerID_by_thread();
-    if (manager._player_func[playerID] != nullptr)
+    if (manager._info[playerID].player_func != nullptr)
     {
-        (*manager._player_func[playerID])();
+        (*manager._info[playerID].player_func)();
     }
     return 0;
 }
 
-bool controller_receive(bool is_parachute, const std::string data)
+bool controller_receive(bool is_jumping, const std::string data)
 {
-    return manager.controller_receive(is_parachute, data);
+    return manager.receive(is_jumping, data);
 }
 
-std::map<int,COMMAND_PARACHUTE> Controller::get_parachute_commands()
+std::map<int, COMMAND_PARACHUTE> Controller::get_parachute_commands()
 {
     std::map<int, COMMAND_PARACHUTE> c;
-    if (!_is_init)
+    if (!_check_init())
         return c;
     for (int i = 0; i < MAX_PLAYER; i++)
     {

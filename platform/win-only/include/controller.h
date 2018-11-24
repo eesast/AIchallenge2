@@ -19,16 +19,18 @@ class Controller
 
     struct AI_INFO
     {
+        //thread token
         DWORD threadID = 0;
         HANDLE handle = nullptr;
+        //thread state
         AI_STATE state = AI_STATE::UNUSED;
-        std::mutex mtx;    //guarantee security of STL used in playerAPI
+        //function pointer for callback
+        AI_Func player_func = nullptr;
+        Recv_Func recv_func = nullptr;
     };
 
-
-
 public:
-
+    //win-only, for CreateThread
     friend DWORD WINAPI thread_func(LPVOID lpParameter);
 
     //singleton
@@ -42,22 +44,32 @@ public:
         return _instance;
     }
 
+    //manager init
+public:
     void init(int player_count = 0, DWORD used_core_count = 0);
-    //parameter is the same as WINAPI CreateThread
+    void register_AI(int playerID, AI_Func pfunc, Recv_Func precv);
+private:
+    //if init,return true.
+    bool _check_init();
+
+    //thread control
+public:
     void run();
+private:
+    int get_playerID_by_thread();
 
-    bool controller_receive(bool is_parachute, const std::string & data);
-
+    //communication
+public:
+    bool receive(bool is_jumping, const std::string & data);
+    void send(int playerID, bool is_jumping, const std::string & data);
 
 
 
     void parachute(VOCATION_TYPE role[MEMBER_COUNT], Position landing_points[MEMBER_COUNT]);
     std::map<int, COMMAND_PARACHUTE> get_parachute_commands();
-    void register_AI(int playerID, AI_Func pfunc, Recv_Func precv);
 private:
     std::string _serialize_route();
 
-    int get_playerID_by_thread();
 
     //singleton
     Controller();
@@ -70,8 +82,7 @@ private:
     HANDLE* _waiting_thread;    //size == _used_core_count
     int _now_offset;
     int _player_count;
-    AI_Func _player_func[MAX_PLAYER];
-    Recv_Func _recv_func[MAX_PLAYER];
+
 
     //communication
     std::vector<COMMAND_PARACHUTE>_commands[MAX_PLAYER];
@@ -79,6 +90,7 @@ private:
 
 DWORD WINAPI thread_func(LPVOID lpParameter);
 
-bool controller_receive(bool is_parachute, const std::string data);
+//not atomic, maybe cause bugs.
+bool controller_receive(bool is_jumping, const std::string data);
 
 #endif // !CONTROLLER_H

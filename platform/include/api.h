@@ -1,8 +1,7 @@
 #ifndef API_H
 #define API_H
 
-#ifdef PLAYERAI_H
-#else
+#ifndef AI_EXPORTS
 #include"controller.h"
 #endif
 #include"constant.h"

@@ -1,13 +1,13 @@
-#include"playerAI.h"
+#include"base.h"
 
 Position start_pos, over_pos;
 
-decltype(&player_send) _player_send = nullptr;
+static decltype(&player_send) _player_send = nullptr;
 
-void player_receive(bool is_parachute, const std::string data)
+void player_receive(bool is_jumping, const std::string data)
 {
     //if jumping, data is platform::parachute, else data is teaminfo.
-    if (is_parachute)
+    if (is_jumping)
     {
         comm_player::Route recv;
         if (recv.ParseFromString(data))
@@ -38,21 +38,13 @@ void player_receive(bool is_parachute, const std::string data)
     }
 }
 
-bool player_send(bool is_parachute, const std::string data)
+bool player_send(bool is_jumping, const std::string data)
 {
-    return (*_player_send)(is_parachute, data);
+    return (*_player_send)(is_jumping, data);
 }
 
 void bind_api(decltype(_player_send) func)
 {
     _player_send = func;
 }
-void play_game()
-{
-    using namespace std;
-    cout << "player" << endl;
-    VOCATION_TYPE role[MEMBER_COUNT] = { VOCATION_TYPE::ENGINEER, VOCATION_TYPE::HACK, VOCATION_TYPE::MEDIC, VOCATION_TYPE::SNIPER };
-    Position landing_points[MEMBER_COUNT] = { over_pos,start_pos,over_pos,start_pos };
-    parachute(role, landing_points);
-    return;
-}
+
