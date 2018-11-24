@@ -385,7 +385,6 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::comm_platform::Command, move_angle_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::comm_platform::Command, view_angle_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::comm_platform::Command, parameter_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::comm_platform::Command, player_id_),
   ~0u,  // no _has_bits_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::comm_platform::Route, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -398,8 +397,8 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::comm_platform::Parachute, types_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::comm_platform::Parachute, landing_points_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::comm_platform::Parachute, role_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::comm_platform::Parachute, landing_point_),
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, sizeof(::comm_platform::PolarPosition)},
@@ -412,8 +411,8 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 66, -1, sizeof(::comm_platform::PlayerInfo)},
   { 77, -1, sizeof(::comm_platform::TeamInfo)},
   { 83, -1, sizeof(::comm_platform::Command)},
-  { 94, -1, sizeof(::comm_platform::Route)},
-  { 101, -1, sizeof(::comm_platform::Parachute)},
+  { 93, -1, sizeof(::comm_platform::Route)},
+  { 100, -1, sizeof(::comm_platform::Parachute)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -486,25 +485,24 @@ void AddDescriptorsImpl() {
       "\022(\n\006others\030\004 \003(\0132\030.comm_platform.OtherIn"
       "fo\022$\n\006sounds\030\005 \003(\0132\024.comm_platform.Sound"
       "\"4\n\010TeamInfo\022(\n\005infos\030\001 \003(\0132\031.comm_platf"
-      "orm.PlayerInfo\"\234\001\n\007Command\0220\n\014command_ty"
+      "orm.PlayerInfo\"\211\001\n\007Command\0220\n\014command_ty"
       "pe\030\001 \001(\0162\032.comm_platform.CommandType\022\021\n\t"
       "target_ID\030\002 \001(\005\022\022\n\nmove_angle\030\003 \001(\001\022\022\n\nv"
-      "iew_angle\030\004 \001(\001\022\021\n\tparameter\030\005 \001(\005\022\021\n\tpl"
-      "ayer_ID\030\006 \001(\005\"b\n\005Route\022,\n\tstart_pos\030\001 \001("
-      "\0132\031.comm_platform.XYPosition\022+\n\010over_pos"
-      "\030\002 \001(\0132\031.comm_platform.XYPosition\"f\n\tPar"
-      "achute\022&\n\005types\030\001 \003(\0162\027.comm_platform.Vo"
-      "cation\0221\n\016landing_points\030\002 \003(\0132\031.comm_pl"
-      "atform.XYPosition*H\n\010Vocation\022\t\n\005MEDIC\020\000"
-      "\022\014\n\010ENGINEER\020\001\022\r\n\tSIGNALMAN\020\002\022\010\n\004HACK\020\003\022"
-      "\n\n\006SNIPER\020\004*_\n\013PlayerState\022\014\n\010RELAXING\020\000"
-      "\022\014\n\010ON_PLANE\020\001\022\013\n\007JUMPING\020\002\022\n\n\006MOVING\020\003\022"
-      "\014\n\010SHOOTING\020\004\022\r\n\tPICKINGUP\020\005*9\n\013CommandT"
-      "ype\022\010\n\004MOVE\020\000\022\t\n\005SHOOT\020\001\022\n\n\006PICKUP\020\002\022\t\n\005"
-      "RADIO\020\003b\006proto3"
+      "iew_angle\030\004 \001(\001\022\021\n\tparameter\030\005 \001(\005\"b\n\005Ro"
+      "ute\022,\n\tstart_pos\030\001 \001(\0132\031.comm_platform.X"
+      "YPosition\022+\n\010over_pos\030\002 \001(\0132\031.comm_platf"
+      "orm.XYPosition\"d\n\tParachute\022%\n\004role\030\001 \001("
+      "\0162\027.comm_platform.Vocation\0220\n\rlanding_po"
+      "int\030\002 \001(\0132\031.comm_platform.XYPosition*H\n\010"
+      "Vocation\022\t\n\005MEDIC\020\000\022\014\n\010ENGINEER\020\001\022\r\n\tSIG"
+      "NALMAN\020\002\022\010\n\004HACK\020\003\022\n\n\006SNIPER\020\004*_\n\013Player"
+      "State\022\014\n\010RELAXING\020\000\022\014\n\010ON_PLANE\020\001\022\013\n\007JUM"
+      "PING\020\002\022\n\n\006MOVING\020\003\022\014\n\010SHOOTING\020\004\022\r\n\tPICK"
+      "INGUP\020\005*9\n\013CommandType\022\010\n\004MOVE\020\000\022\t\n\005SHOO"
+      "T\020\001\022\n\n\006PICKUP\020\002\022\t\n\005RADIO\020\003b\006proto3"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1975);
+      descriptor, 1954);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "communication_platform.proto", &protobuf_RegisterTypes);
 }
@@ -3847,7 +3845,6 @@ const int Command::kTargetIDFieldNumber;
 const int Command::kMoveAngleFieldNumber;
 const int Command::kViewAngleFieldNumber;
 const int Command::kParameterFieldNumber;
-const int Command::kPlayerIDFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Command::Command()
@@ -3862,15 +3859,15 @@ Command::Command(const Command& from)
       _internal_metadata_(NULL) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::memcpy(&command_type_, &from.command_type_,
-    static_cast<size_t>(reinterpret_cast<char*>(&player_id_) -
-    reinterpret_cast<char*>(&command_type_)) + sizeof(player_id_));
+    static_cast<size_t>(reinterpret_cast<char*>(&parameter_) -
+    reinterpret_cast<char*>(&command_type_)) + sizeof(parameter_));
   // @@protoc_insertion_point(copy_constructor:comm_platform.Command)
 }
 
 void Command::SharedCtor() {
   ::memset(&command_type_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&player_id_) -
-      reinterpret_cast<char*>(&command_type_)) + sizeof(player_id_));
+      reinterpret_cast<char*>(&parameter_) -
+      reinterpret_cast<char*>(&command_type_)) + sizeof(parameter_));
 }
 
 Command::~Command() {
@@ -3902,8 +3899,8 @@ void Command::Clear() {
   (void) cached_has_bits;
 
   ::memset(&command_type_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&player_id_) -
-      reinterpret_cast<char*>(&command_type_)) + sizeof(player_id_));
+      reinterpret_cast<char*>(&parameter_) -
+      reinterpret_cast<char*>(&command_type_)) + sizeof(parameter_));
   _internal_metadata_.Clear();
 }
 
@@ -3988,20 +3985,6 @@ bool Command::MergePartialFromCodedStream(
         break;
       }
 
-      // int32 player_ID = 6;
-      case 6: {
-        if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(48u /* 48 & 0xFF */)) {
-
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &player_id_)));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -4054,11 +4037,6 @@ void Command::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(5, this->parameter(), output);
   }
 
-  // int32 player_ID = 6;
-  if (this->player_id() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(6, this->player_id(), output);
-  }
-
   if ((_internal_metadata_.have_unknown_fields() &&  ::google::protobuf::internal::GetProto3PreserveUnknownsDefault())) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         (::google::protobuf::internal::GetProto3PreserveUnknownsDefault()   ? _internal_metadata_.unknown_fields()   : _internal_metadata_.default_instance()), output);
@@ -4097,11 +4075,6 @@ void Command::SerializeWithCachedSizes(
   // int32 parameter = 5;
   if (this->parameter() != 0) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(5, this->parameter(), target);
-  }
-
-  // int32 player_ID = 6;
-  if (this->player_id() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(6, this->player_id(), target);
   }
 
   if ((_internal_metadata_.have_unknown_fields() &&  ::google::protobuf::internal::GetProto3PreserveUnknownsDefault())) {
@@ -4151,13 +4124,6 @@ size_t Command::ByteSizeLong() const {
         this->parameter());
   }
 
-  // int32 player_ID = 6;
-  if (this->player_id() != 0) {
-    total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::Int32Size(
-        this->player_id());
-  }
-
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
@@ -4200,9 +4166,6 @@ void Command::MergeFrom(const Command& from) {
   if (from.parameter() != 0) {
     set_parameter(from.parameter());
   }
-  if (from.player_id() != 0) {
-    set_player_id(from.player_id());
-  }
 }
 
 void Command::CopyFrom(const ::google::protobuf::Message& from) {
@@ -4234,7 +4197,6 @@ void Command::InternalSwap(Command* other) {
   swap(move_angle_, other->move_angle_);
   swap(view_angle_, other->view_angle_);
   swap(parameter_, other->parameter_);
-  swap(player_id_, other->player_id_);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
 
@@ -4532,10 +4494,12 @@ void Route::InternalSwap(Route* other) {
 // ===================================================================
 
 void Parachute::InitAsDefaultInstance() {
+  ::comm_platform::_Parachute_default_instance_._instance.get_mutable()->landing_point_ = const_cast< ::comm_platform::XYPosition*>(
+      ::comm_platform::XYPosition::internal_default_instance());
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Parachute::kTypesFieldNumber;
-const int Parachute::kLandingPointsFieldNumber;
+const int Parachute::kRoleFieldNumber;
+const int Parachute::kLandingPointFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Parachute::Parachute()
@@ -4547,14 +4511,21 @@ Parachute::Parachute()
 }
 Parachute::Parachute(const Parachute& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
-      types_(from.types_),
-      landing_points_(from.landing_points_) {
+      _internal_metadata_(NULL) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  if (from.has_landing_point()) {
+    landing_point_ = new ::comm_platform::XYPosition(*from.landing_point_);
+  } else {
+    landing_point_ = NULL;
+  }
+  role_ = from.role_;
   // @@protoc_insertion_point(copy_constructor:comm_platform.Parachute)
 }
 
 void Parachute::SharedCtor() {
+  ::memset(&landing_point_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&role_) -
+      reinterpret_cast<char*>(&landing_point_)) + sizeof(role_));
 }
 
 Parachute::~Parachute() {
@@ -4563,6 +4534,7 @@ Parachute::~Parachute() {
 }
 
 void Parachute::SharedDtor() {
+  if (this != internal_default_instance()) delete landing_point_;
 }
 
 void Parachute::SetCachedSize(int size) const {
@@ -4585,8 +4557,11 @@ void Parachute::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  types_.Clear();
-  landing_points_.Clear();
+  if (GetArenaNoVirtual() == NULL && landing_point_ != NULL) {
+    delete landing_point_;
+  }
+  landing_point_ = NULL;
+  role_ = 0;
   _internal_metadata_.Clear();
 }
 
@@ -4600,41 +4575,27 @@ bool Parachute::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated .comm_platform.Vocation types = 1;
+      // .comm_platform.Vocation role = 1;
       case 1: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
-          ::google::protobuf::uint32 length;
-          DO_(input->ReadVarint32(&length));
-          ::google::protobuf::io::CodedInputStream::Limit limit = input->PushLimit(static_cast<int>(length));
-          while (input->BytesUntilLimit() > 0) {
-            int value;
-            DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
-                 input, &value)));
-            add_types(static_cast< ::comm_platform::Vocation >(value));
-          }
-          input->PopLimit(limit);
-        } else if (
-            static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(8u /* 8 & 0xFF */)) {
           int value;
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
                  input, &value)));
-          add_types(static_cast< ::comm_platform::Vocation >(value));
+          set_role(static_cast< ::comm_platform::Vocation >(value));
         } else {
           goto handle_unusual;
         }
         break;
       }
 
-      // repeated .comm_platform.XYPosition landing_points = 2;
+      // .comm_platform.XYPosition landing_point = 2;
       case 2: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-                input, add_landing_points()));
+               input, mutable_landing_point()));
         } else {
           goto handle_unusual;
         }
@@ -4667,27 +4628,16 @@ void Parachute::SerializeWithCachedSizes(
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // repeated .comm_platform.Vocation types = 1;
-  if (this->types_size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteTag(
-      1,
-      ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
-      output);
-    output->WriteVarint32(
-        static_cast< ::google::protobuf::uint32>(_types_cached_byte_size_));
-  }
-  for (int i = 0, n = this->types_size(); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteEnumNoTag(
-      this->types(i), output);
+  // .comm_platform.Vocation role = 1;
+  if (this->role() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteEnum(
+      1, this->role(), output);
   }
 
-  // repeated .comm_platform.XYPosition landing_points = 2;
-  for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->landing_points_size()); i < n; i++) {
+  // .comm_platform.XYPosition landing_point = 2;
+  if (this->has_landing_point()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      2,
-      this->landing_points(static_cast<int>(i)),
-      output);
+      2, this->_internal_landing_point(), output);
   }
 
   if ((_internal_metadata_.have_unknown_fields() &&  ::google::protobuf::internal::GetProto3PreserveUnknownsDefault())) {
@@ -4704,24 +4654,17 @@ void Parachute::SerializeWithCachedSizes(
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // repeated .comm_platform.Vocation types = 1;
-  if (this->types_size() > 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteTagToArray(
-      1,
-      ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
-      target);
-    target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(      static_cast< ::google::protobuf::uint32>(
-            _types_cached_byte_size_), target);
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumNoTagToArray(
-      this->types_, target);
+  // .comm_platform.Vocation role = 1;
+  if (this->role() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
+      1, this->role(), target);
   }
 
-  // repeated .comm_platform.XYPosition landing_points = 2;
-  for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->landing_points_size()); i < n; i++) {
+  // .comm_platform.XYPosition landing_point = 2;
+  if (this->has_landing_point()) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        2, this->landing_points(static_cast<int>(i)), deterministic, target);
+        2, this->_internal_landing_point(), deterministic, target);
   }
 
   if ((_internal_metadata_.have_unknown_fields() &&  ::google::protobuf::internal::GetProto3PreserveUnknownsDefault())) {
@@ -4741,34 +4684,17 @@ size_t Parachute::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         (::google::protobuf::internal::GetProto3PreserveUnknownsDefault()   ? _internal_metadata_.unknown_fields()   : _internal_metadata_.default_instance()));
   }
-  // repeated .comm_platform.Vocation types = 1;
-  {
-    size_t data_size = 0;
-    unsigned int count = static_cast<unsigned int>(this->types_size());for (unsigned int i = 0; i < count; i++) {
-      data_size += ::google::protobuf::internal::WireFormatLite::EnumSize(
-        this->types(static_cast<int>(i)));
-    }
-    if (data_size > 0) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
-            static_cast< ::google::protobuf::int32>(data_size));
-    }
-    int cached_size = ::google::protobuf::internal::ToCachedSize(data_size);
-    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-    _types_cached_byte_size_ = cached_size;
-    GOOGLE_SAFE_CONCURRENT_WRITES_END();
-    total_size += data_size;
+  // .comm_platform.XYPosition landing_point = 2;
+  if (this->has_landing_point()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::MessageSize(
+        *landing_point_);
   }
 
-  // repeated .comm_platform.XYPosition landing_points = 2;
-  {
-    unsigned int count = static_cast<unsigned int>(this->landing_points_size());
-    total_size += 1UL * count;
-    for (unsigned int i = 0; i < count; i++) {
-      total_size +=
-        ::google::protobuf::internal::WireFormatLite::MessageSize(
-          this->landing_points(static_cast<int>(i)));
-    }
+  // .comm_platform.Vocation role = 1;
+  if (this->role() != 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::EnumSize(this->role());
   }
 
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
@@ -4798,8 +4724,12 @@ void Parachute::MergeFrom(const Parachute& from) {
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  types_.MergeFrom(from.types_);
-  landing_points_.MergeFrom(from.landing_points_);
+  if (from.has_landing_point()) {
+    mutable_landing_point()->::comm_platform::XYPosition::MergeFrom(from.landing_point());
+  }
+  if (from.role() != 0) {
+    set_role(from.role());
+  }
 }
 
 void Parachute::CopyFrom(const ::google::protobuf::Message& from) {
@@ -4826,8 +4756,8 @@ void Parachute::Swap(Parachute* other) {
 }
 void Parachute::InternalSwap(Parachute* other) {
   using std::swap;
-  types_.InternalSwap(&other->types_);
-  CastToBase(&landing_points_)->InternalSwap(CastToBase(&other->landing_points_));
+  swap(landing_point_, other->landing_point_);
+  swap(role_, other->role_);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
 

@@ -60,10 +60,11 @@ void Controller::run()
         for (int i = 0; i < static_cast<int>(_used_core_count) && offset + i < _player_count; i++)
         {
             //clear commands vector
-            _commands[offset + i].clear();
+            _command_parachute[offset + i].clear();
             //offset + i == playerID
             if (_info[offset + i].state == AI_STATE::UNUSED)
             {
+                //create or recreate a subthread.
                 _info[offset + i].handle = CreateThread(nullptr, 0, thread_func, nullptr, CREATE_SUSPENDED, &_info[offset + i].threadID);
                 if (_info[offset + i].handle == NULL)
                 {
@@ -78,6 +79,7 @@ void Controller::run()
             }
             _waiting_thread[i] = _info[offset + i].handle;    //if the player's thread is suspended, just resume it
         }
+        //send route and start subthread.
         for (int i = 0; i < static_cast<int>(_used_core_count) && offset + i < _player_count; i++)
         {
             _info[offset + i].state = AI_STATE::ACTIVE;
@@ -85,6 +87,7 @@ void Controller::run()
             ResumeThread(_info[offset + i].handle);
         }
         DWORD threadNumber = (_player_count - offset >= static_cast<int>(_used_core_count) ? _used_core_count : static_cast<DWORD>(_player_count - offset));
+        //let sunthreads run TIMEOUT ms.
         if (WaitForMultipleObjects(threadNumber, _waiting_thread, true, TIMEOUT) == WAIT_TIMEOUT)
         {    //if one thread does not exit 
             DWORD exitCode;
@@ -120,18 +123,15 @@ bool Controller::receive(bool is_jumping, const std::string & data)
         return false;
     if (is_jumping)
     {
-        comm_platform::Parachute recv;
-        recv.ParseFromString(data);
-        std::cout << recv.DebugString() << std::endl;
+        return _parse_parachute(data);
     }
     else
     {
-
+        return _parse_commands(data);
     }
-    return true;
 }
 
-void Controller::send(int playerID, bool is_jumping, const std::string & data)
+void Controller::_send(int playerID, bool is_jumping, const std::string & data)
 {
     if (!_check_init())
         return;
@@ -139,21 +139,77 @@ void Controller::send(int playerID, bool is_jumping, const std::string & data)
     return;
 }
 
-void Controller::parachute(VOCATION_TYPE role[MEMBER_COUNT], Position landing_points[MEMBER_COUNT])
+bool Controller::_parse_parachute(const std::string & data)
 {
-    if (!_check_init())
-        return;
-    auto playerID = get_playerID_by_thread();
-    COMMAND_PARACHUTE c;
-    for (int i = 0; i < MEMBER_COUNT; i++)
+    comm_platform::Parachute recv;
+    auto playerID = _get_playerID_by_threadID();
+    if (playerID >= 0 && recv.ParseFromString(data))
     {
-        c.role[i] = role[i];
-        c.landing_points[i] = landing_points[i];
+        COMMAND_PARACHUTE c;
+        c.landing_point.x = recv.landing_point().x();
+        c.landing_point.y = recv.landing_point().y();
+        switch (recv.role())
+        {
+        case comm_platform::Vocation::MEDIC:
+            c.role = VOCATION_TYPE::MEDIC;
+            break;
+        case comm_platform::Vocation::ENGINEER:
+            c.role = VOCATION_TYPE::ENGINEER;
+            break;
+        case comm_platform::Vocation::SIGNALMAN:
+            c.role = VOCATION_TYPE::SIGNALMAN;
+            break;
+        case comm_platform::Vocation::HACK:
+            c.role = VOCATION_TYPE::HACK;
+            break;
+        case comm_platform::Vocation::SNIPER:
+            c.role = VOCATION_TYPE::SNIPER;
+            break;
+        }
+        _command_parachute[playerID].push_back(c);
+        return true;
     }
-    _commands[playerID].push_back(c);
-    return;
+    else
+    {
+        return false;
+    }
 }
 
+bool Controller::_parse_commands(const std::string & data)
+{
+    comm_platform::Command recv;
+    auto playerID = _get_playerID_by_threadID();
+    if (playerID >= 0 && recv.ParseFromString(data))
+    {
+        COMMAND_ACTION c;
+        switch (recv.command_type())
+        {
+        case comm_platform::CommandType::MOVE:
+            c.command_type = COMMAND_TYPE::MOVE;
+            break;
+        case comm_platform::CommandType::SHOOT:
+            c.command_type = COMMAND_TYPE::SHOOT;
+            break;
+        case comm_platform::CommandType::PICKUP:
+            c.command_type = COMMAND_TYPE::PICKUP;
+            break;
+        case comm_platform::CommandType::RADIO:
+            c.command_type = COMMAND_TYPE::RADIO;
+            break;
+        }
+        c.move_angle = recv.move_angle();
+        c.view_angle = recv.view_angle();
+        c.target_ID = recv.target_id();
+        c.parameter = recv.parameter();
+
+        _command_action[playerID].push_back(c);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
 
 void Controller::register_AI(int playerID, AI_Func pfunc, Recv_Func precv)
 {
@@ -163,7 +219,7 @@ void Controller::register_AI(int playerID, AI_Func pfunc, Recv_Func precv)
     _info[playerID].recv_func = precv;
 }
 
-int Controller::get_playerID_by_thread()
+int Controller::_get_playerID_by_threadID()
 {
     if (!_check_init())
         return -1;
@@ -191,7 +247,7 @@ Controller::Controller()
 
 DWORD WINAPI thread_func(LPVOID lpParameter)
 {
-    auto playerID = manager.get_playerID_by_thread();
+    auto playerID = manager._get_playerID_by_threadID();
     if (manager._info[playerID].player_func != nullptr)
     {
         (*manager._info[playerID].player_func)();
@@ -206,17 +262,17 @@ bool controller_receive(bool is_jumping, const std::string data)
 
 std::map<int, COMMAND_PARACHUTE> Controller::get_parachute_commands()
 {
-    std::map<int, COMMAND_PARACHUTE> c;
+    std::map<int, COMMAND_PARACHUTE> m;
     if (!_check_init())
-        return c;
-    for (int i = 0; i < MAX_PLAYER; i++)
+        return m;
+    for (int i = 0; i < _player_count; i++)
     {
-        if (!_commands[i].empty())
+        if (!_command_parachute[i].empty())
         {
-            c[i] = _commands[i].front();
+            m[i] = _command_parachute[i].back();
         }
     }
-    return c;
+    return m;
 }
 
 std::string Controller::_serialize_route()

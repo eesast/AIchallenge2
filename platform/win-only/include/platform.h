@@ -13,17 +13,25 @@
 
 struct COMMAND_PARACHUTE
 {
-    VOCATION_TYPE role[MEMBER_COUNT];
-    Position landing_points[MEMBER_COUNT];
-    COMMAND_PARACHUTE() {}
-    COMMAND_PARACHUTE(const COMMAND_PARACHUTE &other)
-    {
-        for (int i = 0; i < MEMBER_COUNT; i++)
-        {
-            role[i] = other.role[i];
-            landing_points[i] = other.landing_points[i];
-        }
-    }
+    VOCATION_TYPE role;
+    Position landing_point;
+};
+
+enum class COMMAND_TYPE
+{
+    MOVE = 0,
+    SHOOT = 1,
+    PICKUP = 2,
+    RADIO = 3
+};
+
+struct COMMAND_ACTION
+{
+    COMMAND_TYPE command_type;
+    int target_ID;
+    double move_angle;
+    double view_angle;
+    int parameter;
 };
 
 //type of "player_receive" in AI.dll 

@@ -1630,12 +1630,6 @@ class Command : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::int32 parameter() const;
   void set_parameter(::google::protobuf::int32 value);
 
-  // int32 player_ID = 6;
-  void clear_player_id();
-  static const int kPlayerIDFieldNumber = 6;
-  ::google::protobuf::int32 player_id() const;
-  void set_player_id(::google::protobuf::int32 value);
-
   // @@protoc_insertion_point(class_scope:comm_player.Command)
  private:
 
@@ -1645,7 +1639,6 @@ class Command : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   double move_angle_;
   double view_angle_;
   ::google::protobuf::int32 parameter_;
-  ::google::protobuf::int32 player_id_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   friend struct ::protobuf_communication_5fplayer_2eproto::TableStruct;
 };
@@ -1860,35 +1853,30 @@ class Parachute : public ::google::protobuf::Message /* @@protoc_insertion_point
 
   // accessors -------------------------------------------------------
 
-  // repeated .comm_player.Vocation types = 1;
-  int types_size() const;
-  void clear_types();
-  static const int kTypesFieldNumber = 1;
-  ::comm_player::Vocation types(int index) const;
-  void set_types(int index, ::comm_player::Vocation value);
-  void add_types(::comm_player::Vocation value);
-  const ::google::protobuf::RepeatedField<int>& types() const;
-  ::google::protobuf::RepeatedField<int>* mutable_types();
+  // .comm_player.XYPosition landing_point = 2;
+  bool has_landing_point() const;
+  void clear_landing_point();
+  static const int kLandingPointFieldNumber = 2;
+  private:
+  const ::comm_player::XYPosition& _internal_landing_point() const;
+  public:
+  const ::comm_player::XYPosition& landing_point() const;
+  ::comm_player::XYPosition* release_landing_point();
+  ::comm_player::XYPosition* mutable_landing_point();
+  void set_allocated_landing_point(::comm_player::XYPosition* landing_point);
 
-  // repeated .comm_player.XYPosition landing_points = 2;
-  int landing_points_size() const;
-  void clear_landing_points();
-  static const int kLandingPointsFieldNumber = 2;
-  ::comm_player::XYPosition* mutable_landing_points(int index);
-  ::google::protobuf::RepeatedPtrField< ::comm_player::XYPosition >*
-      mutable_landing_points();
-  const ::comm_player::XYPosition& landing_points(int index) const;
-  ::comm_player::XYPosition* add_landing_points();
-  const ::google::protobuf::RepeatedPtrField< ::comm_player::XYPosition >&
-      landing_points() const;
+  // .comm_player.Vocation role = 1;
+  void clear_role();
+  static const int kRoleFieldNumber = 1;
+  ::comm_player::Vocation role() const;
+  void set_role(::comm_player::Vocation value);
 
   // @@protoc_insertion_point(class_scope:comm_player.Parachute)
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::RepeatedField<int> types_;
-  mutable int _types_cached_byte_size_;
-  ::google::protobuf::RepeatedPtrField< ::comm_player::XYPosition > landing_points_;
+  ::comm_player::XYPosition* landing_point_;
+  int role_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   friend struct ::protobuf_communication_5fplayer_2eproto::TableStruct;
 };
@@ -2837,20 +2825,6 @@ inline void Command::set_parameter(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:comm_player.Command.parameter)
 }
 
-// int32 player_ID = 6;
-inline void Command::clear_player_id() {
-  player_id_ = 0;
-}
-inline ::google::protobuf::int32 Command::player_id() const {
-  // @@protoc_insertion_point(field_get:comm_player.Command.player_ID)
-  return player_id_;
-}
-inline void Command::set_player_id(::google::protobuf::int32 value) {
-  
-  player_id_ = value;
-  // @@protoc_insertion_point(field_set:comm_player.Command.player_ID)
-}
-
 // -------------------------------------------------------------------
 
 // Route
@@ -2967,64 +2941,72 @@ inline void Route::set_allocated_over_pos(::comm_player::XYPosition* over_pos) {
 
 // Parachute
 
-// repeated .comm_player.Vocation types = 1;
-inline int Parachute::types_size() const {
-  return types_.size();
+// .comm_player.Vocation role = 1;
+inline void Parachute::clear_role() {
+  role_ = 0;
 }
-inline void Parachute::clear_types() {
-  types_.Clear();
+inline ::comm_player::Vocation Parachute::role() const {
+  // @@protoc_insertion_point(field_get:comm_player.Parachute.role)
+  return static_cast< ::comm_player::Vocation >(role_);
 }
-inline ::comm_player::Vocation Parachute::types(int index) const {
-  // @@protoc_insertion_point(field_get:comm_player.Parachute.types)
-  return static_cast< ::comm_player::Vocation >(types_.Get(index));
-}
-inline void Parachute::set_types(int index, ::comm_player::Vocation value) {
-  types_.Set(index, value);
-  // @@protoc_insertion_point(field_set:comm_player.Parachute.types)
-}
-inline void Parachute::add_types(::comm_player::Vocation value) {
-  types_.Add(value);
-  // @@protoc_insertion_point(field_add:comm_player.Parachute.types)
-}
-inline const ::google::protobuf::RepeatedField<int>&
-Parachute::types() const {
-  // @@protoc_insertion_point(field_list:comm_player.Parachute.types)
-  return types_;
-}
-inline ::google::protobuf::RepeatedField<int>*
-Parachute::mutable_types() {
-  // @@protoc_insertion_point(field_mutable_list:comm_player.Parachute.types)
-  return &types_;
+inline void Parachute::set_role(::comm_player::Vocation value) {
+  
+  role_ = value;
+  // @@protoc_insertion_point(field_set:comm_player.Parachute.role)
 }
 
-// repeated .comm_player.XYPosition landing_points = 2;
-inline int Parachute::landing_points_size() const {
-  return landing_points_.size();
+// .comm_player.XYPosition landing_point = 2;
+inline bool Parachute::has_landing_point() const {
+  return this != internal_default_instance() && landing_point_ != NULL;
 }
-inline void Parachute::clear_landing_points() {
-  landing_points_.Clear();
+inline void Parachute::clear_landing_point() {
+  if (GetArenaNoVirtual() == NULL && landing_point_ != NULL) {
+    delete landing_point_;
+  }
+  landing_point_ = NULL;
 }
-inline ::comm_player::XYPosition* Parachute::mutable_landing_points(int index) {
-  // @@protoc_insertion_point(field_mutable:comm_player.Parachute.landing_points)
-  return landing_points_.Mutable(index);
+inline const ::comm_player::XYPosition& Parachute::_internal_landing_point() const {
+  return *landing_point_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::comm_player::XYPosition >*
-Parachute::mutable_landing_points() {
-  // @@protoc_insertion_point(field_mutable_list:comm_player.Parachute.landing_points)
-  return &landing_points_;
+inline const ::comm_player::XYPosition& Parachute::landing_point() const {
+  const ::comm_player::XYPosition* p = landing_point_;
+  // @@protoc_insertion_point(field_get:comm_player.Parachute.landing_point)
+  return p != NULL ? *p : *reinterpret_cast<const ::comm_player::XYPosition*>(
+      &::comm_player::_XYPosition_default_instance_);
 }
-inline const ::comm_player::XYPosition& Parachute::landing_points(int index) const {
-  // @@protoc_insertion_point(field_get:comm_player.Parachute.landing_points)
-  return landing_points_.Get(index);
+inline ::comm_player::XYPosition* Parachute::release_landing_point() {
+  // @@protoc_insertion_point(field_release:comm_player.Parachute.landing_point)
+  
+  ::comm_player::XYPosition* temp = landing_point_;
+  landing_point_ = NULL;
+  return temp;
 }
-inline ::comm_player::XYPosition* Parachute::add_landing_points() {
-  // @@protoc_insertion_point(field_add:comm_player.Parachute.landing_points)
-  return landing_points_.Add();
+inline ::comm_player::XYPosition* Parachute::mutable_landing_point() {
+  
+  if (landing_point_ == NULL) {
+    auto* p = CreateMaybeMessage<::comm_player::XYPosition>(GetArenaNoVirtual());
+    landing_point_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:comm_player.Parachute.landing_point)
+  return landing_point_;
 }
-inline const ::google::protobuf::RepeatedPtrField< ::comm_player::XYPosition >&
-Parachute::landing_points() const {
-  // @@protoc_insertion_point(field_list:comm_player.Parachute.landing_points)
-  return landing_points_;
+inline void Parachute::set_allocated_landing_point(::comm_player::XYPosition* landing_point) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete landing_point_;
+  }
+  if (landing_point) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      landing_point = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, landing_point, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  landing_point_ = landing_point;
+  // @@protoc_insertion_point(field_set_allocated:comm_player.Parachute.landing_point)
 }
 
 #ifdef __GNUC__

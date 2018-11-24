@@ -86,25 +86,17 @@ std::pair<Position, Position> Pycalling::init()
 
 void Pycalling::parachute(std::map<int, COMMAND_PARACHUTE> m)
 {
-    if (!_is_init)
+    if (!_check_init())
         return;
     //package:{0:{"role":[0,1,2,3],"landing_points":(x,y)},1:...}
     auto all = PyDict_New();
     for (auto& var : m)
     {
-        auto team = PyDict_New();
-        for (int i = 0; i < MEMBER_COUNT; i++)
-        {
-            auto each = Py_BuildValue("{s:i,s:(f,f)}", "vocation", var.second.role[i], "position", var.second.landing_points[i].x, var.second.landing_points[i].y);
-            auto role_id = PyLong_FromLong(i + MEMBER_COUNT * var.first);
-            PyDict_SetItem(team, role_id, each);
-            Py_XDECREF(role_id);
-            Py_XDECREF(each);
-        }
-        auto id = PyLong_FromLong(var.first);
-        PyDict_SetItem(all, id, team);
-        Py_XDECREF(id);
-        Py_XDECREF(team);
+        auto each = Py_BuildValue("{s:i,s:(f,f)}", "vocation", var.second.role, "position", var.second.landing_point.x, var.second.landing_point.y);
+        auto player_ID = PyLong_FromLong(var.first);
+        PyDict_SetItem(all, player_ID, each);
+        Py_XDECREF(player_ID);
+        Py_XDECREF(each);
     }
     auto arg = PyTuple_Pack(1, all);
     auto state = PyObject_CallObject(_parachute, arg);
@@ -113,9 +105,18 @@ void Pycalling::parachute(std::map<int, COMMAND_PARACHUTE> m)
     return; //waiting for logic
 }
 
-Pycalling::~Pycalling()
+bool Pycalling::_check_init()
 {
     if (!_is_init)
+    {
+        std::cerr << "Logic is not initialised,please check codes." << std::endl;
+    }
+    return _is_init;
+}
+
+Pycalling::~Pycalling()
+{
+    if (!_check_init())
         return;
     Py_XDECREF(_game_main);
     Py_XDECREF(_game_init);
@@ -127,6 +128,6 @@ Pycalling::Pycalling()
 }
 void Pycalling::do_loop()
 {
-    if (!_is_init)
+    if (!_check_init())
         return;
 }

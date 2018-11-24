@@ -117,7 +117,6 @@ message Command {
     double move_angle=3;
     double view_angle=4;
     int32 parameter=5;
-    int32 player_ID=6;
 }
 
 message Route {
@@ -126,6 +125,6 @@ message Route {
 }
 
 message Parachute {
-    repeated Vocation types=1;
-    repeated XYPosition landing_points=2;
+    Vocation role=1;
+    XYPosition landing_point=2;
 }

@@ -17,6 +17,7 @@ class Controller
         ACTIVE
     };
 
+    //one team
     struct AI_INFO
     {
         //thread token
@@ -56,16 +57,20 @@ private:
 public:
     void run();
 private:
-    int get_playerID_by_thread();
+    //return -1 if failed
+    int _get_playerID_by_threadID();
 
     //communication
 public:
     bool receive(bool is_jumping, const std::string & data);
-    void send(int playerID, bool is_jumping, const std::string & data);
+private:
+    void _send(int playerID, bool is_jumping, const std::string & data);
+    //return true on success.
+    bool _parse_parachute(const std::string & data);
+    bool _parse_commands(const std::string & data);
 
-
-
-    void parachute(VOCATION_TYPE role[MEMBER_COUNT], Position landing_points[MEMBER_COUNT]);
+public:
+    //always choose the lastest command
     std::map<int, COMMAND_PARACHUTE> get_parachute_commands();
 private:
     std::string _serialize_route();
@@ -85,7 +90,8 @@ private:
 
 
     //communication
-    std::vector<COMMAND_PARACHUTE>_commands[MAX_PLAYER];
+    std::vector<COMMAND_PARACHUTE> _command_parachute[MAX_PLAYER];
+    std::vector<COMMAND_ACTION> _command_action[MAX_PLAYER];
 };
 
 DWORD WINAPI thread_func(LPVOID lpParameter);

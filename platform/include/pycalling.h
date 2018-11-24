@@ -37,6 +37,8 @@ public:
 
 
 private:
+    bool _check_init();
+
     Pycalling();
     bool _is_init = false;
     static Pycalling _instance;
