@@ -1,9 +1,8 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
-#include"constant.h"
+#include"platform.h"
 #include<Windows.h>
-#include<iostream>
 #include<mutex>
 
 #define manager (Controller::get_instance())
@@ -24,9 +23,10 @@ class Controller
         AI_STATE state = AI_STATE::UNUSED;
         std::mutex mtx;    //guarantee security of STL used in playerAPI
     };
+    
+
 
 public:
-    using AI_Func = void(*)();
 
     friend DWORD WINAPI thread_func(LPVOID lpParameter);
 
@@ -45,9 +45,9 @@ public:
     //parameter is the same as WINAPI CreateThread
     void run();
 
-    void send_demand();
-
-    void register_AI(int playerID, AI_Func pfunc);
+    void parachute(VOCATION_TYPE role[MEMBER_COUNT], Position landing_points[MEMBER_COUNT]);
+    std::map<int, COMMAND_PARACHUTE> get_parachute_commands();
+    void register_AI(int playerID, AI_Func pfunc, Recv_Func precv);
 private:
     int get_playerID_by_thread();
 
@@ -63,6 +63,10 @@ private:
     int _now_offset;
     int _player_count;
     AI_Func _player_func[MAX_PLAYER];
+    Recv_Func _recv_func[MAX_PLAYER];
+
+    //communication
+    std::vector<COMMAND_PARACHUTE>_commands[MAX_PLAYER];
 };
 
 DWORD WINAPI thread_func(LPVOID lpParameter);

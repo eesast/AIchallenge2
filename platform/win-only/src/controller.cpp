@@ -1,5 +1,7 @@
 #include "controller.h"
 
+extern std::pair<Position, Position> route;
+
 Controller Controller::_instance;
 
 void Controller::init(int player_count, DWORD used_core_count)
@@ -22,12 +24,15 @@ void Controller::init(int player_count, DWORD used_core_count)
     for (int i = 0; i < MAX_PLAYER; i++)
     {
         _player_func[i] = nullptr;
+        _recv_func[i] = nullptr;
     }
     _is_init = true;
 }
 
 Controller::~Controller()
 {
+    if (!_is_init)
+        return;
     for (int i = 0; i < _player_count; i++)
     {
         if (_info[i].state != AI_STATE::UNUSED)
@@ -50,6 +55,8 @@ void Controller::run()
         //execute some players each loop. The number is equal to the number of core(_used_core_count) 
         for (int i = 0; i < static_cast<int>(_used_core_count) && offset + i < _player_count; i++)
         {
+            //clear commands vector
+            _commands[offset + i].clear();
             //offset + i == playerID
             if (_info[offset + i].state == AI_STATE::UNUSED)
             {
@@ -72,6 +79,7 @@ void Controller::run()
         {
             _info[offset + i].mtx.unlock();
             _info[offset + i].state = AI_STATE::ACTIVE;
+            (*_recv_func[offset + i])(true, 2, route.first, route.second);
             ResumeThread(_info[offset + i].handle);
         }
         DWORD threadNumber = (_player_count - offset >= static_cast<int>(_used_core_count) ? _used_core_count : static_cast<DWORD>(_player_count - offset));
@@ -105,21 +113,28 @@ void Controller::run()
     }
 }
 
-void Controller::send_demand()
+void Controller::parachute(VOCATION_TYPE role[MEMBER_COUNT], Position landing_points[MEMBER_COUNT])
 {
     if (!_is_init)
         return;
     auto playerID = get_playerID_by_thread();
-    //send demand
-    std::cout << "aaaa" << std::endl;
+    COMMAND_PARACHUTE c;
+    for (int i = 0; i < MEMBER_COUNT; i++)
+    {
+        c.role[i] = role[i];
+        c.landing_points[i] = landing_points[i];
+    }
+    _commands[playerID].push_back(c);
+    return;
 }
 
 
-void Controller::register_AI(int playerID, AI_Func pfunc)
+void Controller::register_AI(int playerID, AI_Func pfunc,Recv_Func precv)
 {
     if (!_is_init)
         return;
     _player_func[playerID] = pfunc;
+    _recv_func[playerID] = precv;
 }
 
 int Controller::get_playerID_by_thread()
@@ -156,4 +171,19 @@ DWORD WINAPI thread_func(LPVOID lpParameter)
         (*manager._player_func[playerID])();
     }
     return 0;
+}
+
+std::map<int,COMMAND_PARACHUTE> Controller::get_parachute_commands()
+{
+    std::map<int, COMMAND_PARACHUTE> c;
+    if (!_is_init)
+        return c;
+    for (int i = 0; i < MAX_PLAYER; i++)
+    {
+        if (!_commands[i].empty())
+        {
+            c[i] = _commands[i].front();
+        }
+    }
+    return c;
 }

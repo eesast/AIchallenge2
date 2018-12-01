@@ -16,6 +16,7 @@ def game_init(file_path="./"):
 
 def parachute(information):
     # here game gets all players' information and jump aim, return first turn's information
+    print('parachute:'+str(information))
     return game.parachute(information)
 
 
@@ -46,6 +47,7 @@ def main():
         # first get information from platform
 
         # then refresh game
+        game.unwrap_commands(None)
         game.refresh()
 
         # emit information to platform

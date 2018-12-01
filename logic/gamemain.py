@@ -17,6 +17,7 @@ class GameMain:
         self.all_sounds = []
         self.all_items = []
         self.all_info = []  # save all information for platform
+        self.all_commands = {"move":{}, "shoot":{}, "pickup":{}, "radio":{}}
 
         self.number_to_team = {}  # use a number to find a team
         self.number_to_player = {}  # use a number to find a player
@@ -38,12 +39,42 @@ class GameMain:
 
     def unwrap_commands(self, commands):
         # here unwrap all players' commands
+        self.all_commands["move"].clear()
+        self.all_commands["shoot"].clear()
+        self.all_commands["pickup"].clear()
+        self.all_commands["radio"].clear()
+        # commands format: {teamID:{playerID:{"command_tye":type, "target":
+        # ID, "move_angle":angle, "view_angle":angle, "other":data}}}
+        # for debug
+        commands = {1: {5: [{'command_type': 1, 'target': 12, "move_angle": 1.2,
+                        "view_angle": 3.6, "other": 13}]}}
+        if object.PRINT_DEBUG >= 10:
+            print(commands)
+        for team in commands.values():
+            for playerID, player_commands in team.items():
+                for command in player_commands:
+                    command_type = command["command_type"]
+                    if command_type == character.MOVE:
+                        self.all_commands["move"][playerID] = command["move_angle"], command["view_angle"]
+                    elif command_type == character.SHOOT:
+                        self.all_commands["shoot"][playerID] = \
+                            command["view_angle"], command["target"], command["other"]
+                    elif command_type == character.PICKUP:
+                        self.all_commands["pickup"][playerID] = command["target"], command["other"]
+                    elif command_type == character.RADIO:
+                        self.all_commands["radio"][playerID] = command["target"], command["other"]
+                    else:
+                        # if command_type isn't correct, it will be ignored
+                        pass
+        if object.PRINT_DEBUG >= 10:
+            print("unwrap_command successfully in turn", self.__turn)
         return
 
     def refresh(self):  # refresh a new frame according to the orders
         def instructions():
-            # I need instruction API to finish legality detection
-            pass
+            for player_number, command in self.all_commands["pickup"].items():
+                if self.number_to_player[player_number].state != c
+                pass
 
         def move():
             for team in self.all_players:
@@ -78,7 +109,7 @@ class GameMain:
 
                         if player.is_flying():
                             # this is change from flying to jumping
-                            player.status = character.Character.JUMPING
+                            player.state = character.Character.JUMPING
                             player.position = player.jump_position
                             player.move_direction = (player.land_position - player.jump_position).unitize()
                             player.move_speed = character.Character.JUMPING_SPEED
@@ -87,7 +118,7 @@ class GameMain:
                             player.face_direction = player.move_direction
                         elif player.is_jumping():
                             # jump to the land, and then relax
-                            player.status = character.Character.RELAX
+                            player.state = character.Character.RELAX
                             player.position = player.land_position
                             player.move_direction = None
                             player.move_speed = 0
@@ -251,7 +282,7 @@ class GameMain:
                     raise Exception("wrong object for dict number_to_player, get a", type(player))
                 # I hope it's a pointer, otherwise it's a huge bug
                 player.jump_position = get_pedal(player.land_position, player.number)
-                player.status = character.Character.ON_PLANE
+                player.state = character.Character.ON_PLANE
                 player.move_direction = (self.__over_position - self.__start_position).unitize()
                 player.position = self.__start_position
                 player.move_speed = character.Character.AIRPLANE_SPEED

@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package platform;
+
+enum CommandType {
+    MOVE=0;
+    SHOOT=1;
+    PICKUP=2;
+    RADIO=3;
+}
+
+message Command {
+    CommandType command_type=1;
+    int32 target_ID=2;
+    double move_angle=3;
+    double view_angle=4;
+    int32 parameter=5;
+}

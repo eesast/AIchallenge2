@@ -2,7 +2,10 @@
 #define PLAYERAI_H
 
 #include"./../../../include/constant.h"
+#include"./../../../include/character.h"
+
 #include<iostream>
+#include<cstdarg>
 
 #ifdef DLL_EXPORTS
 #define PLAYERAI_API __declspec(dllexport)
@@ -10,10 +13,11 @@
 #define PLAYERAI_API __declspec(dllimport)
 #endif // DLL_EXPORTS
 
-extern "C" 
+extern "C"
 {
-    PLAYERAI_API void bind_api(void(*func)(Position));
-    PLAYERAI_API void play_game(); 
+    PLAYERAI_API void __cdecl receive(bool is_parachute, int num, ...);
+    PLAYERAI_API void bind_api(void(*func)(VOCATION_TYPE[MEMBER_COUNT], Position[MEMBER_COUNT]));
+    PLAYERAI_API void play_game();
 }
 
 #endif
