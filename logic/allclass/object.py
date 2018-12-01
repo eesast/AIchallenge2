@@ -3,12 +3,18 @@
 
 
 #   here define file name
-DATA_FILE_NAME = "data.ini"
+CHARACTER_FILE_PATH = "./data/character.ini"
+ITEM_FILE_PATH = "./data/character.ini"
+MAP_FILE_PATH = "./data/map"
 
 #   here define a debug level variable to debug print-oriented
 PRINT_DEBUG = 10
 #   level 1: only print illegal information
 #   level 2: also print some adjustment
+
+#   level 9:
+#   level 10:
+#   level 100: will give all information you can imagine, including config file
 
 
 class Object(object):

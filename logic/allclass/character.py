@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 from .object import *
-
+from json import load
 
 MOVE = 0
 SHOOT = 1
@@ -31,6 +31,10 @@ class Character(Object):                # the base class of all characters
     SHOOTING = 4
     PICKUP = 5
     MOVING_SHOOTING = 6
+    DEAD = 7
+
+    MOVE_PERMITTED_STATUS = [RELAX, MOVING, MOVING_SHOOTING]
+    SHOOTING_PERMITTED_STATUS = [RELAX, MOVING]
 
     def __init__(self, vocation):
         super().__init__(Object.CIRCLE)
@@ -38,7 +42,7 @@ class Character(Object):                # the base class of all characters
         self.__heal_point_limit = 100.                  # max HP
         self.heal_point = self.__heal_point_limit       # current HP
         self.bag = []
-        self.state = self.RELAX
+        self.status = self.RELAX
 
         # initialize inherit variables
         self.move_direction = None      # moving direction
@@ -52,18 +56,12 @@ class Character(Object):                # the base class of all characters
         self.last_command = None   # save command to deal with information when CD is over
 
     @staticmethod
-    def load_data(parent_path="./"):
-        if parent_path[-1] != '/':
-            parent_path += '/'
-        with open(parent_path + DATA_FILE_NAME) as file:
-            file_data = file.readlines()
-            for line in file_data:
-                if line[0] == '#':    # judge if this is comment
-                    continue
-
-                # omit the loading code in details temporarily
-                Character.all_data.append(line.split(' '))
-        pass
+    def load_data(parent_path="./", print_debug=PRINT_DEBUG):
+        with open(parent_path + CHARACTER_FILE_PATH, "r", encoding="utf-8") as file:
+            config_data = load(file)
+            if print_debug >= 100:
+                print(config_data)
+        return
 
     # I use some special function to simplify function in game main
     def is_flying(self):
@@ -79,15 +77,15 @@ class Character(Object):                # the base class of all characters
         # warning: it's not enough, must justify other objects, now just for test
         self.position += self.move_direction * self.move_speed
 
-    def command_legal(self, command_type):
+    def command_status_legal(self, command_type):
         if command_type == MOVE:
-
+            return self.status in self.MOVE_PERMITTED_STATUS
         elif command_type == SHOOT:
-
+            return self.status in self.SHOOTING_PERMITTED_STATUS
         elif command_type == PICKUP:
-
+            return True
         elif command_type == RADIO:
-
+            return True
         else:
             return False
 
