@@ -1,6 +1,6 @@
 #include"api.h"
 
-void parachute(VOCATION_TYPE role[MEMBER_COUNT], Position landing_points[MEMBER_COUNT])
+void parachute(VOCATION_TYPE role, Position landing_points)
 {
-    manager.parachute(role, landing_points);
+    
 }
