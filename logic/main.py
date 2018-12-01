@@ -47,6 +47,7 @@ def main():
         # first get information from platform
 
         # then refresh game
+        game.unwrap_commands(None)
         game.refresh()
 
         # emit information to platform

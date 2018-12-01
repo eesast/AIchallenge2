@@ -6,7 +6,7 @@
 DATA_FILE_NAME = "data.ini"
 
 #   here define a debug level variable to debug print-oriented
-PRINT_DEBUG = 1
+PRINT_DEBUG = 10
 #   level 1: only print illegal information
 #   level 2: also print some adjustment
 

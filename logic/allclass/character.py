@@ -3,6 +3,12 @@
 from .object import *
 
 
+MOVE = 0
+SHOOT = 1
+PICKUP = 2
+RADIO = 3
+
+
 class Character(Object):                # the base class of all characters
     # static variables
     all_data = []                       # save all data from setting file
@@ -24,6 +30,7 @@ class Character(Object):                # the base class of all characters
     MOVING = 3
     SHOOTING = 4
     PICKUP = 5
+    MOVING_SHOOTING = 6
 
     def __init__(self, vocation):
         super().__init__(Object.CIRCLE)
@@ -31,7 +38,7 @@ class Character(Object):                # the base class of all characters
         self.__heal_point_limit = 100.                  # max HP
         self.heal_point = self.__heal_point_limit       # current HP
         self.bag = []
-        self.status = self.RELAX
+        self.state = self.RELAX
 
         # initialize inherit variables
         self.move_direction = None      # moving direction
@@ -42,6 +49,7 @@ class Character(Object):                # the base class of all characters
         # platform needn't these variables
         self.jump_position = None  # it means where he jump out airplane
         self.land_position = None  # it means where he want to land
+        self.last_command = None   # save command to deal with information when CD is over
 
     @staticmethod
     def load_data(parent_path="./"):
@@ -70,6 +78,18 @@ class Character(Object):                # the base class of all characters
             return
         # warning: it's not enough, must justify other objects, now just for test
         self.position += self.move_direction * self.move_speed
+
+    def command_legal(self, command_type):
+        if command_type == MOVE:
+
+        elif command_type == SHOOT:
+
+        elif command_type == PICKUP:
+
+        elif command_type == RADIO:
+
+        else:
+            return False
 
 
 if __name__ == '__main__':
