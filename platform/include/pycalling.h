@@ -7,6 +7,7 @@
 #include <python3.6m/Python.h>
 #endif // WIN32
 
+
 #include"platform.h"
 
 //path for finding main.py and data.ini

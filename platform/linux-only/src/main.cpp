@@ -23,9 +23,9 @@ int main()
     manager.init(player_count);
     for (int i = 0; i < player_count; i++)
     {
-        manager.register_AI(i, &PlayGame);
+        manager.register_AI(i, &PlayGame,nullptr);
     }
-    for (logic.init("GameLogic", "game_main"); turn++ < MAX_TURN; logic.do_loop())
+    for (logic.init(); turn++ < MAX_TURN; logic.do_loop())
     {
         manager.run();
     }

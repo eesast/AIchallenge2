@@ -1,5 +1,7 @@
 #include "controller.h"
 
+extern std::pair<Position, Position> route;
+
 Controller Controller::_instance;
 
 void notify_child_finish(int, siginfo_t *info, void *)
@@ -10,6 +12,8 @@ void notify_child_finish(int, siginfo_t *info, void *)
 
 Controller::~Controller()
 {
+    if (!_check_init())
+        return;
     for (int i = 0; i < _player_count; i++)
     {
         if (_info[i].state != AI_STATE::UNUSED)
@@ -20,6 +24,16 @@ Controller::~Controller()
         }
     }
 }
+
+bool Controller::_check_init()
+{
+    if (!_is_init)
+    {
+        std::cerr << "Manager is not initialised,please check codes." << std::endl;
+    }
+    return _is_init;
+}
+
 void Controller::init(int playerCount, long used_core_count)
 {
     _player_count = playerCount;
@@ -33,10 +47,6 @@ void Controller::init(int playerCount, long used_core_count)
     else
     {
         _used_core_count = used_core_count;
-    }
-    for (int i = 0; i < MAX_PLAYER; i++)
-    {
-        _player_func[i] = nullptr;
     }
     _is_init = true;
 }
@@ -53,7 +63,7 @@ Controller::Controller()
 
 void Controller::run()
 {
-    if(!_is_init)
+    if (!_check_init())
         return;
     for (int offset = 0; offset < _player_count; offset += _used_core_count)
     {
@@ -89,7 +99,7 @@ void Controller::run()
                     _playerID = offset + i;
                     close(_info[offset + i].sender[1]);
                     close(_info[offset + i].receiver[0]);
-                    run_player();
+                    _run_player();
                     return;
                 }
                 else //error
@@ -133,9 +143,9 @@ void Controller::run()
         }
     }
 }
-void Controller::run_player()
+void Controller::_run_player()
 {
-    if (!_is_init)
+    if (!_check_init())
         return;
     //set CPU affinity
     cpu_set_t cpuset;
@@ -149,9 +159,9 @@ void Controller::run_player()
         // read(_info[_playerID].sender[0], pState, sizeof(CState));
         //not send demands because of laziness
         // std::cout << "get state" << pState->GetTurn() << ' ' << pState->GetTest() << std::endl;
-        if (_player_func[_playerID] != nullptr)
+        if (_playerID >= 0 && _info[_playerID].player_func != nullptr)
         {
-            (*_player_func[_playerID])();
+            (*_info[_playerID].player_func)();
         }
         kill(getppid(), SIGUSR1);
         raise(SIGSTOP);
@@ -160,28 +170,154 @@ void Controller::run_player()
 
 void Controller::notify_one_finish(pid_t pid)
 {
-    if (!_is_init)
+    if (!_check_init())
         return;
     for (int i = _now_offset; i < _now_offset + _used_core_count && i < _player_count; i++)
     {
         if (_info[i].pid == pid)
         {
             _info[i].state = AI_STATE::SUSPENDED;
-            break;
+            return;
+        }
+    }
+    for (int i = 0; i < _player_count; i++)
+    {
+        if (_info[i].pid == pid)
+        {
+            _info[i].state = AI_STATE::SUSPENDED;
+            return;
         }
     }
 }
 
-void Controller::send_demand()
+void Controller::register_AI(int playerID, AI_Func pfunc, Recv_Func precv)
 {
-    if (!_is_init)
+    if (!_check_init())
         return;
-    // write(_info[_playerID].receiver[1], &d, sizeof(d));
+    _info[playerID].player_func = pfunc;
+    _info[playerID].recv_func = precv;
 }
 
-void Controller::register_AI(int playerID, AI_Func pfunc)
+bool Controller::receive(bool is_jumping, const std::string &data)
 {
-    if (!_is_init)
+    if (!_check_init())
+        return false;
+    if (is_jumping)
+    {
+        return _parse_parachute(data);
+    }
+    else
+    {
+        return _parse_commands(data);
+    }
+}
+
+void Controller::_send(int playerID, bool is_jumping, const std::string &data)
+{
+    if (!_check_init())
         return;
-    _player_func[playerID] = pfunc;
+    _info[playerID].recv_func(is_jumping, data);
+    return;
+}
+
+bool Controller::_parse_parachute(const std::string &data)
+{
+    comm_platform::Parachute recv;
+    auto playerID = _get_playerID_by_threadID();
+    if (playerID >= 0 && recv.ParseFromString(data))
+    {
+        COMMAND_PARACHUTE c;
+        c.landing_point.x = recv.landing_point().x();
+        c.landing_point.y = recv.landing_point().y();
+        switch (recv.role())
+        {
+        case comm_platform::Vocation::MEDIC:
+            c.role = VOCATION_TYPE::MEDIC;
+            break;
+        case comm_platform::Vocation::ENGINEER:
+            c.role = VOCATION_TYPE::ENGINEER;
+            break;
+        case comm_platform::Vocation::SIGNALMAN:
+            c.role = VOCATION_TYPE::SIGNALMAN;
+            break;
+        case comm_platform::Vocation::HACK:
+            c.role = VOCATION_TYPE::HACK;
+            break;
+        case comm_platform::Vocation::SNIPER:
+            c.role = VOCATION_TYPE::SNIPER;
+            break;
+        }
+        _command_parachute[playerID].push_back(c);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool Controller::_parse_commands(const std::string &data)
+{
+    comm_platform::Command recv;
+    auto playerID = _get_playerID_by_threadID();
+    if (playerID >= 0 && recv.ParseFromString(data))
+    {
+        COMMAND_ACTION c;
+        switch (recv.command_type())
+        {
+        case comm_platform::CommandType::MOVE:
+            c.command_type = COMMAND_TYPE::MOVE;
+            break;
+        case comm_platform::CommandType::SHOOT:
+            c.command_type = COMMAND_TYPE::SHOOT;
+            break;
+        case comm_platform::CommandType::PICKUP:
+            c.command_type = COMMAND_TYPE::PICKUP;
+            break;
+        case comm_platform::CommandType::RADIO:
+            c.command_type = COMMAND_TYPE::RADIO;
+            break;
+        }
+        c.move_angle = recv.move_angle();
+        c.view_angle = recv.view_angle();
+        c.target_ID = recv.target_id();
+        c.parameter = recv.parameter();
+
+        _command_action[playerID].push_back(c);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+std::string Controller::_serialize_route()
+{
+    comm_platform::Route sender;
+    sender.mutable_start_pos()->set_x(route.first.x);
+    sender.mutable_start_pos()->set_y(route.first.y);
+    sender.mutable_over_pos()->set_x(route.second.x);
+    sender.mutable_over_pos()->set_y(route.second.y);
+    return sender.SerializeAsString();
+}
+
+std::map<int, COMMAND_PARACHUTE> Controller::get_parachute_commands()
+{
+    std::map<int, COMMAND_PARACHUTE> m;
+    if (!_check_init())
+        return m;
+    for (int i = 0; i < _player_count; i++)
+    {
+        if (!_command_parachute[i].empty())
+        {
+            m[i] = _command_parachute[i].back();
+        }
+    }
+    return m;
+}
+
+bool controller_receive(bool is_jumping, const std::string data)
+{
+    return manager.receive(is_jumping, data);
 }

@@ -28,7 +28,7 @@ void parachute(VOCATION_TYPE role, Position landing_points)
     std::cout << "AI:" << sender.DebugString() << std::endl;
     player_send(true, sender.SerializeAsString());
 }
-void shoot(int player_ID, int weapon_ID, double shoot_angle, int parameter)
+void shoot(int weapon_ID, double shoot_angle, int parameter)
 {
     comm_player::Command sender;
     sender.set_command_type(comm_player::CommandType::SHOOT);
@@ -37,7 +37,7 @@ void shoot(int player_ID, int weapon_ID, double shoot_angle, int parameter)
     sender.set_parameter(parameter);
     player_send(false, sender.SerializeAsString());
 }
-void move(int player_ID, double move_angle, double view_angle, int parameter)
+void move(double move_angle, double view_angle, int parameter)
 {
     comm_player::Command sender;
     sender.set_command_type(comm_player::CommandType::MOVE);
@@ -46,7 +46,7 @@ void move(int player_ID, double move_angle, double view_angle, int parameter)
     sender.set_parameter(parameter);
     player_send(false, sender.SerializeAsString());
 }
-void pickup(int player_ID, int target_ID, int parameter)
+void pickup(int target_ID, int parameter)
 {
     comm_player::Command sender;
     sender.set_command_type(comm_player::CommandType::PICKUP);
@@ -54,7 +54,7 @@ void pickup(int player_ID, int target_ID, int parameter)
     sender.set_parameter(parameter);
     player_send(false, sender.SerializeAsString());
 }
-void radio(int player_ID, int target_ID, int msg)
+void radio(int target_ID, int msg)
 {
     comm_player::Command sender;
     sender.set_command_type(comm_player::CommandType::RADIO);
