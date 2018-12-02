@@ -11,7 +11,7 @@ RADIO = 3
 
 class Character(Object):                # the base class of all characters
     # static variables
-    all_data = []                       # save all data from setting file
+    all_data = {}                       # save all data from setting file
     AIRPLANE_SPEED = 5                  # flying speed, will load from file
     JUMPING_SPEED = 1                   # jumping speed, also load from file
 
@@ -32,6 +32,7 @@ class Character(Object):                # the base class of all characters
     PICKUP = 5
     MOVING_SHOOTING = 6
     DEAD = 7
+    REAL_DEAD = 8
 
     MOVE_PERMITTED_STATUS = [RELAX, MOVING, MOVING_SHOOTING]
     SHOOTING_PERMITTED_STATUS = [RELAX, MOVING]
@@ -56,8 +57,8 @@ class Character(Object):                # the base class of all characters
         self.last_command = None   # save command to deal with information when CD is over
 
     @staticmethod
-    def load_data(parent_path="./", print_debug=PRINT_DEBUG):
-        with open(parent_path + CHARACTER_FILE_PATH, "r", encoding="utf-8") as file:
+    def load_data(parent_path, character_file_path, print_debug):
+        with open(parent_path + character_file_path, "r", encoding="utf-8") as file:
             config_data = load(file)
             if print_debug >= 100:
                 print(config_data)

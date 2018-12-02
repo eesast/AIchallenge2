@@ -27,7 +27,7 @@ def main():
     # this function is just to debug for logic
     object.PRINT_DEBUG = 999
     game_init("./", "config.ini")
-    file = open("./debug/input.txt", 'r', encoding='utf-8')
+    file = open("./debug/input.json", 'r', encoding='utf-8')
     information_tem = load(file)
     information = {}
     for key, value in information_tem.items():
@@ -35,14 +35,20 @@ def main():
         information[int(key)] = value
     print(information)
     game.parachute(information)
-
+    # for debug
+    commands = \
+        {
+            5: [
+                {'command_type': 1, 'target': 12, "move_angle": 1.2, "view_angle": 3.6, "other": 13}
+            ],
+        }
     # start the loop
     # fight until there is only one team alive or be overtime
     while game.alive_teams() > 1 and game.anti_infinite_loop():
         # first get information from platform
 
         # then refresh game
-        game.unwrap_commands(None)
+        game.unwrap_commands(commands)
         game.refresh()
 
         # emit information to platform

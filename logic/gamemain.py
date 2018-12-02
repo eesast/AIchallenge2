@@ -4,15 +4,28 @@ from allclass import *
 from random import randrange
 from json import load
 
+#   here define a debug level variable to debug print-oriented
+PRINT_DEBUG = 10
+
+
+#   level 1: only print illegal information
+#   level 2: also print some adjustment
+
+#   level 9:
+#   level 10:
+#   level 100: will give all information you can imagine, including config file
+
 
 class GameMain:
     # if not specified, platform needn't this class's members
+
     def __init__(self):
 
         # it's more like a define instead of an initialization
         self.map_size = 1000
         self.die_order = []  # save the player's dying order
         self.map_items = [[[] for i in range(16)] for j in range(16)]  # try to divide map into 256 parts
+
         self.all_players = []  # save all player's information
         self.all_bullets = []
         self.all_sounds = []
@@ -28,25 +41,20 @@ class GameMain:
         return
 
     def load_data(self, file_path, file_name):
-        def load_global():
-            with open(file_path + file_name) as config:
-                global_config = load(config)
-            object.PRINT_DEBUG = global_config["PRINT_DEBUG"]
-            object.CHARACTER_FILE_PATH = global_config["CHARACTER_FILE_PATH"]
-            object.ITEM_FILE_PATH = global_config["ITEM_FILE_PATH"]
-            object.MAP_FILE_PATH = global_config["MAP_FILE_PATH"]
-            if object.PRINT_DEBUG >= 100:
-                print(global_config)
-
         # first load some global information
-        load_global()
+        with open(file_path + file_name) as config:
+            global_config = load(config)
+        global PRINT_DEBUG
+        PRINT_DEBUG = global_config["PRINT_DEBUG"]
+        if PRINT_DEBUG >= 100:
+            print(global_config)
 
         # then load some module data here
-        character.Character.load_data(file_path, object.PRINT_DEBUG)
-        item.Item.load_data(file_path)
+        character.Character.load_data(file_path, global_config["CHARACTER_FILE_PATH"], PRINT_DEBUG)
+        item.Item.load_data(file_path, global_config["ITEM_FILE_PATH"], PRINT_DEBUG)
 
         # here load map data
-        self.__load_map(file_path)
+        self.__load_map(file_path, global_config["MAP_FILE_PATH"])
 
     def unwrap_commands(self, commands):
         # here unwrap all players' commands
@@ -56,14 +64,8 @@ class GameMain:
         self.all_commands["radio"].clear()
         # commands format: {teamID:{playerID:[{"command_tye":type, "target":
         # ID, "move_angle":angle, "view_angle":angle, "other":data}]}}
-        # for debug
-        commands = \
-            {
-                5: [
-                    {'command_type': 1, 'target': 12, "move_angle": 1.2, "view_angle": 3.6, "other": 13}
-                ],
-            }
-        if object.PRINT_DEBUG >= 10:
+
+        if PRINT_DEBUG >= 10:
             print(commands)
         for playerID, player_commands in commands.items():
             for command in player_commands:
@@ -80,7 +82,7 @@ class GameMain:
                 else:
                     # if command_type isn't correct, it will be ignored
                     continue
-        if object.PRINT_DEBUG >= 10:
+        if PRINT_DEBUG >= 10:
             print("unwrap_command successfully in turn", self.__turn)
         return
 
@@ -168,8 +170,8 @@ class GameMain:
         # here return everything as i mention in the related files
         return self.all_info
 
-    def __load_map(self, parent_path="./"):
-        with open(parent_path + object.MAP_FILE_PATH, "r", encoding="utf-8") as map_file:
+    def __load_map(self, parent_path, map_file_path):
+        with open(parent_path + map_file_path, "r", encoding="utf-8") as map_file:
             pass
 
     def alive_teams(self):
@@ -278,8 +280,8 @@ class GameMain:
             a = position.delta_y(self.__start_position, self.__over_position)
             b = - position.delta_x(self.__start_position, self.__over_position)
             c = position.cross_product(self.__start_position, self.__over_position)
-            x = (b * b * aim_x - a * b * aim_y - a * b) / (a * a + b * b)
-            y = (a * a * aim_y - a * b * aim_y - b * b) / (a * a + b * b)
+            x = (b * b * aim_x - a * b * aim_y - a * c) / (a * a + b * b)
+            y = (a * a * aim_y - a * b * aim_x - b * c) / (a * a + b * b)
             aim = position.Position(x, y)
             # if the pedal isn't in the map, player must jump at begin or end
             if x < 0 or y < 0 or x > self.map_size or y > self.map_size:
