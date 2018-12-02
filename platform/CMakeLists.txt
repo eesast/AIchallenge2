@@ -50,4 +50,5 @@ target_link_libraries(platform ${PYTHON_LIBRARIES})
 
 IF(UNIX)
 target_link_libraries(platform ${Protobuf_LIBRARIES})
+target_link_libraries(platform libdl.so)
 ENDIF()

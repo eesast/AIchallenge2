@@ -10,9 +10,14 @@
 
 #include"platform.h"
 
+#ifdef WIN32
 //path for finding main.py and data.ini
 const char * const LOGIC_PATH = R"(C:\\Users\\zhang\\Desktop\\AIchallenge2\\logic\\)";
 const char * const DATA_PATH = R"(C:\Users\zhang\Desktop\AIchallenge2\logic\)";
+#else
+const char *const LOGIC_PATH = R"(/home/sweetnow/AIchallenge2/logic/)";
+const char *const DATA_PATH = R"(/home/sweetnow/AIchallenge2/logic/)";
+#endif
 const char * const MODULE_NAME = "main";
 const char * const MAIN_FUNC_NAME = "game_main";
 const char * const INIT_FUNC_NAME = "game_init";

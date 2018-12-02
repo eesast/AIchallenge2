@@ -32,7 +32,7 @@ private:
     // pipe pipe[0] for reading pipe[1] for writing
     int sender[2] = {0, 0};   //server->client
     int receiver[2] = {0, 0}; //client->server
-
+    int turn = 0;             //turn of game
     AI_Func player_func = nullptr;
     Recv_Func recv_func = nullptr;
   };
@@ -66,13 +66,16 @@ private:
 
   //communication
 public:
-  bool receive(bool is_jumping, const std::string &data);
+  //only work in client
+  bool receive_for_client(bool is_jumping, const std::string &data);
 
 private:
-  void _send(int playerID, bool is_jumping, const std::string &data);
+  void _receive_for_server(int playerID);
+  void _send_for_server(int playerID, const std::string &data);
+  void _send_for_client();
   //return true on success.
-  bool _parse_parachute(const std::string &data);
-  bool _parse_commands(const std::string &data);
+  bool _parse_parachute(const std::string &data, int playerID);
+  bool _parse_commands(const std::string &data, int playerID);
 
 public:
   //always choose the lastest command

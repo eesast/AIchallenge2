@@ -89,10 +89,10 @@ void Controller::run()
                 _info[offset + i].pid = fork();
                 if (_info[offset + i].pid > 0) //manager
                 {
+                    _info[offset + i].state = AI_STATE::ACTIVE;
                     close(_info[offset + i].sender[0]);
                     close(_info[offset + i].receiver[1]);
-                    // write(_info[offset + i].sender[1], pState, sizeof(CState));
-                    _info[offset + i].state = AI_STATE::ACTIVE;
+                    _send_for_server(offset + i, _serialize_route());
                 }
                 else if (_info[offset + i].pid == 0) //player AI
                 {
@@ -123,23 +123,21 @@ void Controller::run()
                 break;
             }
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(TIMEOUT));
+        //std::this_thread::sleep_for(std::chrono::milliseconds(TIMEOUT));
         for (int i = 0; i < _used_core_count && offset + i < _player_count; i++)
         {
-            if (_info[offset + i].state == AI_STATE::ACTIVE)
+
+            while (_info[offset + i].state == AI_STATE::ACTIVE)
             {
-                kill(_info[offset + i].pid, SIGSTOP);
-                _info[offset + i].state = AI_STATE::SUSPENDED;
+                sleep(10);
+                // kill(_info[offset + i].pid, SIGSTOP);
+                // _info[offset + i].state = AI_STATE::SUSPENDED;
             }
         }
         for (int i = 0; i < _used_core_count && offset + i < _player_count; i++)
         {
-            // DEMAND d;
-            // while (read(_info[offset + i].receiver[0], &d, sizeof(d)) > 0)
-            // {
-            //     std::cout << "id" << offset + i << "cd:" << d.cd << "order:" << d.order << std::endl;
-            //     pAllDemands[offset + i].push_back(d);
-            // }
+            _receive_for_server(offset + i);
+            ++_info[offset + i].turn;
         }
     }
 }
@@ -155,10 +153,7 @@ void Controller::_run_player()
     //player AI
     while (true)
     {
-        //receive data from server
-        // read(_info[_playerID].sender[0], pState, sizeof(CState));
-        //not send demands because of laziness
-        // std::cout << "get state" << pState->GetTurn() << ' ' << pState->GetTest() << std::endl;
+        _send_for_client();
         if (_playerID >= 0 && _info[_playerID].player_func != nullptr)
         {
             (*_info[_playerID].player_func)();
@@ -198,34 +193,116 @@ void Controller::register_AI(int playerID, AI_Func pfunc, Recv_Func precv)
     _info[playerID].recv_func = precv;
 }
 
-bool Controller::receive(bool is_jumping, const std::string &data)
+bool Controller::receive_for_client(bool is_jumping, const std::string &data)
 {
     if (!_check_init())
         return false;
-    if (is_jumping)
+    if (is_jumping && _info[_playerID].turn != 0)
     {
-        return _parse_parachute(data);
+        return false;
     }
-    else
+    else if (is_jumping)
     {
-        return _parse_commands(data);
+        ++_info[_playerID].turn;
     }
+    //send data to server
+    int size = data.size();
+    char *buffer = new char[size];
+    memcpy(buffer, data.data(), size);
+    if (write(_info[_playerID].receiver[1], &size, sizeof(size)) != sizeof(size))
+    {
+        delete[] buffer;
+        return false;
+    }
+    if (write(_info[_playerID].receiver[1], buffer, sizeof(char) * size) != sizeof(char) * size)
+    {
+        delete[] buffer;
+        return false;
+    }
+    delete[] buffer;
+    return true;
 }
 
-void Controller::_send(int playerID, bool is_jumping, const std::string &data)
+void Controller::_receive_for_server(int playerID)
+{
+    int size = 0;
+    int recv_size;
+    do
+    {
+        recv_size = read(_info[playerID].receiver[0], &size, sizeof(size));
+        if (recv_size <= 0)
+            break;
+        char *buffer = new char[size];
+        //assume that it always read completely.
+        recv_size = read(_info[playerID].receiver[0], buffer, sizeof(char) * size);
+        if (recv_size <= 0)
+        {
+            delete[] buffer;
+            break;
+        }
+        std::string s;
+        s.append(buffer, size);
+        if (_info[playerID].turn == 0)
+        {
+            _parse_parachute(s, playerID);
+        }
+        else
+        {
+            _parse_commands(s, playerID);
+        }
+        delete[] buffer;
+    } while (recv_size > 0);
+}
+
+void Controller::_send_for_server(int playerID, const std::string &data)
 {
     if (!_check_init())
         return;
-    _info[playerID].recv_func(is_jumping, data);
+    //send data to server
+    int size = data.size();
+    char *buffer = new char[size];
+    memcpy(buffer, data.data(), size);
+    if (write(_info[playerID].sender[1], &size, sizeof(size)) != sizeof(size))
+    {
+        delete[] buffer;
+        return;
+    }
+    if (write(_info[playerID].sender[1], buffer, sizeof(char) * size) != sizeof(char) * size)
+    {
+        delete[] buffer;
+        return;
+    }
+    delete[] buffer;
     return;
 }
 
-bool Controller::_parse_parachute(const std::string &data)
+void Controller::_send_for_client()
+{
+    int size = 0;
+    int recv_size;
+    recv_size = read(_info[_playerID].sender[0], &size, sizeof(size));
+    if (recv_size <= 0)
+        return;
+    char *buffer = new char[size];
+    //assume that it always read completely.
+    recv_size = read(_info[_playerID].sender[0], buffer, sizeof(char) * size);
+    if (recv_size <= 0)
+    {
+        delete[] buffer;
+        return;
+    }
+    std::string s;
+    s.append(buffer, size);
+    (*_info[_playerID].recv_func)(_info[_playerID].turn == 0, s);
+    delete[] buffer;
+}
+
+bool Controller::_parse_parachute(const std::string &data, int playerID)
 {
     comm_platform::Parachute recv;
-    auto playerID = _get_playerID_by_threadID();
     if (playerID >= 0 && recv.ParseFromString(data))
     {
+        std::cout << recv.DebugString() << std::endl;
         COMMAND_PARACHUTE c;
         c.landing_point.x = recv.landing_point().x();
         c.landing_point.y = recv.landing_point().y();
@@ -256,10 +333,9 @@ bool Controller::_parse_parachute(const std::string &data)
     }
 }
 
-bool Controller::_parse_commands(const std::string &data)
+bool Controller::_parse_commands(const std::string &data, int playerID)
 {
     comm_platform::Command recv;
-    auto playerID = _get_playerID_by_threadID();
     if (playerID >= 0 && recv.ParseFromString(data))
     {
         COMMAND_ACTION c;
@@ -319,5 +395,6 @@ std::map<int, COMMAND_PARACHUTE> Controller::get_parachute_commands()
 
 bool controller_receive(bool is_jumping, const std::string data)
 {
-    return manager.receive(is_jumping, data);
+    std::cout << "client recvive" << data << std::endl;
+    return manager.receive_for_client(is_jumping, data);
 }

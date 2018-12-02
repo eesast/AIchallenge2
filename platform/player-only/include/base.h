@@ -3,11 +3,11 @@
 
 //basic tools for communication
 
-#include"./../../include/constant.h"
-#include"./../../include/character.h"
+#include "./../../include/constant.h"
+#include "./../../include/character.h"
 
 #ifdef WIN32
-#pragma warning(disable:4251)
+#pragma warning(disable : 4251)
 
 #ifdef AI_EXPORTS
 #define PLAYERAI_API __declspec(dllexport)
@@ -17,11 +17,13 @@
 
 #else
 #define PLAYERAI_API
+#ifndef AI_EXPORTS
 #define AI_EXPORTS
+#endif // !AI_EXPORTS
 #endif // WIN32
-#include"communication_player.pb.h"
+#include "communication_player.pb.h"
 
-#include<iostream>
+#include <iostream>
 
 extern "C"
 {

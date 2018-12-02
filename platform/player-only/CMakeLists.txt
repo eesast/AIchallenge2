@@ -7,6 +7,8 @@ set(CMAKE_BUILD_TYPE Debug)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src DIR_SRC)
+aux_source_directory(${PROJECT_SOURCE_DIR}/player_only/src DIR_SRC)
+
 
 IF(WIN32)
 
