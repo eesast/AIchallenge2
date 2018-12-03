@@ -2,15 +2,6 @@
 # -*- coding: utf-8 -*-
 
 
-#   here define file name
-DATA_FILE_NAME = "data.ini"
-
-#   here define a debug level variable to debug print-oriented
-PRINT_DEBUG = 1
-#   level 1: only print illegal information
-#   level 2: also print some adjustment
-
-
 class Object(object):
     # all objects in the map, including players, should be its subclass instead of object
 

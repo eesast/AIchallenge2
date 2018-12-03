@@ -14,5 +14,6 @@ struct Position
 const int MAX_PLAYER = 64;
 const int TIMEOUT = 50;
 const int MAX_TURN = 100;
+const int MEMBER_COUNT = 4;
 
 #endif // !CONSTANT_H

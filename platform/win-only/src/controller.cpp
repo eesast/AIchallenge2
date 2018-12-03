@@ -1,5 +1,7 @@
 #include "controller.h"
 
+extern std::pair<Position, Position> route;
+
 Controller Controller::_instance;
 
 void Controller::init(int player_count, DWORD used_core_count)
@@ -19,15 +21,22 @@ void Controller::init(int player_count, DWORD used_core_count)
         _used_core_count = used_core_count;
     }
     _waiting_thread = new HANDLE[_used_core_count];
-    for (int i = 0; i < MAX_PLAYER; i++)
-    {
-        _player_func[i] = nullptr;
-    }
     _is_init = true;
+}
+
+bool Controller::_check_init()
+{
+    if (!_is_init)
+    {
+        std::cerr << "Manager is not initialised,please check codes." << std::endl;
+    }
+    return _is_init;
 }
 
 Controller::~Controller()
 {
+    if (!_check_init())
+        return;
     for (int i = 0; i < _player_count; i++)
     {
         if (_info[i].state != AI_STATE::UNUSED)
@@ -42,7 +51,7 @@ Controller::~Controller()
 
 void Controller::run()
 {
-    if (!_is_init)
+    if (!_check_init())
         return;
     for (int offset = 0; offset < _player_count; offset += _used_core_count)
     {
@@ -50,9 +59,12 @@ void Controller::run()
         //execute some players each loop. The number is equal to the number of core(_used_core_count) 
         for (int i = 0; i < static_cast<int>(_used_core_count) && offset + i < _player_count; i++)
         {
+            //clear commands vector
+            _command_parachute[offset + i].clear();
             //offset + i == playerID
             if (_info[offset + i].state == AI_STATE::UNUSED)
             {
+                //create or recreate a subthread.
                 _info[offset + i].handle = CreateThread(nullptr, 0, thread_func, nullptr, CREATE_SUSPENDED, &_info[offset + i].threadID);
                 if (_info[offset + i].handle == NULL)
                 {
@@ -61,20 +73,21 @@ void Controller::run()
                     system("pause");
                     exit(1);
                 }
-                _info[offset + i].mtx.lock();
                 _info[offset + i].state = AI_STATE::SUSPENDED;
                 //CPU control, choose the core which the thread uses. When the used core number is less than that CPU actually has, using core with higher ID firstly 
                 SetThreadAffinityMask(_info[offset + i].handle, (static_cast<DWORD_PTR>(1) << ((_total_core_count - _used_core_count) + i)));
             }
             _waiting_thread[i] = _info[offset + i].handle;    //if the player's thread is suspended, just resume it
         }
+        //send route and start subthread.
         for (int i = 0; i < static_cast<int>(_used_core_count) && offset + i < _player_count; i++)
         {
-            _info[offset + i].mtx.unlock();
             _info[offset + i].state = AI_STATE::ACTIVE;
+            (*_info[offset + i].recv_func)(true, _serialize_route());
             ResumeThread(_info[offset + i].handle);
         }
         DWORD threadNumber = (_player_count - offset >= static_cast<int>(_used_core_count) ? _used_core_count : static_cast<DWORD>(_player_count - offset));
+        //let sunthreads run TIMEOUT ms.
         if (WaitForMultipleObjects(threadNumber, _waiting_thread, true, TIMEOUT) == WAIT_TIMEOUT)
         {    //if one thread does not exit 
             DWORD exitCode;
@@ -83,7 +96,6 @@ void Controller::run()
                 GetExitCodeThread(_info[offset + i].handle, &exitCode);
                 if (exitCode == STILL_ACTIVE)
                 {
-                    _info[offset + i].mtx.lock();
                     _info[offset + i].state = AI_STATE::SUSPENDED;
                     SuspendThread(_info[offset + i].handle);
                 }
@@ -105,26 +117,111 @@ void Controller::run()
     }
 }
 
-void Controller::send_demand()
+bool Controller::receive(bool is_jumping, const std::string & data)
 {
-    if (!_is_init)
-        return;
-    auto playerID = get_playerID_by_thread();
-    //send demand
-    std::cout << "aaaa" << std::endl;
+    if (!_check_init())
+        return false;
+    if (is_jumping)
+    {
+        return _parse_parachute(data);
+    }
+    else
+    {
+        return _parse_commands(data);
+    }
 }
 
-
-void Controller::register_AI(int playerID, AI_Func pfunc)
+void Controller::_send(int playerID, bool is_jumping, const std::string & data)
 {
-    if (!_is_init)
+    if (!_check_init())
         return;
-    _player_func[playerID] = pfunc;
+    _info[playerID].recv_func(is_jumping, data);
+    return;
 }
 
-int Controller::get_playerID_by_thread()
+bool Controller::_parse_parachute(const std::string & data)
 {
-    if (!_is_init)
+    comm_platform::Parachute recv;
+    auto playerID = _get_playerID_by_threadID();
+    if (playerID >= 0 && recv.ParseFromString(data))
+    {
+        COMMAND_PARACHUTE c;
+        c.landing_point.x = recv.landing_point().x();
+        c.landing_point.y = recv.landing_point().y();
+        switch (recv.role())
+        {
+        case comm_platform::Vocation::MEDIC:
+            c.role = VOCATION_TYPE::MEDIC;
+            break;
+        case comm_platform::Vocation::ENGINEER:
+            c.role = VOCATION_TYPE::ENGINEER;
+            break;
+        case comm_platform::Vocation::SIGNALMAN:
+            c.role = VOCATION_TYPE::SIGNALMAN;
+            break;
+        case comm_platform::Vocation::HACK:
+            c.role = VOCATION_TYPE::HACK;
+            break;
+        case comm_platform::Vocation::SNIPER:
+            c.role = VOCATION_TYPE::SNIPER;
+            break;
+        }
+        _command_parachute[playerID].push_back(c);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool Controller::_parse_commands(const std::string & data)
+{
+    comm_platform::Command recv;
+    auto playerID = _get_playerID_by_threadID();
+    if (playerID >= 0 && recv.ParseFromString(data))
+    {
+        COMMAND_ACTION c;
+        switch (recv.command_type())
+        {
+        case comm_platform::CommandType::MOVE:
+            c.command_type = COMMAND_TYPE::MOVE;
+            break;
+        case comm_platform::CommandType::SHOOT:
+            c.command_type = COMMAND_TYPE::SHOOT;
+            break;
+        case comm_platform::CommandType::PICKUP:
+            c.command_type = COMMAND_TYPE::PICKUP;
+            break;
+        case comm_platform::CommandType::RADIO:
+            c.command_type = COMMAND_TYPE::RADIO;
+            break;
+        }
+        c.move_angle = recv.move_angle();
+        c.view_angle = recv.view_angle();
+        c.target_ID = recv.target_id();
+        c.parameter = recv.parameter();
+
+        _command_action[playerID].push_back(c);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void Controller::register_AI(int playerID, AI_Func pfunc, Recv_Func precv)
+{
+    if (!_check_init())
+        return;
+    _info[playerID].player_func = pfunc;
+    _info[playerID].recv_func = precv;
+}
+
+int Controller::_get_playerID_by_threadID()
+{
+    if (!_check_init())
         return -1;
     auto threadID = GetCurrentThreadId();
     for (int i = _now_offset; i < _now_offset + static_cast<int>(_used_core_count) && i < _player_count; i++)
@@ -150,10 +247,40 @@ Controller::Controller()
 
 DWORD WINAPI thread_func(LPVOID lpParameter)
 {
-    auto playerID = manager.get_playerID_by_thread();
-    if (manager._player_func[playerID] != nullptr)
+    auto playerID = manager._get_playerID_by_threadID();
+    if (manager._info[playerID].player_func != nullptr)
     {
-        (*manager._player_func[playerID])();
+        (*manager._info[playerID].player_func)();
     }
     return 0;
+}
+
+bool controller_receive(bool is_jumping, const std::string data)
+{
+    return manager.receive(is_jumping, data);
+}
+
+std::map<int, COMMAND_PARACHUTE> Controller::get_parachute_commands()
+{
+    std::map<int, COMMAND_PARACHUTE> m;
+    if (!_check_init())
+        return m;
+    for (int i = 0; i < _player_count; i++)
+    {
+        if (!_command_parachute[i].empty())
+        {
+            m[i] = _command_parachute[i].back();
+        }
+    }
+    return m;
+}
+
+std::string Controller::_serialize_route()
+{
+    comm_platform::Route sender;
+    sender.mutable_start_pos()->set_x(route.first.x);
+    sender.mutable_start_pos()->set_y(route.first.y);
+    sender.mutable_over_pos()->set_x(route.second.x);
+    sender.mutable_over_pos()->set_y(route.second.y);
+    return sender.SerializeAsString();
 }
