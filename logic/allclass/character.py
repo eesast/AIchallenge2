@@ -1,11 +1,17 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 from .object import *
+from json import load
+
+MOVE = 0
+SHOOT = 1
+PICKUP = 2
+RADIO = 3
 
 
 class Character(Object):                # the base class of all characters
     # static variables
-    all_data = []                       # save all data from setting file
+    all_data = {}                       # save all data from setting file
     AIRPLANE_SPEED = 5                  # flying speed, will load from file
     JUMPING_SPEED = 1                   # jumping speed, also load from file
 
@@ -24,6 +30,12 @@ class Character(Object):                # the base class of all characters
     MOVING = 3
     SHOOTING = 4
     PICKUP = 5
+    MOVING_SHOOTING = 6
+    DEAD = 7
+    REAL_DEAD = 8
+
+    MOVE_PERMITTED_STATUS = [RELAX, MOVING, MOVING_SHOOTING]
+    SHOOTING_PERMITTED_STATUS = [RELAX, MOVING]
 
     def __init__(self, vocation):
         super().__init__(Object.CIRCLE)
@@ -42,20 +54,15 @@ class Character(Object):                # the base class of all characters
         # platform needn't these variables
         self.jump_position = None  # it means where he jump out airplane
         self.land_position = None  # it means where he want to land
+        self.last_command = None   # save command to deal with information when CD is over
 
     @staticmethod
-    def load_data(parent_path="./"):
-        if parent_path[-1] != '/':
-            parent_path += '/'
-        with open(parent_path + DATA_FILE_NAME) as file:
-            file_data = file.readlines()
-            for line in file_data:
-                if line[0] == '#':    # judge if this is comment
-                    continue
-
-                # omit the loading code in details temporarily
-                Character.all_data.append(line.split(' '))
-        pass
+    def load_data(parent_path, character_file_path, print_debug):
+        with open(parent_path + character_file_path, "r", encoding="utf-8") as file:
+            config_data = load(file)
+            if print_debug >= 100:
+                print(config_data)
+        return
 
     # I use some special function to simplify function in game main
     def is_flying(self):
@@ -70,6 +77,18 @@ class Character(Object):                # the base class of all characters
             return
         # warning: it's not enough, must justify other objects, now just for test
         self.position += self.move_direction * self.move_speed
+
+    def command_status_legal(self, command_type):
+        if command_type == MOVE:
+            return self.status in self.MOVE_PERMITTED_STATUS
+        elif command_type == SHOOT:
+            return self.status in self.SHOOTING_PERMITTED_STATUS
+        elif command_type == PICKUP:
+            return True
+        elif command_type == RADIO:
+            return True
+        else:
+            return False
 
 
 if __name__ == '__main__':
