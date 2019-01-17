@@ -1,4 +1,4 @@
-#ignore pycharm configuration files
+#ignore pycharm/vscode/vs configuration/temp files
 
 # platform
 /platform/build
@@ -14,7 +14,7 @@
 /platform-linux-1.0/*
 /platform/player-only/AI/.vscode
 /platform/player-only/AI/build
-
+/.vscode
 
 
 # logic
