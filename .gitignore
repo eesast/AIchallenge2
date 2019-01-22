@@ -1,4 +1,4 @@
-#ignore pycharm configuration files
+#ignore pycharm/vscode/vs configuration/temp files
 
 /.vscode
 
@@ -14,6 +14,8 @@
 /platform/win-only/__pycache__
 /platform/win-only/build
 /platform-linux-1.0/*
+/platform/player-only/AI/.vscode
+/platform/player-only/AI/build
 /platform/player-only/.vscode
 /platform/player-only/build
 
