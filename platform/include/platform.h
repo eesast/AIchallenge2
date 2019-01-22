@@ -3,10 +3,10 @@
 
 //struct, header, constant that platform needs
 
-#include"constant.h"
-#include"character.h"
-#include<map>
-#include<vector>
+#include "constant.h"
+#include "character.h"
+#include <map>
+#include <vector>
 #include <iostream>
 #include <string>
 #include <cstdlib>

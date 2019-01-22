@@ -5,29 +5,43 @@
 
 enum class VOCATION_TYPE
 {
-    MEDIC = 0,
-    ENGINEER = 1,
-    SIGNALMAN = 2,
-    HACK = 3,
-    SNIPER = 4
+  MEDIC = 0,
+  ENGINEER = 1,
+  SIGNALMAN = 2,
+  HACK = 3,
+  SNIPER = 4
 };
 
 class Character : public Object
 {
-  public:
-    Character(VOCATION_TYPE vocation);
-    Character(Character &&) = default;
-    Character(const Character &) = default;
-    Character &operator=(Character &&) = default;
-    Character &operator=(const Character &) = default;
-    ~Character();
+public:
+  enum class STATUS
+  {
+    RELAX = 0,
+    ON_PLANE = 1,
+    JUMPING = 2,
+    MOVING = 3,
+    SHOOTING = 4,
+    PICKUP = 5,
+    MOVING_SHOOTING = 6,
+    DEAD = 7,
+    REAL_DEAD = 8
+  };
 
-    const HP_T HP_LIMIT = 100;
+  Character(VOCATION_TYPE vocation);
+  Character(Character &&) = default;
+  Character(const Character &) = default;
+  Character &operator=(Character &&) = default;
+  Character &operator=(const Character &) = default;
+  ~Character();
 
-  private:
-    VOCATION_TYPE _vocation;
-    HP_T _hp;
-    CD_T _move_cd;
+  const HP_T HP_LIMIT = 100;
+
+private:
+  VOCATION_TYPE _vocation;
+  HP_T _hp;
+  CD_T _move_cd;
+  STATUS _status;
 };
 
 #endif // !CHARACTER_H

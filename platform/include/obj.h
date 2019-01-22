@@ -13,7 +13,7 @@ class Object
         CIRCLE = 0,
         RECTANGLE = 1
     };
-    Object(SHAPE_TYPE shape_type = CIRCLE);
+    Object(SHAPE_TYPE shape = CIRCLE);
     Object(Object &&) = default;
     Object(const Object &) = default;
     Object &operator=(Object &&) = default;
@@ -22,10 +22,10 @@ class Object
 
   private:
     Position _position;
-    SHAPE_TYPE _shape_type;
+    SHAPE_TYPE _shape;
     BASE_T _move_speed;
-    BASE_T _move_direction;
-    BASE_T _face_direction;
+    BASE_T _move_direction;     //need check DataType
+    BASE_T _face_direction;     //need check DataType
     BASE_T _radius;
     BASE_T _angle;
 };
