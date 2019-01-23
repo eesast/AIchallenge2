@@ -16,12 +16,13 @@ class LandForm(Object):
 
     def __init__(self, land_type):
         if land_type in LandForm.CIRCLE_SHAPE:
-            self.shape = Object.CIRCLE
+            shape = Object.CIRCLE
         elif land_type in LandForm.RECTANGLE_SHAPE:
-            self.shape = Object.RECTANGLE
+            shape = Object.RECTANGLE
         else:
             Exception("wrong type for LandForm!")
-        super().__init__(self.shape)
+            shape = None
+        super().__init__(shape)
         self.land_type = land_type
         # haven't finished yet, only a start
         if land_type == LandForm.WALL:

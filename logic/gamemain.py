@@ -5,12 +5,15 @@ from random import randrange
 from json import load
 
 #   here define a debug level variable to debug print-oriented
-PRINT_DEBUG = 10
+#   remember: here is just a initial level for logic
+#   platform may give another number in game_init
+PRINT_DEBUG = 8
 
 
 #   level 1: only print illegal information
 #   level 2: also print some adjustment
 
+#   level 8: give all players' jumping information
 #   level 9:
 #   level 10:
 #   level 100: will give all information you can imagine, including config file
@@ -38,20 +41,24 @@ class GameMain:
         self.__start_position, self.__over_position = None, None
         self.__turn = 0
 
+        # initialize debug level for logic to use directly and for platform to change it
+        self.__debug_level = PRINT_DEBUG
+
         return
+
+    def set_debug_level(self, level):
+        if level:
+            self.__debug_level = level
 
     def load_data(self, file_path, file_name):
         # first load some global information
         with open(file_path + file_name) as config:
             global_config = load(config)
-        global PRINT_DEBUG
-        PRINT_DEBUG = global_config["PRINT_DEBUG"]
-        if PRINT_DEBUG >= 100:
-            print(global_config)
+        self.print_debug(100, global_config)
 
         # then load some module data here
-        character.Character.load_data(file_path, global_config["CHARACTER_FILE_PATH"], PRINT_DEBUG)
-        item.Item.load_data(file_path, global_config["ITEM_FILE_PATH"], PRINT_DEBUG)
+        self.print_debug(100, character.Character.load_data(file_path, global_config["CHARACTER_FILE_PATH"]))
+        self.print_debug(100, item.Item.load_data(file_path, global_config["ITEM_FILE_PATH"]))
 
         # here load map data
         self.__load_map(file_path, global_config["MAP_FILE_PATH"])
@@ -65,8 +72,7 @@ class GameMain:
         # commands format: {teamID:{playerID:[{"command_tye":type, "target":
         # ID, "move_angle":angle, "view_angle":angle, "other":data}]}}
 
-        if PRINT_DEBUG >= 10:
-            print(commands)
+        self.print_debug(10, commands)
         for playerID, player_commands in commands.items():
             for command in player_commands:
                 command_type = command["command_type"]
@@ -82,8 +88,7 @@ class GameMain:
                 else:
                     # if command_type isn't correct, it will be ignored
                     continue
-        if PRINT_DEBUG >= 10:
-            print("unwrap_command successfully in turn", self.__turn)
+        self.print_debug(10, "unwrap_command successfully in turn", self.__turn)
         return
 
     def refresh(self):  # refresh a new frame according to the orders
@@ -138,8 +143,9 @@ class GameMain:
                             player.position = player.land_position
                             player.move_direction = None
                             player.move_speed = 0
-
-            pass
+                            self.print_debug(8, "in turn", self.__turn, "player", player.number, "reach the ground at",
+                                             player.position)
+            return
 
         # 1. judge and operate players' instructions
         instructions()
@@ -251,23 +257,21 @@ class GameMain:
 
                 # first judge if this vocation is legal
                 if not 0 <= new_vocation <= character.Character.VOCATION_COUNT:
-                    if object.PRINT_DEBUG:
-                        print("number", player_number, "choose illegal vocation", new_vocation)
+                    self.print_debug(1, "number", player_number, "choose illegal vocation", new_vocation)
+                    # if illegal, change it as zero
                     new_vocation = 0
 
                 # then ensure it hasn't been chosen, or I will give one
                 for player_check in self.number_to_team[team_number]:
                     if new_vocation == player_check.vocation:
-                        if object.PRINT_DEBUG:
-                            print("player", player_number, "choose repeated vocation", new_vocation, end='')
-                            print("(this log maybe repeated during trying to adjust vocation )")
+                        self.print_debug(1, "player", player_number, "choose repeated vocation", new_vocation, end='')
                         new_vocation = (new_vocation + 1) % character.Character.VOCATION_COUNT
+                        self.print_debug(1, ", now it's adjusted to", new_vocation)
 
                 new_player = character.Character(new_vocation)
                 new_player.land_position = position.Position(player_information['position'])
                 if not new_player.land_position.good(self.map_size):  # for illegal aim, auto fall in the end
-                    if object.PRINT_DEBUG:
-                        print("number", player_number, "choose illegal aim", new_player.land_position)
+                    self.print_debug(1, "number", player_number, "choose illegal aim", new_player.land_position)
                     new_player.land_position = self.__over_position
                 new_player.number = player_number
                 new_team.append(new_player)
@@ -277,24 +281,21 @@ class GameMain:
         def get_pedal(aim_position, number=-1):
             # these formulas are transformed from internet, I hope they're right
             aim_x, aim_y = aim_position.x, aim_position.y
-            a = position.delta_y(self.__start_position, self.__over_position)
-            b = - position.delta_x(self.__start_position, self.__over_position)
-            c = position.cross_product(self.__start_position, self.__over_position)
+            a = position.delta_y(self.__over_position, self.__start_position)
+            b = - position.delta_x(self.__over_position, self.__start_position)
+            c = position.cross_product(self.__over_position, self.__start_position)
             x = (b * b * aim_x - a * b * aim_y - a * c) / (a * a + b * b)
             y = (a * a * aim_y - a * b * aim_x - b * c) / (a * a + b * b)
             aim = position.Position(x, y)
             # if the pedal isn't in the map, player must jump at begin or end
             if x < 0 or y < 0 or x > self.map_size or y > self.map_size:
-                if object.PRINT_DEBUG >= 2:
-                    print("player", number, "aimed", aim_position, "pedal is", aim, end='')
+                self.print_debug(2, "player", number, "aimed", aim_position, "pedal is", aim, end='')
                 aim = self.__start_position if aim.distance2(self.__start_position) < aim.distance2(
                     self.__over_position) else self.__over_position
-                if object.PRINT_DEBUG >= 2:
-                    print("now it has been adjusted to", aim)
+                self.print_debug(2, "now it has been adjusted to", aim)
             return aim
 
-        if object.PRINT_DEBUG >= 9:
-            print('parachute:' + str(information))
+        self.print_debug(9, 'parachute:' + str(information))
 
         # here unwrap players' information and their land positions
         unwrap()
@@ -322,6 +323,11 @@ class GameMain:
         # the game can hold no more than half an hour
         # later, we will design poison circle, but now I can just use enforcement measure
         return self.__turn < 20 * 60 * 30
+
+    def print_debug(self, level, *args, sep=' ', end='\n', file=None):
+        # print debug log if current debug level is higher than message debug level
+        if self.__debug_level >= level:
+            print(*args, sep=sep, end=end, file=file)
 
 
 if __name__ == '__main__':

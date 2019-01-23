@@ -57,12 +57,10 @@ class Character(Object):                # the base class of all characters
         self.last_command = None   # save command to deal with information when CD is over
 
     @staticmethod
-    def load_data(parent_path, character_file_path, print_debug):
+    def load_data(parent_path, character_file_path):
         with open(parent_path + character_file_path, "r", encoding="utf-8") as file:
             config_data = load(file)
-            if print_debug >= 100:
-                print(config_data)
-        return
+        return config_data
 
     # I use some special function to simplify function in game main
     def is_flying(self):
