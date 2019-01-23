@@ -6,7 +6,8 @@ std::pair<Position, Position> route;
 
 int main(int argc, char *argv[])
 {
-    if(argc<=1){
+    if (argc <= 1)
+    {
         std::cerr << "Please enter the number of players" << std::endl;
         return 0;
     }
@@ -27,7 +28,13 @@ int main(int argc, char *argv[])
         manager.register_AI(i, play_game, player_receive);
     }
     route = logic.init();
-    manager.run();
+
+    for (size_t i = 0; i < 5; i++)
+    {
+        /* code */
+        manager.run();
+    }
+
     logic.parachute(manager.get_parachute_commands());
     dlclose(h);
     return 0;

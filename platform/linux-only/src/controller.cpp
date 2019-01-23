@@ -19,8 +19,8 @@ Controller::~Controller()
         if (_info[i].state != AI_STATE::UNUSED)
         {
             kill(_info[i].pid, SIGKILL);
-            close(_info[i].sender[1]);
-            close(_info[i].receiver[0]);
+            shmdt(_info[i].shm);
+            shmctl(_info[i].shmid, IPC_RMID, nullptr);
         }
     }
 }
@@ -71,34 +71,30 @@ void Controller::run()
         //execute some players each loop. The number is equal to the number of core(_used_core_count)
         for (int i = 0; i < _used_core_count && offset + i < _player_count; i++)
         {
+            std::cout << "enter run" << std::endl;
+            _command_action[offset + i].clear();
+            _command_parachute[offset + i].clear();
             switch (_info[offset + i].state)
             {
             case AI_STATE::UNUSED: //only first time
                 _used_cpuID = _total_core_count - _used_core_count + i;
-                if (pipe(_info[offset + i].sender) == -1 || pipe(_info[offset + i].receiver) == -1)
-                {
-                    std::cerr << "cannot create pipe";
-                    std::cin.get();
-                    std::cin.get();
-                    exit(1);
-                }
-                else
-                {
-                    fcntl(_info[offset + i].receiver[0], F_SETFL, O_NONBLOCK);
-                }
+                _info[offset + i].shmid = shmget(IPC_PRIVATE, sizeof(COMM_BLOCK), IPC_CREAT | 0600);
                 _info[offset + i].pid = fork();
                 if (_info[offset + i].pid > 0) //manager
                 {
+                    std::cout << "manager report" << std::endl;
                     _info[offset + i].state = AI_STATE::ACTIVE;
-                    close(_info[offset + i].sender[0]);
-                    close(_info[offset + i].receiver[1]);
-                    _send_for_server(offset + i, _serialize_route());
+                    _info[offset + i].shm = reinterpret_cast<COMM_BLOCK *>(shmat(_info[offset + i].shmid, nullptr, 0));
+                    _info[offset + i].shm->init();
+                    std::cout << "start send" << std::endl;
+                    _send_to_client(offset + i, _serialize_route());
+                    _info[offset + i].shm->set_inited();
                 }
                 else if (_info[offset + i].pid == 0) //player AI
                 {
+                    std::cout << "client report" << std::endl;
                     _playerID = offset + i;
-                    close(_info[offset + i].sender[1]);
-                    close(_info[offset + i].receiver[0]);
+                    _info[offset + i].shm = reinterpret_cast<COMM_BLOCK *>(shmat(_info[offset + i].shmid, nullptr, 0));
                     _run_player();
                     return;
                 }
@@ -111,8 +107,10 @@ void Controller::run()
                 }
                 break;
             case AI_STATE::SUSPENDED:
+                _send_to_client(offset + i, _serialize_infos(offset + i));
+                _send_to_client(offset + i, _serialize_route());
+
                 kill(_info[offset + i].pid, SIGCONT);
-                // write(_info[offset + i].sender[1], pState, sizeof(CState));
                 _info[offset + i].state = AI_STATE::ACTIVE;
                 break;
             default:
@@ -123,20 +121,53 @@ void Controller::run()
                 break;
             }
         }
-        //std::this_thread::sleep_for(std::chrono::milliseconds(TIMEOUT));
-        for (int i = 0; i < _used_core_count && offset + i < _player_count; i++)
-        {
+        std::cout << "enter waiting" << std::endl;
 
-            while (_info[offset + i].state == AI_STATE::ACTIVE)
+        bool all_finish = true;
+        timeval start, now;
+        gettimeofday(&start, nullptr);
+        do
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(CHECK_INTERVAL));
+            gettimeofday(&now, nullptr);
+            if (now.tv_sec > start.tv_sec || now.tv_usec - start.tv_usec > 1000 * TIMEOUT)
             {
-                sleep(10);
-                // kill(_info[offset + i].pid, SIGSTOP);
-                // _info[offset + i].state = AI_STATE::SUSPENDED;
+                std::cout << "TIMEOUT LOOP!!!!!" << std::endl;
+                break;
+            }
+            all_finish = true;
+            for (int i = 0; i < _used_core_count && offset + i < _player_count; ++i)
+            {
+                if (_info[offset + i].state == AI_STATE::ACTIVE)
+                {
+                    all_finish = false;
+                    break;
+                }
+            }
+        } while (!all_finish);
+        std::cout << "TIMEOUT!!!!!\n";
+        if (!all_finish)
+        {
+            for (int i = 0; i < _used_core_count && offset + i < _player_count; ++i)
+            {
+                if (_info[offset + i].state == AI_STATE::ACTIVE)
+                {
+                    //get all locks before stopping clients, avoid deadlocks(if the client has locked it but stopped)
+                    _info[offset + i].shm->lock_commands();
+                    _info[offset + i].shm->lock_infos();
+                    kill(_info[offset + i].pid, SIGSTOP);
+                    _info[offset + i].state = AI_STATE::SUSPENDED;
+                    _info[offset + i].shm->unlock_infos();
+                    _info[offset + i].shm->unlock_commands();
+                }
             }
         }
         for (int i = 0; i < _used_core_count && offset + i < _player_count; i++)
         {
-            _receive_for_server(offset + i);
+            _info[offset + i].shm->lock_commands();
+            _receive_from_client(offset + i);
+            _info[offset + i].shm->clear_commands();
+            _info[offset + i].shm->unlock_commands();
             ++_info[offset + i].turn;
         }
     }
@@ -150,10 +181,14 @@ void Controller::_run_player()
     CPU_ZERO(&cpuset);
     CPU_SET(_used_cpuID, &cpuset);
     sched_setaffinity(0, sizeof(cpuset), &cpuset);
+    while (!_info[_playerID].shm->is_init)
+        ;
     //player AI
     while (true)
     {
-        _send_for_client();
+        _info[_playerID].shm->lock_infos();
+        _receive_from_server();
+        _info[_playerID].shm->unlock_infos();
         if (_playerID >= 0 && _info[_playerID].player_func != nullptr)
         {
             (*_info[_playerID].player_func)();
@@ -162,7 +197,6 @@ void Controller::_run_player()
         raise(SIGSTOP);
     }
 }
-
 void Controller::notify_one_finish(pid_t pid)
 {
     if (!_check_init())
@@ -193,7 +227,7 @@ void Controller::register_AI(int playerID, AI_Func pfunc, Recv_Func precv)
     _info[playerID].recv_func = precv;
 }
 
-bool Controller::receive_for_client(bool is_jumping, const std::string &data)
+bool Controller::send_to_server(bool is_jumping, const std::string &data)
 {
     if (!_check_init())
         return false;
@@ -206,95 +240,49 @@ bool Controller::receive_for_client(bool is_jumping, const std::string &data)
         ++_info[_playerID].turn;
     }
     //send data to server
-    int size = data.size();
-    char *buffer = new char[size];
-    memcpy(buffer, data.data(), size);
-    if (write(_info[_playerID].receiver[1], &size, sizeof(size)) != sizeof(size))
-    {
-        delete[] buffer;
-        return false;
-    }
-    if (write(_info[_playerID].receiver[1], buffer, sizeof(char) * size) != sizeof(char) * size)
-    {
-        delete[] buffer;
-        return false;
-    }
-    delete[] buffer;
+    _info[_playerID].shm->lock_commands();
+    _info[_playerID].shm->add_command(data);
+    _info[_playerID].shm->unlock_commands();
     return true;
 }
 
-void Controller::_receive_for_server(int playerID)
+void Controller::_receive_from_client(int playerID)
 {
-    int size = 0;
-    int recv_size;
-    do
+    if (!_check_init())
+        return;
+    auto all = _info[playerID].shm->get_commands();
+    if (_info[playerID].turn == 0)
     {
-        recv_size = read(_info[playerID].receiver[0], &size, sizeof(size));
-        if (recv_size <= 0)
-            break;
-        char *buffer = new char[size];
-        //assume that it always read completely.
-        recv_size = read(_info[playerID].receiver[0], buffer, sizeof(char) * size);
-        if (recv_size <= 0)
-        {
-            delete[] buffer;
-            break;
-        }
-        std::string s;
-        s.append(buffer, size);
-        if (_info[playerID].turn == 0)
+        for (auto &s : all)
         {
             _parse_parachute(s, playerID);
         }
-        else
+    }
+    else
+    {
+        for (auto &s : all)
         {
             _parse_commands(s, playerID);
         }
-        delete[] buffer;
-    } while (recv_size > 0);
+    }
 }
 
-void Controller::_send_for_server(int playerID, const std::string &data)
+void Controller::_send_to_client(int playerID, const std::string &data)
 {
     if (!_check_init())
         return;
     //send data to server
-    int size = data.size();
-    char *buffer = new char[size];
-    memcpy(buffer, data.data(), size);
-    if (write(_info[playerID].sender[1], &size, sizeof(size)) != sizeof(size))
-    {
-        delete[] buffer;
-        return;
-    }
-    if (write(_info[playerID].sender[1], buffer, sizeof(char) * size) != sizeof(char) * size)
-    {
-        delete[] buffer;
-        return;
-    }
-    delete[] buffer;
+    _info[playerID].shm->lock_infos();
+    _info[playerID].shm->set_infos(data);
+    _info[playerID].shm->turn = _info[playerID].turn;
+    _info[playerID].shm->unlock_infos();
     return;
 }
 
-void Controller::_send_for_client()
+void Controller::_receive_from_server()
 {
-    int size = 0;
-    int recv_size;
-    recv_size = read(_info[_playerID].sender[0], &size, sizeof(size));
-    if (recv_size <= 0)
-        return;
-    char *buffer = new char[size];
-    //assume that it always read completely.
-    recv_size = read(_info[_playerID].sender[0], buffer, sizeof(char) * size);
-    if (recv_size <= 0)
-    {
-        delete[] buffer;
-        return;
-    }
-    std::string s;
-    s.append(buffer, size);
-    (*_info[_playerID].recv_func)(_info[_playerID].turn == 0, s);
-    delete[] buffer;
+    _info[_playerID].turn = _info[_playerID].shm->turn;
+    (*_info[_playerID].recv_func)(_info[_playerID].turn == 0, _info[_playerID].shm->get_infos());
 }
 
 bool Controller::_parse_parachute(const std::string &data, int playerID)
@@ -378,6 +366,20 @@ std::string Controller::_serialize_route()
     return sender.SerializeAsString();
 }
 
+std::string Controller::_serialize_infos(int playerID)
+{
+    comm_platform::PlayerInfo sender;
+    sender.set_player_id(playerID);
+    //........
+    //
+    //
+    // L O G I C
+    //
+    //
+    //.......
+    return sender.SerializeAsString();
+}
+
 std::map<int, COMMAND_PARACHUTE> Controller::get_parachute_commands()
 {
     std::map<int, COMMAND_PARACHUTE> m;
@@ -395,6 +397,6 @@ std::map<int, COMMAND_PARACHUTE> Controller::get_parachute_commands()
 
 bool controller_receive(bool is_jumping, const std::string data)
 {
-    std::cout << "client recvive" << data << std::endl;
-    return manager.receive_for_client(is_jumping, data);
+    std::cout << "client receive" << data << std::endl;
+    return manager.send_to_server(is_jumping, data);
 }

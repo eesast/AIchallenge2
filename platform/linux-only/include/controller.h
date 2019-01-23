@@ -9,9 +9,14 @@
 #include <chrono>
 #include <thread>
 #include <fcntl.h>
+#include <sys/shm.h>
+#include <sys/ipc.h>
+#include <sys/time.h>
 #include "communication_platform.pb.h"
+#include "comm_block.h"
 
 #define manager (Controller::get_instance())
+
 
 void notify_child_finish(int, siginfo_t *info, void *);
 
@@ -25,14 +30,15 @@ private:
     ACTIVE
   };
 
+  const int CHECK_INTERVAL = 10; //before TIMEOUT, check if all finish per CHECK_INTERVAl(ms);
+
   struct AI_INFO
   {
     pid_t pid = 0;
     AI_STATE state = AI_STATE::UNUSED;
-    // pipe pipe[0] for reading pipe[1] for writing
-    int sender[2] = {0, 0};   //server->client
-    int receiver[2] = {0, 0}; //client->server
     int turn = 0;             //turn of game
+    int shmid;
+    COMM_BLOCK *shm = nullptr;
     AI_Func player_func = nullptr;
     Recv_Func recv_func = nullptr;
   };
@@ -67,12 +73,12 @@ private:
   //communication
 public:
   //only work in client
-  bool receive_for_client(bool is_jumping, const std::string &data);
+  bool send_to_server(bool is_jumping, const std::string &data);
 
 private:
-  void _receive_for_server(int playerID);
-  void _send_for_server(int playerID, const std::string &data);
-  void _send_for_client();
+  void _receive_from_client(int playerID);  //assume that the lock is locked
+  void _send_to_client(int playerID, const std::string &data);
+  void _receive_from_server(); //assume that the lock is locked
   //return true on success.
   bool _parse_parachute(const std::string &data, int playerID);
   bool _parse_commands(const std::string &data, int playerID);
@@ -83,6 +89,7 @@ public:
 
 private:
   std::string _serialize_route();
+  std::string _serialize_infos(int playerID);
 
 private:
   //singleton
