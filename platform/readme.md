@@ -30,6 +30,7 @@
 2. 选手程序生成.so文件。
 3. Linux平台下，选手进程与主进程都包含类Controller，可以被认为是C-S结构，两者之间通过共享内存通信。
 4. client中的Controller会完成与选手AI的信息交互。
+5. Server采用近似忙等待的方法检查client是否执行结束，以加快整体速度，具体而言，server每隔CHECK_INTERVAL(Controller中的常量，ms)检查一次client状况并决定是否继续，**这可能会影响同一核心下的AI程序，暂未做核心区分**
 
 ---
 ## 问题
