@@ -21,11 +21,10 @@ class Item(Object):   # class for each weapon and goods
         pass
 
     @staticmethod
-    def load_data(parent_path, item_file_path, print_debug):
+    def load_data(parent_path, item_file_path):
         with open(parent_path + item_file_path, "r", encoding="utf-8") as file:
             all_data = load(file)
-            if print_debug >= 100:
-                print(all_data)
+        return all_data
 
     # enum all props' name
     WEAPON_HANDGUN = 1
