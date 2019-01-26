@@ -21,11 +21,11 @@ PRINT_DEBUG = 8
 
 class GameMain:
     # if not specified, platform needn't this class's members
+    map_size = 1000
 
     def __init__(self):
 
         # it's more like a define instead of an initialization
-        self.map_size = 1000
         self.die_order = []  # save the player's dying order
         self.map_items = [[[] for i in range(16)] for j in range(16)]  # try to divide map into 256 parts
 

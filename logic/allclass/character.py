@@ -44,17 +44,16 @@ class Character(Object):                # the base class of all characters
         self.heal_point = self.__heal_point_limit       # current HP
         self.bag = []
         self.status = self.RELAX
-
-        # initialize inherit variables
-        self.move_direction = None      # moving direction
-        self.move_speed = 1.2           # move distance per second
-        self.move_cd = 0                # move again in move_cd frames
+        self.move_cd = 0                # move finished after move_cd frames
+        self.shoot_cd = 0               # shoot finished after move_cd frames
         self.vocation = vocation            # save the Vocation
+
+        # initialize some inherited variables
+        self.move_speed = 1.2           # move distance per second
 
         # platform needn't these variables
         self.jump_position = None  # it means where he jump out airplane
         self.land_position = None  # it means where he want to land
-        self.last_command = None   # save command to deal with information when CD is over
 
     @staticmethod
     def load_data(parent_path, character_file_path):
@@ -72,9 +71,10 @@ class Character(Object):                # the base class of all characters
     def move(self):
         # without move direction, needn't move
         if self.move_direction is None:
-            return
+            return None
         # warning: it's not enough, must justify other objects, now just for test
         self.position += self.move_direction * self.move_speed
+        return True
 
     def command_status_legal(self, command_type):
         if command_type == MOVE:
