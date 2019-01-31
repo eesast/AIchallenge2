@@ -9,7 +9,7 @@ class Item(Object):   # class for each weapon and goods
     EQUIP = 0
     GOODS = 1
 
-    # save all props data
+    # save all items' data
     all_data = []
 
     def __init__(self, item_type):

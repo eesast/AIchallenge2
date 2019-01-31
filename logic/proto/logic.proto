@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package comm_logic;
+
+message Pos
+{
+	double x = 1;
+	double y = 2;
+}
+
+// some basic information to be sent in the beginning
+message PlayerBasicInfo
+{
+	int32 id = 1;
+	int32 vocation = 2;
+	int32 HP_max = 3;
+	// maybe here should be more information
+}
+
+// for players in the sky
+message PlayerParachuteInfo
+{
+	int32 id = 1;
+	int32 HP = 2;// for interface, integer HP is enough
+	double face_direction = 3;
+	Pos leave_pos = 4;
+	Pos land_pos = 5;
+	Pos current_pos = 6;
+}
+
+// for players on the groud
+message PlayerInfo
+{
+	int32 id = 1;
+	int32 HP = 2;
+	int32 weapon = 3;
+	int32 armor = 4;
+	Pos pos = 5;
+	double face_direction = 6;
+	double move_direction = 7;
+}
+
+message Item
+{
+	int32 id = 1;
+	int32 type = 2;
+	Pos pos = 3;
+}
+
+// all bullets and shells
+message Bullet
+{
+	int32 id = 1;
+	int32 type = 2;
+	Pos emit_pos = 3;
+	Pos current_pos = 4;
+	double direction = 5;
+}
+
+// only used in the beginning
+message InitialInfo
+{
+	Pos start = 1;
+	Pos over = 2;
+	repeated PlayerBasicInfo players = 3;
+}
+
+// created in each frame
+message Frame
+{
+	int32 frame = 1;
+	Pos plane = 2;
+	repeated PlayerParachuteInfo parachutists = 3;
+	repeated PlayerInfo players = 4;
+	repeated Item items = 5;
+	repeated Bullet bullets = 6;
+}
+
+   

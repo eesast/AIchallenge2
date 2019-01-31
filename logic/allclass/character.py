@@ -15,6 +15,8 @@ class Character(Object):                # the base class of all characters
     AIRPLANE_SPEED = 5                  # flying speed, will load from file
     JUMPING_SPEED = 1                   # jumping speed, also load from file
 
+    all_characters = {}                 # key: id, value: all characters' entities
+
     # enum for vocation
     MEDIC = 0
     ENGINEER = 1
@@ -56,10 +58,19 @@ class Character(Object):                # the base class of all characters
         self.land_position = None  # it means where he want to land
 
     @staticmethod
+    def __getitem__(self, item):
+        return Character.all_characters[item]
+
+    @staticmethod
     def load_data(parent_path, character_file_path):
         with open(parent_path + character_file_path, "r", encoding="utf-8") as file:
             config_data = load(file)
         return config_data
+
+    @staticmethod
+    def add_character(new_id, vocation):
+        Character.all_characters[new_id] = Character(vocation)
+        return
 
     # I use some special function to simplify function in game main
     def is_flying(self):

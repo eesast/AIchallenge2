@@ -21,11 +21,17 @@ This file is for logic to organize the whole project.
 
 ### `GameMain`
 
+here is the main class for the whole game, and it is a singleton class.
+
 #### attribute
+
+remember: all containers here consist of just id, while the entities exist as class's static members.
 
 ##### static
 
-`map_size`:the length of edge of the map
+`map_size`: the length of edge of the map
+
+`playback_file_path`: the path for playback file
 
 ##### dynamic
 
@@ -56,6 +62,8 @@ This file is for logic to organize the whole project.
 `set_debug_level`:set debug level, mainly for platform
 
 `load_data`:load config file, character data file, item data file and map file
+
+`write_playback`: write a proto object into playback file
 
 `unwrap_commands`:after receive commands from platform, use this method to unwrap them
 
@@ -141,21 +149,13 @@ generally speaking, this class has two usage, as a position in the map or as a v
 
 also, I use some other functions to deal with two postioin
 
-##### delta_y
+`delta_y`:get the delta of y of two position
 
-get the delta of y of two position
+`delta_x`:get the delta of x of two position
 
-##### delta_x
+`dot_product`:get the dot product of two vector
 
-get the delta of x of two postion
-
-##### dot_product
-
-get the dot product of two vector
-
-##### cross_product
-
-get the cross product of two vector
+`cross_product`:get the cross product of two vector
 
 ### `Character`
 
@@ -226,6 +226,8 @@ inherited from Object(CIRCLE), define player's entity
 
 ##### static
 
+`__getitem__`: overload [] to get the number of `all_characters` by id
+
 `load_data`: load character data file
 
 ##### dynamic
@@ -284,7 +286,7 @@ inherited from Object(CIRCLE), define player's entity
 
 ### `Item`
 
-##### inherited from Object, the class of all pick-up in the map
+inherited from Object, the class of all pick-up in the map
 
 ##### enumeration
 

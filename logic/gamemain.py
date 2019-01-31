@@ -1,8 +1,11 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 from allclass import *
+import proto.logic_pb2 as pb2
 from random import randrange
 from json import load
+import time
+import struct
 
 #   here define a debug level variable to debug print-oriented
 #   remember: here is just a initial level for logic
@@ -18,10 +21,10 @@ PRINT_DEBUG = 8
 #   level 10:
 #   level 100: will give all information you can imagine, including config file
 
-
 class GameMain:
     # if not specified, platform needn't this class's members
     map_size = 1000
+    playback_file_path = None
 
     def __init__(self):
 
@@ -62,6 +65,16 @@ class GameMain:
 
         # here load map data
         self.__load_map(file_path, global_config["MAP_FILE_PATH"])
+
+        # for play back file
+        GameMain.playback_file_path = global_config["PLAYBACK_FILE_PATH"] + time.strftime("%Y%m%d_%H'%M'%S") + ".pb"
+        open(GameMain.playback_file_path, 'wb').close()     # create the new playback file
+
+    def write_playback(self, pb2_data):
+        data = pb2_data.SerializeToString()
+        with open(self.playback_file_path, 'ab') as fp:
+            fp.write(struct.pack('i', data))
+            fp.write(data)
 
     def unwrap_commands(self, commands):
         # here unwrap all players' commands
@@ -295,6 +308,13 @@ class GameMain:
                 self.print_debug(2, "now it has been adjusted to", aim)
             return aim
 
+        def get_proto_data():
+            data = pb2.InitialInfo()
+            data.start.x, data.start.y = self.__start_position.x, self.__start_position.y
+            data.over.x, data.over.y = self.__over_position.x, self.__over_position.y
+
+            return data
+
         self.print_debug(9, 'parachute:' + str(information))
 
         # here unwrap players' information and their land positions
@@ -315,6 +335,10 @@ class GameMain:
                 player.face_direction = player.move_direction
                 # meanwhile deal with information list
                 self.all_info.append(info.Information(player))
+
+        # output data for interface
+        self.write_playback(get_proto_data())
+
         # now everything down, main operation starts
         # return first turn's information
         return self.refresh()
