@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package comm_logic;
 
+// all direction is a number in [0,360)
+
 message Pos
 {
 	double x = 1;
@@ -12,8 +14,9 @@ message Pos
 message PlayerBasicInfo
 {
 	int32 id = 1;
-	int32 vocation = 2;
-	int32 HP_max = 3;
+	int32 team = 2;
+	int32 vocation = 3;
+	int32 HP_max = 4;
 	// maybe here should be more information
 }
 
@@ -23,9 +26,9 @@ message PlayerParachuteInfo
 	int32 id = 1;
 	int32 HP = 2;// for interface, integer HP is enough
 	double face_direction = 3;
-	Pos leave_pos = 4;
-	Pos land_pos = 5;
-	Pos current_pos = 6;
+	Pos pos = 4;
+	Pos jump_pos = 5;
+	Pos land_pos = 6;
 }
 
 // for players on the groud
@@ -33,11 +36,10 @@ message PlayerInfo
 {
 	int32 id = 1;
 	int32 HP = 2;
-	int32 weapon = 3;
-	int32 armor = 4;
-	Pos pos = 5;
+	Pos pos = 3;
+	int32 weapon = 4;
+	int32 armor = 5;
 	double face_direction = 6;
-	double move_direction = 7;
 }
 
 message Item
@@ -66,14 +68,13 @@ message InitialInfo
 }
 
 // created in each frame
-message Frame
+message FrameInfo
 {
 	int32 frame = 1;
-	Pos plane = 2;
-	repeated PlayerParachuteInfo parachutists = 3;
-	repeated PlayerInfo players = 4;
-	repeated Item items = 5;
-	repeated Bullet bullets = 6;
+	repeated PlayerParachuteInfo parachutists = 2;
+	repeated PlayerInfo players = 3;
+	repeated Item items = 4;
+	repeated Bullet bullets = 5;
 }
 
    

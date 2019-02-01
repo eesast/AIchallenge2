@@ -48,7 +48,8 @@ class Character(Object):                # the base class of all characters
         self.status = self.RELAX
         self.move_cd = 0                # move finished after move_cd frames
         self.shoot_cd = 0               # shoot finished after move_cd frames
-        self.vocation = vocation            # save the Vocation
+        self.vocation = vocation        # save the Vocation
+        self.team = -1                  # team id
 
         # initialize some inherited variables
         self.move_speed = 1.2           # move distance per second
@@ -57,9 +58,9 @@ class Character(Object):                # the base class of all characters
         self.jump_position = None  # it means where he jump out airplane
         self.land_position = None  # it means where he want to land
 
-    @staticmethod
-    def __getitem__(self, item):
-        return Character.all_characters[item]
+        # these variables are just for interface
+        self.last_weapon = -1
+        self.best_armor = -1
 
     @staticmethod
     def load_data(parent_path, character_file_path):
@@ -69,8 +70,12 @@ class Character(Object):                # the base class of all characters
 
     @staticmethod
     def add_character(new_id, vocation):
+        if Character.all_characters.get(new_id, None):
+            # this bug is logically impossible
+            raise Exception("repeated character id!")
         Character.all_characters[new_id] = Character(vocation)
-        return
+        Character.all_characters[new_id].number = new_id
+        return Character.all_characters[new_id]
 
     # I use some special function to simplify function in game main
     def is_flying(self):
@@ -78,6 +83,9 @@ class Character(Object):                # the base class of all characters
 
     def is_jumping(self):
         return self.status == self.JUMPING
+
+    def is_alive(self):
+        return self.status != Character.REAL_DEAD
 
     def move(self):
         # without move direction, needn't move

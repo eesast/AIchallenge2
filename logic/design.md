@@ -37,9 +37,11 @@ remember: all containers here consist of just id, while the entities exist as cl
 
 `die_order`:save the order of players' death by player id
 
-`map_items`:save all items in the map by object number
+`map_items`:save id for all items in the map by multiway tree
 
-`all_bullets`:save all bullets(mainly shells) in the map
+`all_players`: save all teams as list, in which are all players' pointers
+
+`all_bullets`:save id for all bullets(mainly shells) in the map
 
 `all_sounds`:save all sounds(including footstep and guns) in the map
 
@@ -67,15 +69,15 @@ remember: all containers here consist of just id, while the entities exist as cl
 
 `unwrap_commands`:after receive commands from platform, use this method to unwrap them
 
-`refresh`:refresh game in each turn. Here are other functions, including instructions, move, attack, damage, die, items, radio, update for all eight stages
+`refresh`:refresh game in each turn. Here are other functions, including `instructions`, `move`, `attack`, `damage`,` die`,` items`, `radio`,` update` for all eight stages, as well as `get_proto_data` to get `FrameInfo` data
 
 `__load_map`:load map data from file by interface
 
 `alive_teams`: judge number of alive teams in the map to judge if game over
 
-`generate_route`:generate the route of plane, here are other two functions, `unwrap` to unwrap player initial information and `get_pedal` to get the pedal 
+`generate_route`:generate the route of plane, here are other two functions, `random_route` to get a route and return start position and over position, `get_position` use a parameter as distance to get a position, whose algorithm is to find along the edge of map anti-clock-wisely for given distance
 
-`parachute`:deal with parachute event
+`parachute`:deal with parachute event, here are other three functions, `unwrap` to unwrap player initial information and `get_pedal` to get the pedal , `get_proto_data` to get `InitialInfo` data for interface
 
 `anti_infinite_loop`:judge if the game have lasted too long
 
@@ -145,6 +147,8 @@ generally speaking, this class has two usage, as a position in the map or as a v
 
 `good`:judge if this position is in the map
 
+`get angle`: get angle in [0, 360) for the direction of the vector
+
 #### other function
 
 also, I use some other functions to deal with two postioin
@@ -192,6 +196,8 @@ inherited from Object(CIRCLE), define player's entity
 
 `all_data`: load data from data file
 
+`all_characters`: a dictionary to save all characters' entities by id-entity pair
+
 `AIRLANE_SPEED`: the speed of airplane
 
 `JUMPING_SPEED`: the speed of parachuting
@@ -222,11 +228,13 @@ inherited from Object(CIRCLE), define player's entity
 
 `land_position`: the position of the player landing
 
+`last_weapon`: save the last used/picked weapon's id
+
+`best_armor`: save the best armor's id on the body
+
 #### method
 
 ##### static
-
-`__getitem__`: overload [] to get the number of `all_characters` by id
 
 `load_data`: load character data file
 
@@ -235,6 +243,8 @@ inherited from Object(CIRCLE), define player's entity
 `is_flying`: judge if the player is on the plane
 
 `is_jumping`: judge if the player is jumping to the land
+
+`is_alive`: judge if the player is still alive(not real dead)
 
 `move`: deal with player move event, it will be complex, hasn't started to code yet
 
