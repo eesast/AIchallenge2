@@ -15,6 +15,8 @@ class Character(Object):                # the base class of all characters
     AIRPLANE_SPEED = 5                  # flying speed, will load from file
     JUMPING_SPEED = 1                   # jumping speed, also load from file
 
+    all_characters = {}                 # key: id, value: all characters' entities
+
     # enum for vocation
     MEDIC = 0
     ENGINEER = 1
@@ -44,23 +46,36 @@ class Character(Object):                # the base class of all characters
         self.heal_point = self.__heal_point_limit       # current HP
         self.bag = []
         self.status = self.RELAX
+        self.move_cd = 0                # move finished after move_cd frames
+        self.shoot_cd = 0               # shoot finished after move_cd frames
+        self.vocation = vocation        # save the Vocation
+        self.team = -1                  # team id
 
-        # initialize inherit variables
-        self.move_direction = None      # moving direction
+        # initialize some inherited variables
         self.move_speed = 1.2           # move distance per second
-        self.move_cd = 0                # move again in move_cd frames
-        self.vocation = vocation            # save the Vocation
 
         # platform needn't these variables
         self.jump_position = None  # it means where he jump out airplane
         self.land_position = None  # it means where he want to land
-        self.last_command = None   # save command to deal with information when CD is over
+
+        # these variables are just for interface
+        self.last_weapon = -1
+        self.best_armor = -1
 
     @staticmethod
     def load_data(parent_path, character_file_path):
         with open(parent_path + character_file_path, "r", encoding="utf-8") as file:
             config_data = load(file)
         return config_data
+
+    @staticmethod
+    def add_character(new_id, vocation):
+        if Character.all_characters.get(new_id, None):
+            # this bug is logically impossible
+            raise Exception("repeated character id!")
+        Character.all_characters[new_id] = Character(vocation)
+        Character.all_characters[new_id].number = new_id
+        return Character.all_characters[new_id]
 
     # I use some special function to simplify function in game main
     def is_flying(self):
@@ -69,12 +84,16 @@ class Character(Object):                # the base class of all characters
     def is_jumping(self):
         return self.status == self.JUMPING
 
+    def is_alive(self):
+        return self.status != Character.REAL_DEAD
+
     def move(self):
         # without move direction, needn't move
         if self.move_direction is None:
-            return
+            return None
         # warning: it's not enough, must justify other objects, now just for test
         self.position += self.move_direction * self.move_speed
+        return True
 
     def command_status_legal(self, command_type):
         if command_type == MOVE:

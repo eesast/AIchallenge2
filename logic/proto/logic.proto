@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package comm_logic;
+
+// all direction is a number in [0,360)
+
+message Pos
+{
+	double x = 1;
+	double y = 2;
+}
+
+// some basic information to be sent in the beginning
+message PlayerBasicInfo
+{
+	int32 id = 1;
+	int32 team = 2;
+	int32 vocation = 3;
+	int32 HP_max = 4;
+	// maybe here should be more information
+}
+
+// for players in the sky
+message PlayerParachuteInfo
+{
+	int32 id = 1;
+	int32 HP = 2;// for interface, integer HP is enough
+	double face_direction = 3;
+	Pos pos = 4;
+	Pos jump_pos = 5;
+	Pos land_pos = 6;
+}
+
+// for players on the groud
+message PlayerInfo
+{
+	int32 id = 1;
+	int32 HP = 2;
+	Pos pos = 3;
+	int32 weapon = 4;
+	int32 armor = 5;
+	double face_direction = 6;
+}
+
+message Item
+{
+	int32 id = 1;
+	int32 type = 2;
+	Pos pos = 3;
+}
+
+// all bullets and shells
+message Bullet
+{
+	int32 id = 1;
+	int32 type = 2;
+	Pos emit_pos = 3;
+	Pos current_pos = 4;
+	double direction = 5;
+}
+
+// only used in the beginning
+message InitialInfo
+{
+	Pos start = 1;
+	Pos over = 2;
+	repeated PlayerBasicInfo players = 3;
+}
+
+// created in each frame
+message FrameInfo
+{
+	int32 frame = 1;
+	repeated PlayerParachuteInfo parachutists = 2;
+	repeated PlayerInfo players = 3;
+	repeated Item items = 4;
+	repeated Bullet bullets = 5;
+}
+
+   

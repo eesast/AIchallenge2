@@ -5,18 +5,18 @@ from json import load
 
 
 class Item(Object):   # class for each weapon and goods
-    # two name for different prop types
-    WEAPON = 0
+    # two name for different item types
+    EQUIP = 0
     GOODS = 1
 
-    # save all props data
+    # save all items' data
     all_data = []
 
-    def __init__(self, prop_type):
+    def __init__(self, item_type):
         super().__init__()
         # some important characteristics
         self.durability = None      # using durability
-        self.prop_type = prop_type  # 0 means weapon and 1 means goods
+        self.item_type = item_type  # 0 means equip and 1 means goods
         self.damage = None          # including real damage and heal(negative number)
         pass
 
@@ -27,7 +27,7 @@ class Item(Object):   # class for each weapon and goods
         return all_data
 
     # enum all props' name
-    WEAPON_HANDGUN = 1
+    EQUIP_CHARGER = 1
     GOODS_CHARGER = 51
 
 

@@ -61,6 +61,11 @@ class Position:     # this is a class for position and reload some operator
             size_y = size_x
         return 0 <= self.x <= size_x and 0 <= self.y <= size_y
 
+    # it should be in [0,360)
+    def get_angle(self):
+        angle = atan2(self.y, self.x) * 180 / pi
+        return angle if angle >= 0 else angle + 360
+
 
 def delta_y(position1, position2):
     return position1.y - position2.y
