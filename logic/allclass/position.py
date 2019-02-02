@@ -4,7 +4,7 @@ from math import *
 
 
 class Position:     # this is a class for position and reload some operator
-    def __init__(self, x=0., y=0.):
+    def __init__(self, x, y=0.):
         if isinstance(x, Position):
             self.x, self.y = x.x, x.y
         elif isinstance(x, tuple):
@@ -45,7 +45,7 @@ class Position:     # this is a class for position and reload some operator
         return (self - other_position).length()
 
     def distance2(self, other_position):    # distance's square
-        return (self-other_position).length2()
+        return (self - other_position).length2()
 
     def unitize(self, other_position=0):
         if other_position == 0:     # without other position, unitize itself and return self
@@ -62,9 +62,25 @@ class Position:     # this is a class for position and reload some operator
         return 0 <= self.x <= size_x and 0 <= self.y <= size_y
 
     # it should be in [0,360)
-    def get_angle(self):
-        angle = atan2(self.y, self.x) * 180 / pi
-        return angle if angle >= 0 else angle + 360
+    def get_angle(self, other=None):
+        if not other:
+            # get the angle of the vector itself
+            angle = atan2(self.y, self.x) * 180 / pi
+            return angle if angle >= 0 else angle + 360
+        if not isinstance(other, Position):
+            raise Exception("wrong type of position!")
+        # get the angle for two vector
+        theta = acos(self * other/(abs(self) * abs(other))) * 180 / pi
+        if cross_product(self, other) < 0:
+            theta = 360 - theta
+        return theta
+
+    def get_polar_position(self, direction, other):
+        if not (isinstance(other, Position) and isinstance(direction, Position)):
+            raise Exception("wrong type of position!")
+        distance = self.distance(other)
+        theta = direction.get_angle(other - self)
+        return distance, theta
 
 
 def delta_y(position1, position2):

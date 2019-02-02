@@ -2,9 +2,13 @@
 
 ### 文件列表
 
-`logic.proto`:文件规定了所有要写入回放文件的数据内容。
+`interface.proto`:文件规定了所有要写入回放文件的数据内容。
 
-`logic_pb2.py`:由`logic.proto`文件转化得到的脚本，提供相关数据类型和接口。
+`interface_pb2.py`:由`interface.proto`文件转化得到的脚本，提供相关数据类型和接口。
+
+`platform.proto`:文件规定了逻辑回传给平台的数据格式。
+
+`platform_pb2.py`:由`platform.proto`转化得到的脚本，提供接口。
 
 ### 使用说明
 
@@ -20,4 +24,4 @@
 
 #### 平台通信
 
-直接调用接口每回合打包为`PlayerInfo`后集成为字典并回传。
+每次`refresh`时直接调用接口将平台所需信息打包为`PlayerInfo`后集成为字典(player_id-`PlayerInfo`)并回传。
