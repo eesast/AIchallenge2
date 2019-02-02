@@ -87,8 +87,8 @@ class GameMain:
         self.all_commands["shoot"].clear()
         self.all_commands["pickup"].clear()
         self.all_commands["radio"].clear()
-        # commands format: {teamID:{playerID:[{"command_tye":type, "target":
-        # ID, "move_angle":angle, "view_angle":angle, "other":data}]}}
+        # commands format: { playerID: [{"command_tye":type, "target":
+        # ID, "move_angle": angle, "view_angle": angle, "other": data}]}}
 
         self.print_debug(10, commands)
         for playerID, player_commands in commands.items():
@@ -295,7 +295,7 @@ class GameMain:
         def items():
             pass
 
-        def radio():
+        def noise():
             pass
 
         def update():
@@ -369,8 +369,8 @@ class GameMain:
         # 6. refresh items information
         items()
 
-        # 7. refresh radio voice
-        radio()
+        # 7. refresh radio and other sound
+        noise()
 
         # 8. update player's view, cd and etc
         update()
@@ -439,6 +439,7 @@ class GameMain:
                 new_sound = data.sounds.add()
                 new_sound.sender, new_sound.delay, new_sound.parameter = arrived_sound
 
+        self.print_debug(50, "return", len(all_data), "players' data back to platform")
         return all_data
 
     def anti_infinite_loop(self):

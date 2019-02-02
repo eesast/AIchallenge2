@@ -69,6 +69,8 @@ remember: all containers here consist of just id, while the entities exist as cl
 
 `unwrap_commands`:after receive commands from platform, use this method to unwrap them
 
+`refresh`:refresh game in each turn. Here are other functions, including `instructions`, `move`, `attack`, `damage`,` die`,` items`, `noise`,` update` for all eight stages, as well as `get_proto_data` to get `FrameInfo` data
+
 `__load_map`:load map data from file by interface
 
 `alive_teams`: judge number of alive teams in the map to judge if game over
@@ -76,10 +78,6 @@ remember: all containers here consist of just id, while the entities exist as cl
 `generate_route`:generate the route of plane, here are other two functions, `random_route` to get a route and return start position and over position, `get_position` use a parameter as distance to get a position, whose algorithm is to find along the edge of map anti-clock-wisely for given distance
 
 `parachute`:deal with parachute event, here are other three functions, `unwrap` to unwrap player initial information and `get_pedal` to get the pedal , `get_proto_data` to get `InitialInfo` data for interface
-
-`refresh`:refresh game in each turn. Here are other functions, including `instructions`, `move`, `attack`, `damage`,` die`,` items`, `radio`,` update` for all eight stages, as well as `get_proto_data` to get `FrameInfo` data
-
-`pack_for_platform`: pack data as proto for platform 
 
 `anti_infinite_loop`:judge if the game have lasted too long
 
@@ -300,7 +298,7 @@ inherited from Object(CIRCLE), define player's entity
 
 inherited from Object, the class of all pick-up in the map
 
-#### enumeration
+##### enumeration
 
 ##### type
 
@@ -313,15 +311,17 @@ inherited from Object, the class of all pick-up in the map
 
 `all_data`: all items data, loaded from data file
 
-`all_items`: a dictionary to save all items' entities
-
 ##### dynamic
-
-`item_type`: the type of item, should be enumeration type
 
 `durability`: using durability, for vest it means how many damage it can block, for WEAPON it means bullets, and for GOODS it means rest using times
 
 `prop_type`: it should be type enumeration
+
+`damage`: for weapons, it means real damage or heal number
+
+`owner`: the id of player who owns it
+
+`param`: a parameter if needed
 
 #### method
 
