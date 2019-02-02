@@ -11,6 +11,9 @@ class Information:
         self.vision = []
         self.sound = []
 
+    def update(self):
+        pass
+
     def clear(self):
         self.vision.clear()
         self.sound.clear()
