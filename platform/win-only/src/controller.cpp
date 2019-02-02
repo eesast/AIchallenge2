@@ -4,8 +4,56 @@ extern std::pair<Position, Position> route;
 
 Controller Controller::_instance;
 
-void Controller::init(int player_count, DWORD used_core_count)
+void Controller::init(const std::string &path, DWORD used_core_count)
 {
+    using namespace std::filesystem;
+    auto PAT = std::regex(R"((AI_(\d*)_(\d*)).dll)", std::regex_constants::ECMAScript | std::regex_constants::icase);
+    std::smatch m;
+    int player_count = 0;
+    for (const auto &entry : directory_iterator(path))
+    {
+        if (entry.is_regular_file())
+        {
+            auto name = entry.path().filename().string();
+            if (std::regex_match(name, m, PAT) && m.size() == 4)
+            {
+                int team = atoi(m[2].str().c_str());
+                int number = atoi(m[3].str().c_str());
+                if (0 <= team && team <= 15 && 0 <= number && number <= 3)
+                {
+                    _info[player_count].team = team;
+                    std::string fullpath = entry.path().root_directory().string() + m[1].str();
+                    _info[player_count].lib = LoadLibrary(fullpath.c_str());
+                    if (_info[player_count].lib == NULL)
+                    {
+                        std::cerr << "LoadLibrary " + fullpath + " error:" << GetLastError() << std::endl;
+                        continue;
+                    }
+                    else
+                    {
+                        auto bind_api = (void(*)(Player_Send_Func))GetProcAddress(_info[player_count].lib, "bind_api");
+                        _info[player_count].player_func = (AI_Func)GetProcAddress(_info[player_count].lib, "play_game");
+                        _info[player_count].recv_func = (Recv_Func)GetProcAddress(_info[player_count].lib, "player_receive");
+                        if (bind_api == NULL || _info[player_count].player_func == NULL || _info[player_count].recv_func == NULL)
+                        {
+                            std::cerr << "Cannot Get AI API from " << _info[player_count].lib << " Error Code:" << GetLastError() << std::endl;
+                            continue;
+                        }
+                        else
+                        {
+                            (*bind_api)(&controller_receive);
+                            ++player_count;
+                            std::cout << "Load AI " << fullpath << " as team" << team << std::endl;
+                        }
+                    }
+                }
+                else
+                {
+                    std::cerr << "Wrong filename:" << m[0] << std::endl;
+                }
+            }
+        }
+    }
     _player_count = player_count;
     _waiting_thread = nullptr;
     //get core number
@@ -43,6 +91,7 @@ Controller::~Controller()
         {
             TerminateThread(_info[i].handle, 0);
             CloseHandle(_info[i].handle);
+            FreeLibrary(_info[i].lib);
         }
     }
     delete _waiting_thread;
@@ -68,14 +117,19 @@ void Controller::run()
                 _info[offset + i].handle = CreateThread(nullptr, 0, thread_func, nullptr, CREATE_SUSPENDED, &_info[offset + i].threadID);
                 if (_info[offset + i].handle == NULL)
                 {
-                    DWORD errorCode = GetLastError();
-                    std::cerr << "Cannot create thread. Error Code: " << errorCode << std::endl;
+                    std::cerr << "Cannot create thread. Error Code: " << GetLastError() << std::endl;
                     system("pause");
                     exit(1);
                 }
                 _info[offset + i].state = AI_STATE::SUSPENDED;
                 //CPU control, choose the core which the thread uses. When the used core number is less than that CPU actually has, using core with higher ID firstly 
-                SetThreadAffinityMask(_info[offset + i].handle, (static_cast<DWORD_PTR>(1) << ((_total_core_count - _used_core_count) + i)));
+                if (SetThreadAffinityMask(_info[offset + i].handle, (static_cast<DWORD_PTR>(1) << ((_total_core_count - _used_core_count) + i))))
+                {
+                }
+                else
+                {
+                    std::cerr << "CPU core setting fails. Error Code: " << GetLastError() << std::endl;
+                }
             }
             _waiting_thread[i] = _info[offset + i].handle;    //if the player's thread is suspended, just resume it
         }
@@ -84,7 +138,10 @@ void Controller::run()
         {
             _info[offset + i].state = AI_STATE::ACTIVE;
             (*_info[offset + i].recv_func)(true, _serialize_route());
-            ResumeThread(_info[offset + i].handle);
+            if (ResumeThread(_info[offset + i].handle) == 0xFFFFFFFF)
+            {
+                std::cerr << "Cannot resume Thread" << _info[offset + i].threadID << " Error Code: " << GetLastError() << std::endl;
+            }
         }
         DWORD threadNumber = (_player_count - offset >= static_cast<int>(_used_core_count) ? _used_core_count : static_cast<DWORD>(_player_count - offset));
         //let sunthreads run TIMEOUT ms.
@@ -97,7 +154,10 @@ void Controller::run()
                 if (exitCode == STILL_ACTIVE)
                 {
                     _info[offset + i].state = AI_STATE::SUSPENDED;
-                    SuspendThread(_info[offset + i].handle);
+                    if (SuspendThread(_info[offset + i].handle) == 0xFFFFFFFF)
+                    {
+                        std::cerr << "Cannot suspend Thread" << _info[offset + i].threadID << " Error Code: " << GetLastError() << std::endl;
+                    }
                 }
                 else
                 {
@@ -121,6 +181,7 @@ bool Controller::receive(bool is_jumping, const std::string & data)
 {
     if (!_check_init())
         return false;
+    std::cout << "receive" << std::endl;
     if (is_jumping)
     {
         return _parse_parachute(data);

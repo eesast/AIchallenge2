@@ -5,6 +5,8 @@
 #include<Windows.h>
 #include<mutex>
 #include"communication_platform.pb.h"
+#include<filesystem>
+#include<regex>
 
 #define manager (Controller::get_instance())
 
@@ -14,12 +16,15 @@ class Controller
     {
         UNUSED,
         SUSPENDED,
-        ACTIVE
+        ACTIVE,
+        DEAD
     };
 
     //one team
     struct AI_INFO
     {
+        int team;
+        HMODULE lib;    //AI DLL/SO
         //thread token
         DWORD threadID = 0;
         HANDLE handle = nullptr;
@@ -47,8 +52,9 @@ public:
 
     //manager init
 public:
-    void init(int player_count = 0, DWORD used_core_count = 0);
-    void register_AI(int playerID, AI_Func pfunc, Recv_Func precv);
+    //find dll in path
+    void init(const std::string &path, DWORD used_core_count = 0);
+    [[deprecated]] void register_AI(int playerID, AI_Func pfunc, Recv_Func precv);
 private:
     //if init,return true.
     bool _check_init();

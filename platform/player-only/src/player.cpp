@@ -15,7 +15,7 @@ void play_game()
     cout << "playeraaaa" << endl;
     VOCATION_TYPE role = VOCATION_TYPE::ENGINEER;
     Position landing_point = { (over_pos.x + start_pos.x) / 2, (over_pos.y + start_pos.y) / 2 };
-    std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+    //std::this_thread::sleep_for(std::chrono::milliseconds(delay));
     parachute(role, landing_point);
     return;
 }

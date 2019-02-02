@@ -2,7 +2,15 @@
 #define PYCALLING_H
 
 #ifdef WIN32
+
+#ifdef _DEBUG
+#undef _DEBUG
 #include<Python.h>
+#define _DEBUG
+#else
+#include<Python.h>
+#endif // _DEBUG
+
 #else
 #include <python3.6m/Python.h>
 #endif // WIN32
@@ -53,7 +61,6 @@ private:
     PyObject *_game_init = nullptr;
     PyObject *_game_main = nullptr;
     PyObject *_parachute = nullptr;
-
 };
 
 #endif //!PYCALLING_H
