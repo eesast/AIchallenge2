@@ -10,7 +10,7 @@ import struct
 #   here define a debug level variable to debug print-oriented
 #   remember: here is just a initial level for logic
 #   platform may give another number in game_init
-PRINT_DEBUG = 8
+PRINT_DEBUG = 50
 
 
 #   level 1: only print illegal information
@@ -231,6 +231,7 @@ class GameMain:
         def get_proto_data():
             data = pb2.InitialInfo()
             data.start.x, data.start.y = self.__start_position.x, self.__start_position.y
+            data.over.x, data.over.y = self.__over_position.x, self.__over_position.y
             for each_team in self.all_players:
                 for each_player in each_team:
                     player_info = data.players.add()
@@ -378,7 +379,12 @@ class GameMain:
         # output data for playback file
         self.write_playback(get_proto_data())
 
-        # here return everything as i mention in the related files
+        # return pack data after refreshing
+        return self.pack_for_platform()
+
+    # here return everything as i mention in the related files
+    def pack_for_platform(self):
+
         return self.all_info
 
     def anti_infinite_loop(self):

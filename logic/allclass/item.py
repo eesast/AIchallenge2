@@ -4,7 +4,7 @@ from .object import *
 from json import load
 
 
-class Item(Object):   # class for each weapon and goods
+class Item(Object):   # class for each equipment and goods
     # two name for different item types
     EQUIP = 0
     GOODS = 1
@@ -26,7 +26,7 @@ class Item(Object):   # class for each weapon and goods
             all_data = load(file)
         return all_data
 
-    # enum all props' name
+    # enum all items' name
     EQUIP_CHARGER = 1
     GOODS_CHARGER = 51
 
