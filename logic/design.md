@@ -45,7 +45,9 @@ remember: all containers here consist of just id, while the entities exist as cl
 
 `all_sounds`:save all sounds(including footstep and guns) in the map
 
-`all_info`: save all players basic information for platform
+`all_wild_items`: a dictionary to save all items on the ground(maybe not wild but discarded)
+
+`all_info`: a dictionary to save all players basic information for platform
 
 `number_to_team`:use team id to find a team's pointer
 
@@ -250,6 +252,8 @@ inherited from Object(CIRCLE), define player's entity
 
 `command_status_legal`: judge if the given command is legal
 
+`change_status`: change status and refresh some status related data
+
 ### `Sound`
 
 (this class isn't inherited from Object because it's not entity)
@@ -298,18 +302,23 @@ inherited from Object(CIRCLE), define player's entity
 
 inherited from Object, the class of all pick-up in the map
 
-##### enumeration
+#### enumeration
 
 ##### type
 
-- EQUIP
+- WEAPON
+- ARMOR
 - GOODS
 
 #### attribute
 
 ##### static
 
-`all_data`: all items data, loaded from data file
+`all_data`: a dictionary to save all items data, loaded from data file
+
+`all_items`: a dictionary to save all items' entities by id-entity pair
+
+`next_id`: id should be monotone increasing, use this variable to get a new id
 
 ##### dynamic
 
@@ -317,15 +326,15 @@ inherited from Object, the class of all pick-up in the map
 
 `prop_type`: it should be type enumeration
 
-`damage`: for weapons, it means real damage or heal number
+`owner`: the id of player who owns it or -1 as default value
 
-`owner`: the id of player who owns it
+##### method
 
-`param`: a parameter if needed
+##### static
 
-#### method
+`load_data`: load data from data file
 
-<!--to be finished-->
+`add`: add a new item entity and update next_id, then return this item's id
 
 ### `LandForm`
 

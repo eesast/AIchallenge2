@@ -98,3 +98,9 @@ def dot_product(position1, position2):
 def cross_product(position1, position2):
     return position1.x * position2.y - position1.y * position2.x
 
+
+def angle_to_position(angle):
+    if angle > 180:
+        angle -= 360
+    angle = angle * pi / 180
+    return Position(cos(angle), sin(angle))

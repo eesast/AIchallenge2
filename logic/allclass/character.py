@@ -12,7 +12,7 @@ RADIO = 3
 class Character(Object):                # the base class of all characters
     # static variables
     all_data = {}                       # save all data from setting file
-    AIRPLANE_SPEED = 5                  # flying speed, will load from file
+    AIRPLANE_SPEED = 50                  # flying speed, will load from file
     JUMPING_SPEED = 1                   # jumping speed, also load from file
 
     all_characters = {}                 # key: id, value: all characters' entities
@@ -42,7 +42,7 @@ class Character(Object):                # the base class of all characters
     def __init__(self, vocation):
         super().__init__(Object.CIRCLE)
         # define some variables
-        self.__heal_point_limit = 100.                  # max HP
+        self.__heal_point_limit = Character.all_data[vocation]['hp']    # max HP
         self.heal_point = self.__heal_point_limit       # current HP
         self.bag = []
         self.status = self.RELAX
@@ -52,7 +52,7 @@ class Character(Object):                # the base class of all characters
         self.team = -1                  # team id
 
         # initialize some inherited variables
-        self.move_speed = 1.2           # move distance per second
+        self.move_speed = Character.all_data[vocation]['move']
 
         # platform needn't these variables
         self.jump_position = None  # it means where he jump out airplane
@@ -66,6 +66,13 @@ class Character(Object):                # the base class of all characters
     def load_data(parent_path, character_file_path):
         with open(parent_path + character_file_path, "r", encoding="utf-8") as file:
             config_data = load(file)
+        Character.MEDIC = config_data['MEDIC']['number']
+        Character.ENGINEER = config_data['ENGINEER']['number']
+        Character.SIGNALMAN = config_data['SIGNALMAN']['number']
+        Character.HACK = config_data['HACK']['number']
+        Character.SNIPER = config_data['SNIPER']['number']
+        for key, value in config_data.items():
+            Character.all_data[value['number']] = value
         return config_data
 
     @staticmethod
@@ -87,13 +94,22 @@ class Character(Object):                # the base class of all characters
     def is_alive(self):
         return self.status != Character.REAL_DEAD
 
+    move_factor = [0, 0.2, 0.5, 0.3]
+
     def move(self):
-        # without move direction, needn't move
-        if self.move_direction is None:
+        # without move cd, needn't move
+        if self.move_cd == 0:
             return None
         # warning: it's not enough, must justify other objects, now just for test
-        self.position += self.move_direction * self.move_speed
-        return True
+        if self.is_jumping() or self.is_flying():
+            self.position += self.move_direction * self.move_speed
+        else:
+            new_position = self.position + self.move_direction * (self.move_speed * Character.move_factor[self.move_cd])
+            if new_position.good(1000):
+                self.position = new_position
+            else:
+                return False
+            return True
 
     def command_status_legal(self, command_type):
         if command_type == MOVE:
@@ -106,6 +122,17 @@ class Character(Object):                # the base class of all characters
             return True
         else:
             return False
+
+    def change_status(self, new_status):
+        if new_status == Character.MOVING:
+            self.move_cd = 3
+            self.move_speed = Character.all_data[self.vocation]['move']
+        if self.status == Character.RELAX:
+            pass
+        elif self.status == Character.MOVING:
+            pass
+        self.status = new_status
+        return True
 
 
 if __name__ == '__main__':
