@@ -5,6 +5,8 @@ set(CMAKE_MINOR_VERSION 1)
 
 set(CMAKE_BUILD_TYPE Debug)
 
+set(CMAKE_CXX_STANDARD 17)
+
 add_subdirectory(${PROJECT_SOURCE_DIR}/player-only/)
 
 IF(WIN32)

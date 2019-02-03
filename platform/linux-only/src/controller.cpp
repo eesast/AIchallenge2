@@ -38,7 +38,7 @@ bool Controller::_check_init()
 
 void Controller::init(const std::string &path, long used_core_count)
 {
-    using namespace std::experimental::filesystem;
+    using namespace std::filesystem;
     auto PAT = std::regex(R"((libAI_(\d*)_(\d*)).so)", std::regex_constants::ECMAScript | std::regex_constants::icase);
     std::smatch m;
     int player_count = 0;
