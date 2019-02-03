@@ -21,6 +21,8 @@ Controller::~Controller()
             kill(_info[i].pid, SIGKILL);
             shmdt(_info[i].shm);
             shmctl(_info[i].shmid, IPC_RMID, nullptr);
+            dlclose(_info[i].lib);
+
         }
     }
 }
@@ -34,9 +36,60 @@ bool Controller::_check_init()
     return _is_init;
 }
 
-void Controller::init(int playerCount, long used_core_count)
+void Controller::init(const std::string &path, long used_core_count)
 {
-    _player_count = playerCount;
+    using namespace std::experimental::filesystem;
+    auto PAT = std::regex(R"((libAI_(\d*)_(\d*)).so)", std::regex_constants::ECMAScript | std::regex_constants::icase);
+    std::smatch m;
+    int player_count = 0;
+    for (const auto &entry : directory_iterator(path))
+    {
+
+        if (is_regular_file(entry))
+        {
+            auto name = entry.path().filename().string();
+            if (std::regex_match(name, m, PAT) && m.size() == 4)
+            {
+                int team = atoi(m[2].str().c_str());
+                int number = atoi(m[3].str().c_str());
+                if (0 <= team && team <= 15 && 0 <= number && number <= 3)
+                {
+                    _info[player_count].team = team;
+                    std::string fullpath = entry.path();
+                    std::cerr << "try to load " << fullpath << std::endl;
+                    _info[player_count].lib = dlopen(fullpath.c_str(), RTLD_NOW);
+                    if (_info[player_count].lib == NULL)
+                    {
+                        std::cerr << "LoadLibrary " + fullpath + " error" << std::endl;
+                        continue;
+                    }
+                    else
+                    {
+                        auto bind_api = (void (*)(Player_Send_Func))dlsym(_info[player_count].lib, "bind_api");
+                        _info[player_count].player_func = (AI_Func)dlsym(_info[player_count].lib, "play_game");
+                        _info[player_count].recv_func = (Recv_Func)dlsym(_info[player_count].lib, "player_receive");
+                        if (bind_api == NULL || _info[player_count].player_func == NULL || _info[player_count].recv_func == NULL)
+                        {
+                            std::cerr << "Cannot Get AI API from " << std::endl;
+                            continue;
+                        }
+                        else
+                        {
+                            (*bind_api)(&controller_receive);
+                            ;
+                            ++player_count;
+                            std::cout << "Load AI " << fullpath << " as team" << team << std::endl;
+                        }
+                    }
+                }
+                else
+                {
+                    std::cerr << "Wrong filename:" << m[0] << std::endl;
+                }
+            }
+        }
+    }
+    _player_count = player_count;
     _used_core_count = used_core_count;
     //set CPU
     _total_core_count = sysconf(_SC_NPROCESSORS_ONLN);

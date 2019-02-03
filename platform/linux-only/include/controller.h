@@ -14,6 +14,9 @@
 #include <sys/time.h>
 #include "communication_platform.pb.h"
 #include "comm_block.h"
+#include <experimental/filesystem>
+#include <dlfcn.h>
+#include <regex>
 
 #define manager (Controller::get_instance())
 
@@ -27,13 +30,16 @@ private:
   {
     UNUSED,
     SUSPENDED,
-    ACTIVE
+    ACTIVE,
+    DEAD
   };
 
   const int CHECK_INTERVAL = 10; //before TIMEOUT, check if all finish per CHECK_INTERVAl(ms);
 
   struct AI_INFO
   {
+    int team;
+    void *lib = nullptr;
     pid_t pid = 0;
     AI_STATE state = AI_STATE::UNUSED;
     int turn = 0;             //turn of game
@@ -56,8 +62,8 @@ public:
   }
   //manager init
 public:
-  void init(int player_count = 0, long used_core_count = 0);
-  void register_AI(int playerID, AI_Func pfunc, Recv_Func precv);
+  void init(const std::string &path, long used_core_count = 0);
+  [[deprecated]] void register_AI(int playerID, AI_Func pfunc, Recv_Func precv);
 
 private:
   bool _check_init();
