@@ -4,31 +4,33 @@ from .object import *
 from json import load
 
 
-class Item(Object):   # class for each weapon and goods
-    # two name for different prop types
-    WEAPON = 0
+class Item(Object):   # class for each equipment and goods
+    # two name for different item types
+    EQUIP = 0
     GOODS = 1
 
-    # save all props data
+    # save all items' data
     all_data = []
 
-    def __init__(self, prop_type):
+    # all items' entities
+    all_items = {}
+
+    def __init__(self, item_type):
         super().__init__()
         # some important characteristics
         self.durability = None      # using durability
-        self.prop_type = prop_type  # 0 means weapon and 1 means goods
+        self.item_type = item_type  # should be type enum
         self.damage = None          # including real damage and heal(negative number)
         pass
 
     @staticmethod
-    def load_data(parent_path, item_file_path, print_debug):
+    def load_data(parent_path, item_file_path):
         with open(parent_path + item_file_path, "r", encoding="utf-8") as file:
             all_data = load(file)
-            if print_debug >= 100:
-                print(all_data)
+        return all_data
 
-    # enum all props' name
-    WEAPON_HANDGUN = 1
+    # enum all items' name
+    EQUIP_CHARGER = 1
     GOODS_CHARGER = 51
 
 

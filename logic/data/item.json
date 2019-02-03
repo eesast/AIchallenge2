@@ -1,4 +1,27 @@
 {
-	"comment":
-	"here give all items' data"
+	"RIFLE": {
+		"type": "WEAPON",
+		"number": 1,
+		"durability": 10,
+		"range": 200,
+		"cd": 5,
+		"damage": 50,
+		"occur": 100
+	},
+	"VEST_1": {
+		"type": "ARMOR",
+		"number": 41,
+		"durability": 100,
+		"reduce": 30,
+		"param": 0.0,
+		"occur": 50
+	},
+	"MUFFLER": {
+		"type": "GOODS",
+		"number": 51,
+		"macro": "MUFFLER",
+		"mode": "PORTABLE",
+		"param": 0.3,
+		"occur": 10
+	}
 }

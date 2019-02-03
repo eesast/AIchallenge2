@@ -1,32 +1,41 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 from allclass import *
+import proto.interface_pb2 as interface
+import proto.platform_pb2 as platform
 from random import randrange
 from json import load
+import time
+import struct
 
 #   here define a debug level variable to debug print-oriented
-PRINT_DEBUG = 10
+#   remember: here is just a initial level for logic
+#   platform may give another number in game_init
+PRINT_DEBUG = 50
 
 
 #   level 1: only print illegal information
 #   level 2: also print some adjustment
 
-#   level 9:
-#   level 10:
-#   level 100: will give all information you can imagine, including config file
+#   level 8: give all players' jumping information
+#   level 9: print initialize information for parachuting
+#   level 10: print commands for each frame
 
+#   level 50: print data length for proto
+#   level 100: will give all information you can imagine, including config file
 
 class GameMain:
     # if not specified, platform needn't this class's members
+    map_size = 1000
+    playback_file_path = None
 
     def __init__(self):
 
         # it's more like a define instead of an initialization
-        self.map_size = 1000
         self.die_order = []  # save the player's dying order
         self.map_items = [[[] for i in range(16)] for j in range(16)]  # try to divide map into 256 parts
 
-        self.all_players = []  # save all player's information
+        self.all_players = []  # save all teams and players
         self.all_bullets = []
         self.all_sounds = []
         self.all_items = []
@@ -38,23 +47,39 @@ class GameMain:
         self.__start_position, self.__over_position = None, None
         self.__turn = 0
 
+        # initialize debug level for logic to use directly and for platform to change it
+        self.__debug_level = PRINT_DEBUG
+
+        return
+
+    def set_debug_level(self, level):
+        if level:
+            self.__debug_level = level
         return
 
     def load_data(self, file_path, file_name):
         # first load some global information
         with open(file_path + file_name) as config:
             global_config = load(config)
-        global PRINT_DEBUG
-        PRINT_DEBUG = global_config["PRINT_DEBUG"]
-        if PRINT_DEBUG >= 100:
-            print(global_config)
+        self.print_debug(100, global_config)
 
         # then load some module data here
-        character.Character.load_data(file_path, global_config["CHARACTER_FILE_PATH"], PRINT_DEBUG)
-        item.Item.load_data(file_path, global_config["ITEM_FILE_PATH"], PRINT_DEBUG)
+        self.print_debug(100, character.Character.load_data(file_path, global_config["CHARACTER_FILE_PATH"]))
+        self.print_debug(100, item.Item.load_data(file_path, global_config["ITEM_FILE_PATH"]))
 
         # here load map data
         self.__load_map(file_path, global_config["MAP_FILE_PATH"])
+
+        # for play back file
+        GameMain.playback_file_path = global_config["PLAYBACK_FILE_PATH"] + time.strftime("%Y%m%d_%H'%M'%S") + ".pb"
+        open(GameMain.playback_file_path, 'wb').close()  # create the new playback file
+
+    def write_playback(self, interface_data):
+        data = interface_data.SerializeToString()
+        with open(self.playback_file_path, 'ab') as playback:
+            playback.write(struct.pack('i', len(data)))
+            playback.write(data)
+        self.print_debug(50, "write", len(data), "bytes into the playback file")
 
     def unwrap_commands(self, commands):
         # here unwrap all players' commands
@@ -65,8 +90,7 @@ class GameMain:
         # commands format: {teamID:{playerID:[{"command_tye":type, "target":
         # ID, "move_angle":angle, "view_angle":angle, "other":data}]}}
 
-        if PRINT_DEBUG >= 10:
-            print(commands)
+        self.print_debug(10, commands)
         for playerID, player_commands in commands.items():
             for command in player_commands:
                 command_type = command["command_type"]
@@ -82,96 +106,12 @@ class GameMain:
                 else:
                     # if command_type isn't correct, it will be ignored
                     continue
-        if PRINT_DEBUG >= 10:
-            print("unwrap_command successfully in turn", self.__turn)
+        self.print_debug(10, "unwrap_command successfully in turn", self.__turn)
         return
-
-    def refresh(self):  # refresh a new frame according to the orders
-        def instructions():
-            for player_number, command in self.all_commands["pickup"].items():
-                # if self.number_to_player[player_number].state != c
-                pass
-
-        def move():
-            for team in self.all_players:
-                for player in team:
-                    if not isinstance(player, character.Character):
-                        raise Exception("wrong player!")
-                    player.move()
-
-        def attack():
-            pass
-
-        def damage():
-            pass
-
-        def die():
-            pass
-
-        def items():
-            pass
-
-        def radio():
-            pass
-
-        def update():
-            for team in self.all_players:
-                for player in team:
-                    if not isinstance(player, character.Character):
-                        raise Exception("wrong player!")
-                    if player.move_cd:
-                        player.move_cd -= 1
-                    if player.move_cd == 0:
-
-                        if player.is_flying():
-                            # this is change from flying to jumping
-                            player.state = character.Character.JUMPING
-                            player.position = player.jump_position
-                            player.move_direction = (player.land_position - player.jump_position).unitize()
-                            player.move_speed = character.Character.JUMPING_SPEED
-                            player.move_cd = int((player.land_position - player.jump_position).length() /
-                                                 player.move_speed + 1)
-                            player.face_direction = player.move_direction
-                        elif player.is_jumping():
-                            # jump to the land, and then relax
-                            player.state = character.Character.RELAX
-                            player.position = player.land_position
-                            player.move_direction = None
-                            player.move_speed = 0
-
-            pass
-
-        # 1. judge and operate players' instructions
-        instructions()
-
-        # 2. all players move
-        move()
-
-        # 3. all bullets and shells fly on
-        attack()
-
-        # 4. calculate all damage(including healing)
-        damage()
-
-        # 5. judge if one dies
-        die()
-
-        # 6. refresh items information
-        items()
-
-        # 7. refresh radio voice
-        radio()
-
-        # 8. update player's view, cd and etc
-        update()
-
-        self.__turn = self.__turn + 1
-
-        # here return everything as i mention in the related files
-        return self.all_info
 
     def __load_map(self, parent_path, map_file_path):
         with open(parent_path + map_file_path, "r", encoding="utf-8") as map_file:
+            self.map_size = 1000
             pass
 
     def alive_teams(self):
@@ -251,25 +191,23 @@ class GameMain:
 
                 # first judge if this vocation is legal
                 if not 0 <= new_vocation <= character.Character.VOCATION_COUNT:
-                    if object.PRINT_DEBUG:
-                        print("number", player_number, "choose illegal vocation", new_vocation)
+                    self.print_debug(1, "number", player_number, "choose illegal vocation", new_vocation)
+                    # if illegal, change it as zero
                     new_vocation = 0
 
                 # then ensure it hasn't been chosen, or I will give one
                 for player_check in self.number_to_team[team_number]:
                     if new_vocation == player_check.vocation:
-                        if object.PRINT_DEBUG:
-                            print("player", player_number, "choose repeated vocation", new_vocation, end='')
-                            print("(this log maybe repeated during trying to adjust vocation )")
+                        self.print_debug(1, "player", player_number, "choose repeated vocation", new_vocation, end='')
                         new_vocation = (new_vocation + 1) % character.Character.VOCATION_COUNT
+                        self.print_debug(1, ", now it's adjusted to", new_vocation)
 
-                new_player = character.Character(new_vocation)
+                new_player = character.Character.add_character(player_number, new_vocation)
+                new_player.team = team_number
                 new_player.land_position = position.Position(player_information['position'])
                 if not new_player.land_position.good(self.map_size):  # for illegal aim, auto fall in the end
-                    if object.PRINT_DEBUG:
-                        print("number", player_number, "choose illegal aim", new_player.land_position)
+                    self.print_debug(1, "number", player_number, "choose illegal aim", new_player.land_position)
                     new_player.land_position = self.__over_position
-                new_player.number = player_number
                 new_team.append(new_player)
                 self.number_to_player[player_number] = new_player
             return
@@ -277,24 +215,34 @@ class GameMain:
         def get_pedal(aim_position, number=-1):
             # these formulas are transformed from internet, I hope they're right
             aim_x, aim_y = aim_position.x, aim_position.y
-            a = position.delta_y(self.__start_position, self.__over_position)
-            b = - position.delta_x(self.__start_position, self.__over_position)
-            c = position.cross_product(self.__start_position, self.__over_position)
+            a = position.delta_y(self.__over_position, self.__start_position)
+            b = - position.delta_x(self.__over_position, self.__start_position)
+            c = position.cross_product(self.__over_position, self.__start_position)
             x = (b * b * aim_x - a * b * aim_y - a * c) / (a * a + b * b)
             y = (a * a * aim_y - a * b * aim_x - b * c) / (a * a + b * b)
             aim = position.Position(x, y)
             # if the pedal isn't in the map, player must jump at begin or end
             if x < 0 or y < 0 or x > self.map_size or y > self.map_size:
-                if object.PRINT_DEBUG >= 2:
-                    print("player", number, "aimed", aim_position, "pedal is", aim, end='')
+                self.print_debug(2, "player", number, "aimed", aim_position, "pedal is", aim, end='')
                 aim = self.__start_position if aim.distance2(self.__start_position) < aim.distance2(
                     self.__over_position) else self.__over_position
-                if object.PRINT_DEBUG >= 2:
-                    print("now it has been adjusted to", aim)
+                self.print_debug(2, "now it has been adjusted to", aim)
             return aim
 
-        if object.PRINT_DEBUG >= 9:
-            print('parachute:' + str(information))
+        def get_proto_data():
+            data = interface.InitialInfo()
+            data.start.x, data.start.y = self.__start_position.x, self.__start_position.y
+            data.over.x, data.over.y = self.__over_position.x, self.__over_position.y
+            for each_team in self.all_players:
+                for each_player in each_team:
+                    player_info = data.players.add()
+                    player_info.id = each_player.number
+                    player_info.team = each_player.team
+                    player_info.vocation = each_player.vocation
+                    player_info.HP_max = int(each_player.heal_point)  # now HP == HP_max
+            return data
+
+        self.print_debug(9, 'parachute:' + str(information))
 
         # here unwrap players' information and their land positions
         unwrap()
@@ -306,7 +254,7 @@ class GameMain:
                     raise Exception("wrong object for dict number_to_player, get a", type(player))
                 # I hope it's a pointer, otherwise it's a huge bug
                 player.jump_position = get_pedal(player.land_position, player.number)
-                player.state = character.Character.ON_PLANE
+                player.status = character.Character.ON_PLANE
                 player.move_direction = (self.__over_position - self.__start_position).unitize()
                 player.position = self.__start_position
                 player.move_speed = character.Character.AIRPLANE_SPEED
@@ -314,14 +262,194 @@ class GameMain:
                 player.face_direction = player.move_direction
                 # meanwhile deal with information list
                 self.all_info.append(info.Information(player))
+
+        # output data for interface
+        self.write_playback(get_proto_data())
+
         # now everything down, main operation starts
         # return first turn's information
         return self.refresh()
 
+    def refresh(self):  # refresh a new frame according to the orders
+        def instructions():
+            for player_number, command in self.all_commands["pickup"].items():
+                # if self.number_to_player[player_number].status != c
+                pass
+
+        def move():
+            for team in self.all_players:
+                for player in team:
+                    if not isinstance(player, character.Character):
+                        raise Exception("wrong player!")
+                    player.move()
+
+        def attack():
+            pass
+
+        def damage():
+            pass
+
+        def die():
+            pass
+
+        def items():
+            pass
+
+        def radio():
+            pass
+
+        def update():
+            for team in self.all_players:
+                for player in team:
+                    if not isinstance(player, character.Character):
+                        raise Exception("wrong player!")
+                    if player.move_cd:
+                        player.move_cd -= 1
+                    if player.move_cd == 0:
+
+                        if player.is_flying():
+                            # this is change from flying to jumping
+                            player.status = character.Character.JUMPING
+                            player.position = player.jump_position
+                            player.move_direction = (player.land_position - player.jump_position).unitize()
+                            player.move_speed = character.Character.JUMPING_SPEED
+                            player.move_cd = int((player.land_position - player.jump_position).length() /
+                                                 player.move_speed + 1)
+                            player.face_direction = player.move_direction
+                        elif player.is_jumping():
+                            # jump to the land, and then relax
+                            player.status = character.Character.RELAX
+                            player.position = player.land_position
+                            player.move_direction = None
+                            player.move_speed = 0
+                            self.print_debug(8, "in turn", self.__turn, "player", player.number, "reach the ground at",
+                                             player.position)
+            return
+
+        def get_proto_data():
+            data = interface.FrameInfo()
+            data.frame = self.__turn
+            for team in self.all_players:
+                for player in team:
+                    if player.is_flying() or not player.is_alive():
+                        continue
+                    elif player.is_jumping():
+                        new_info = data.parachutists.add()
+                        new_info.id = player.number
+                        new_info.HP = int(player.heal_point)
+                        new_info.face_direction = player.face_direction.get_angle()
+                        new_info.pos.x, new_info.pos.y = player.position.x, player.position.y
+                        new_info.jump_pos.x, new_info.jump_pos.y = player.jump_position.x, player.jump_position.y
+                        new_info.land_pos.x, new_info.land_pos.y = player.land_position.x, player.land_position.y
+                    else:
+                        new_info = data.players.add()
+                        new_info.id = player.number
+                        new_info.HP = int(player.heal_point)
+                        new_info.pos.x, new_info.pos.y = player.position.x, player.position.y
+                        new_info.weapon = player.last_weapon
+                        new_info.armor = player.best_armor
+                        new_info.face_direction = player.face_direction.get_angle()
+            return data
+
+        # 1. judge and operate players' instructions
+        instructions()
+
+        # 2. all players move
+        move()
+
+        # 3. all bullets and shells fly on
+        attack()
+
+        # 4. calculate all damage(including healing)
+        damage()
+
+        # 5. judge if one dies
+        die()
+
+        # 6. refresh items information
+        items()
+
+        # 7. refresh radio voice
+        radio()
+
+        # 8. update player's view, cd and etc
+        update()
+
+        self.__turn = self.__turn + 1
+
+        # output data for playback file
+        self.write_playback(get_proto_data())
+
+        # return pack data after refreshing
+        return self.pack_for_platform()
+
+    # here return everything as i mention in the related files
+    def pack_for_platform(self):
+        all_data = {}
+        for player_info in self.all_info:
+            player = character.Character.all_characters[player_info.id]
+            if not isinstance(player, character.Character):
+                raise Exception("wrong type of player!")
+            data = platform.PlayerInfo()
+            all_data[player.number] = data
+            data.player_ID = player.number
+            data.self.heal_point = player.heal_point
+            data.self.heal_point_limit = player_info.hp_max
+            data.self.move_angle = player.move_direction.get_angle() if player.move_direction else 0
+            data.self.view_angle = player.face_direction.get_angle()
+            data.self.move_speed = player.move_speed
+            data.self.status = player.status
+            data.self.move_cd = player.move_cd
+            data.self.attack_cd = player.shoot_cd
+            data.self.pos.x, data.self.pos.y = player.position.x, player.position.y
+
+            for item_id in player.bag:
+                new_item = data.self.bag.add()
+                entity = item.Item.all_items[item_id]
+                new_item.item_ID = item_id
+                new_item.type = entity.item_type
+                new_item.durability = entity.durability
+
+            data.landform_id.extend(player_info.landform)
+
+            for item_id in player_info.items:
+                new_item = data.items.add()
+                entity = item.Item.all_items[item_id]
+                new_item.item_ID = item_id
+                new_item.type = entity.item_type
+                new_item.durability = entity.durability
+                new_item.pos.distance, new_item.pos.angle = \
+                    player.position.get_polar_position(player.face_direction, entity.position)
+
+            for player_id in player_info.others:
+                new_other = data.others.add()
+                other = character.Character.all_characters[player_id]
+                if not isinstance(other, character.Character):
+                    raise Exception("wrong type of player!")
+                new_other.player_ID = player_id
+                new_other.status = other.status
+                new_other.move_angle = other.move_direction.get_angle()
+                new_other.view_angle = other.face_direction.get_angle()
+                new_other.move_speed = other.move_speed
+                new_other.vocation = other.vocation
+                new_other.pos.distance, new_other.pos.angle = \
+                    player.position.get_polar_position(player.face_direction, other.position)
+
+            for arrived_sound in player_info.sounds:
+                new_sound = data.sounds.add()
+                new_sound.sender, new_sound.delay, new_sound.parameter = arrived_sound
+
+        return all_data
+
     def anti_infinite_loop(self):
         # the game can hold no more than half an hour
         # later, we will design poison circle, but now I can just use enforcement measure
-        return self.__turn < 20 * 60 * 30
+        return self.__turn < 2 * 60 * 25
+
+    def print_debug(self, level, *args, sep=' ', end='\n', file=None):
+        # print debug log if current debug level is higher than message debug level
+        if self.__debug_level >= level:
+            print(*args, sep=sep, end=end, file=file)
 
 
 if __name__ == '__main__':

@@ -6,9 +6,9 @@
 
 ### 文件列表
 
-`data.xlsx`:面向windows的数据文件，作为相关数据的唯一修改源。
+`data.xlsx`:面向windows的数据文件，作为相关数据的唯一修改源。(宽度是为了适应转化pdf设置的临界值)
 
 `data.pdf`:由`data.xlsx`转化而来的pdf，主要将来用作选手文档。
 
-`convert.py`:一个将`data.xlsx`转化成所需要的`json`文件的脚本，应当由逻辑组在修改`data.xlsx`后立即运行以保证`json`和`excel`的一致性。（尚未开始写 2018年12月2日）
+`convert.py`:一个将`data.xlsx`转化成所需要的`json`文件的脚本，应当由逻辑组在修改`data.xlsx`后立即运行以保证`json`和`excel`的一致性。
 

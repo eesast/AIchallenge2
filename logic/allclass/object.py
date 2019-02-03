@@ -3,7 +3,7 @@
 
 
 class Object(object):
-    # all objects in the map, including players, should be its subclass instead of object
+    # all entities in the map, should be its subclass instead of object
 
     # all shapes
     CIRCLE = 0

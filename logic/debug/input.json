@@ -3,7 +3,7 @@
 	"0":{"vocation": 0, "position": [238.83, 42.6], "team": 2},
 	"1": {"vocation": 1, "position": [840.81, 194.0], "team": 2},
 	"2": {"vocation": 2, "position": [786.76, 981.48], "team": 2},
-	"3": {"vocation": 3, "position": [110.0, 573.41], "team": 3},
+	"3": {"vocation": 3, "position": [110.0, 573.41], "team": 2},
 
 	"4": {"vocation": 1, "position": [380.56, 30.49], "team": 3}, 
 	"5": {"vocation": 2, "position": [188.8, 551.69], "team": 3}, 
@@ -14,5 +14,4 @@
 	"9": {"vocation": 3, "position": [333.81, 304.16], "team": 56}, 
 	"10": {"vocation": 4, "position": [34.87, 195.6], "team": 56}, 
 	"11": {"vocation": 1, "position": [501.5, 787.89], "team": 56}
-	
 }
