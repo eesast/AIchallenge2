@@ -13,6 +13,7 @@ def game_init(file_path="./", config_file_name="config.ini", debug_level=None):
     game.set_debug_level(debug_level)
     # here give the parent path and load the data and return the airplane
     game.load_data(file_path, config_file_name)  # for platform: here input dictionary path
+    game.map_init()
     return game.generate_route()
 
 

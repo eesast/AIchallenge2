@@ -83,12 +83,8 @@ class GameMain:
         GameMain.playback_file_path = global_config["PLAYBACK_FILE_PATH"] + time.strftime("%Y%m%d_%H'%M'%S") + ".pb"
         open(GameMain.playback_file_path, 'wb').close()  # create the new playback file
 
-    def write_playback(self, interface_data):
-        data = interface_data.SerializeToString()
-        with open(self.playback_file_path, 'ab') as playback:
-            playback.write(struct.pack('i', len(data)))
-            playback.write(data)
-        self.print_debug(50, "write", len(data), "bytes into the playback file")
+    def map_init(self):
+        pass
 
     def unwrap_commands(self, commands):
         # here unwrap all players' commands
@@ -483,6 +479,13 @@ class GameMain:
 
         self.print_debug(50, "return", len(all_data), "players' data back to platform")
         return all_data
+
+    def write_playback(self, interface_data):
+        data = interface_data.SerializeToString()
+        with open(self.playback_file_path, 'ab') as playback:
+            playback.write(struct.pack('i', len(data)))
+            playback.write(data)
+        self.print_debug(50, "write", len(data), "bytes into the playback file")
 
     def anti_infinite_loop(self):
         # the game can hold no more than half an hour

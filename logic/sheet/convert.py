@@ -67,7 +67,7 @@ def get_item_data(file):
         for i in range(START_ROW, sheet_weapon.nrows):
             row = sheet_weapon.row_values(i)
             if len(row[WEAPON_MACRO]) < 1:
-                break   # if this row is empty, break
+                break  # if this row is empty, break
             number = int(row[WEAPON_NUMBER])
             macro = row[WEAPON_MACRO]
             durability = int(row[WEAPON_DURABILITY])
@@ -90,7 +90,7 @@ def get_item_data(file):
         for i in range(START_ROW, sheet_armor.nrows):
             row = sheet_armor.row_values(i)
             if len(row[ARMOR_MACRO]) < 1:
-                break   # if this row is empty, break
+                break  # if this row is empty, break
             number = int(row[ARMOR_NUMBER])
             macro = row[ARMOR_MACRO]
             durability = int(row[ARMOR_DURABILITY])
@@ -111,7 +111,7 @@ def get_item_data(file):
         for i in range(START_ROW, sheet_goods.nrows):
             row = sheet_goods.row_values(i)
             if len(row[GOODS_MACRO]) < 1:
-                break   # if this row is empty, break
+                break  # if this row is empty, break
             number = int(row[GOODS_NUMBER])
             macro = row[GOODS_MACRO]
             mode = row[GOODS_MODE]
@@ -135,8 +135,11 @@ def get_item_data(file):
 
 
 def output_item_data(data, path):
+    formatter = JsonFormatter(data=data)
+    data = formatter.render()
     with open(path, 'w') as fp:
-        dump(data, fp)
+        # dump(data, fp)
+        fp.write(data)
 
 
 def get_character_data(sheet_character):
@@ -144,7 +147,7 @@ def get_character_data(sheet_character):
     for i in range(START_ROW, sheet_character.nrows):
         row = sheet_character.row_values(i)
         if len(row[CHARACTER_MACRO]) < 1:
-            break   # if this row is empty, break
+            break  # if this row is empty, break
         number = int(row[CHARACTER_NUMBER])
         macro = row[CHARACTER_MACRO]
         hp = int(row[CHARACTER_HP])
@@ -160,8 +163,84 @@ def get_character_data(sheet_character):
 
 
 def output_character_data(data, path):
+    formatter = JsonFormatter(data=data)
+    data = formatter.render()
     with open(path, 'w') as fp:
-        dump(data, fp)
+        # dump(data, fp)
+        fp.write(data)
+
+
+# here is a class from internet to format json data
+class JsonFormatter:
+
+    def __init__(self, intend=4, data=""):
+        self.intend = intend
+        self.stack = []
+        '''self.obj = None
+        self.source = data
+        self.prepare()'''
+        self.obj = data
+
+    @staticmethod
+    def json_str(s):
+        return '"' + s + '"'
+
+    '''@staticmethod
+    def get_source(name):
+        with open(name, 'r') as f:
+            return ''.join(f.read().split())
+
+    def prepare(self):
+        try:
+            self.obj = eval(self.source)
+        except:
+            raise Exception('Invalid json string!')'''
+
+    def line_intend(self, level=0):
+        return '\n' + ' ' * self.intend * level
+
+    def parse_dict(self, obj=None, intend_level=0):
+        self.stack.append(self.line_intend(intend_level) + '{')
+        intend_level += 1
+        for key, value in obj.items():
+            key = self.json_str(str(key))
+            self.stack.append(self.line_intend(intend_level) + key + ':')
+            self.parse(value, intend_level)
+            self.stack.append(',')
+        if self.stack[-1] == ',':
+            self.stack.pop(-1)
+        self.stack.append(self.line_intend(intend_level - 1) + '}')
+
+    def parse_list(self, obj=None, intend_level=0):
+        self.stack.append(self.line_intend(intend_level) + '[')
+        intend_level += 1
+        for item in obj:
+            self.parse(item, intend_level)
+            self.stack.append(',')
+        self.stack.append(self.line_intend(intend_level - 1) + ']')
+
+    def parse(self, obj, intend_level=0):
+        if obj is None:
+            self.stack.append('null')
+        elif obj is True:
+            self.stack.append('true')
+        elif obj is False:
+            self.stack.append('false')
+        elif isinstance(obj, (int, int, float)):
+            self.stack.append(str(obj))
+        elif isinstance(obj, str):
+            self.stack.append(self.json_str(obj))
+        elif isinstance(obj, (list, tuple)):
+            self.parse_list(obj, intend_level)
+        elif isinstance(obj, dict):
+            self.parse_dict(obj, intend_level)
+        else:
+            raise Exception('Invalid json type %s!' % obj)
+
+    def render(self):
+        self.parse(self.obj, 0)
+        res = ''.join(self.stack).strip()
+        return res
 
 
 def main():
