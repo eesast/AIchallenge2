@@ -7,13 +7,20 @@ class Information:
     def __init__(self, player):
         if not isinstance(player, Character):
             raise Exception("wrong player type!")
-        self.player = player
-        self.vision = []
-        self.sound = []
+        self.id = player.number
+        self.hp_max = player.heal_point
+        self.bag = []
+        self.items = []
+        self.landform = []
+        self.others = []
+        self.sounds = []
 
     def update(self):
         pass
 
     def clear(self):
-        self.vision.clear()
-        self.sound.clear()
+        self.bag.clear()
+        self.items.clear()
+        self.landform.clear()
+        self.others.clear()
+        self.sounds.clear()

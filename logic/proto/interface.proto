@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package comm_logic;
+package logic_to_interface;
 
 // all direction is a number in [0,360)
 

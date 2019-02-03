@@ -34,16 +34,14 @@
 
 `parachute`:逻辑传给平台所有队伍选手的信息，中间包含队伍编号、角色编号、职业信息、跳伞坐标，格式为`{player_id:{'vocation': vocation_number, 'position': (x, y), 'team': team_id},...}`，其中`team_id`和`player_id`由平台钦定一系列编号数字，`vocation_number`是参考自`character.py`的职业枚举值。逻辑将回传第一回合的信息，信息格式与后面一致，见下。
 
-`game_main`:其输入参数是平台传给逻辑的所有玩家指令信息，格式为`{player_id: [{"command_tye": type, "target": ID, "move_angle": angle, "view_angle": angle, "other": data},...]},...}`其中`player_number`应当是与前面钦定的一致的编号。返回值是逻辑传给平台的玩家需要获取到的信息，此处将直接传入一个列表，列表内容是玩家集成信息的对象，其内部包括一个玩家对象，一个视觉信息列表与一个听觉信息列表。
+`game_main`:其输入参数是平台传给逻辑的所有玩家指令信息，格式为`{player_id: [{"command_tye": type, "target": ID, "move_angle": angle, "view_angle": angle, "other": data},...]},...}`其中`player_number`应当是与前面钦定的一致的编号。返回值是逻辑传给平台的玩家需要获取到的信息，此处将直接传入一个字典，字典键为角色id，值为一个proto文件，详见proto部分。
 
 ## debug
 
-为了便于debug，我在内添置了面向print 的debug，并且在object.py内设置了变量`PRINT_DEBUG`作为debug的等级设定，为了方便起见这个等级将从主配置文件中读入。目前（2018年10月27日）只设置了1、2两个等级，等级1将会打印出选择职业的错误信息、选择坐标的错误信息，等级2在此基础之上还会打印出计算跳机点时若垂足超出地图的处理信息。以后新增的相关信息将在`PRINT_DEBUG`旁边的注释中列出。
-
-默认的debug等级为1，平台可根据实际需求调整（非负整数），如果对于某些特定的信息有打印需求，可联系逻辑组提出。
+为了便于debug，我在内添置了面向print 的debug接口`print_debug`，并且在`GameMain`内设置了变量`__debug_level`作为debug的等级设定，为了方便逻辑debug时这个等级直接取自`gamemain.py`里的全局变量`PRING_DEBUG`，而平台调用逻辑API时在`game_init`中可以指定关键字`debug_level`(否则默认按照`PRINT_DEBUG`来)。关于不同等级打印的信息将在`PRINT_DEBUG`旁边(即`gamemain.py`最上面import完后的部分)的注释中列出。
 
 ## 变量表
 
 此处给出了平台组需要实现的类、变量等内容，基本上也就是需要平台组呈递给选手的内容。
 
-（但是现在暂时没空写，后面补坑）
+（但是看上去proto已经说清楚了这些，这一段回头看看是不是该删了）

@@ -1,7 +1,8 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 from allclass import *
-import proto.logic_pb2 as pb2
+import proto.interface_pb2 as interface
+import proto.platform_pb2 as platform
 from random import randrange
 from json import load
 import time
@@ -71,10 +72,10 @@ class GameMain:
 
         # for play back file
         GameMain.playback_file_path = global_config["PLAYBACK_FILE_PATH"] + time.strftime("%Y%m%d_%H'%M'%S") + ".pb"
-        open(GameMain.playback_file_path, 'wb').close()     # create the new playback file
+        open(GameMain.playback_file_path, 'wb').close()  # create the new playback file
 
-    def write_playback(self, pb2_data):
-        data = pb2_data.SerializeToString()
+    def write_playback(self, interface_data):
+        data = interface_data.SerializeToString()
         with open(self.playback_file_path, 'ab') as playback:
             playback.write(struct.pack('i', len(data)))
             playback.write(data)
@@ -229,7 +230,7 @@ class GameMain:
             return aim
 
         def get_proto_data():
-            data = pb2.InitialInfo()
+            data = interface.InitialInfo()
             data.start.x, data.start.y = self.__start_position.x, self.__start_position.y
             data.over.x, data.over.y = self.__over_position.x, self.__over_position.y
             for each_team in self.all_players:
@@ -238,7 +239,7 @@ class GameMain:
                     player_info.id = each_player.number
                     player_info.team = each_player.team
                     player_info.vocation = each_player.vocation
-                    player_info.HP_max = int(each_player.heal_point)     # now HP == HP_max
+                    player_info.HP_max = int(each_player.heal_point)  # now HP == HP_max
             return data
 
         self.print_debug(9, 'parachute:' + str(information))
@@ -326,7 +327,7 @@ class GameMain:
             return
 
         def get_proto_data():
-            data = pb2.FrameInfo()
+            data = interface.FrameInfo()
             data.frame = self.__turn
             for team in self.all_players:
                 for player in team:
@@ -384,8 +385,61 @@ class GameMain:
 
     # here return everything as i mention in the related files
     def pack_for_platform(self):
+        all_data = {}
+        for player_info in self.all_info:
+            player = character.Character.all_characters[player_info.id]
+            if not isinstance(player, character.Character):
+                raise Exception("wrong type of player!")
+            data = platform.PlayerInfo()
+            all_data[player.number] = data
+            data.player_ID = player.number
+            data.self.heal_point = player.heal_point
+            data.self.heal_point_limit = player_info.hp_max
+            data.self.move_angle = player.move_direction.get_angle() if player.move_direction else 0
+            data.self.view_angle = player.face_direction.get_angle()
+            data.self.move_speed = player.move_speed
+            data.self.status = player.status
+            data.self.move_cd = player.move_cd
+            data.self.attack_cd = player.shoot_cd
+            data.self.pos.x, data.self.pos.y = player.position.x, player.position.y
 
-        return self.all_info
+            for item_id in player.bag:
+                new_item = data.self.bag.add()
+                entity = item.Item.all_items[item_id]
+                new_item.item_ID = item_id
+                new_item.type = entity.item_type
+                new_item.durability = entity.durability
+
+            data.landform_id.extend(player_info.landform)
+
+            for item_id in player_info.items:
+                new_item = data.items.add()
+                entity = item.Item.all_items[item_id]
+                new_item.item_ID = item_id
+                new_item.type = entity.item_type
+                new_item.durability = entity.durability
+                new_item.pos.distance, new_item.pos.angle = \
+                    player.position.get_polar_position(player.face_direction, entity.position)
+
+            for player_id in player_info.others:
+                new_other = data.others.add()
+                other = character.Character.all_characters[player_id]
+                if not isinstance(other, character.Character):
+                    raise Exception("wrong type of player!")
+                new_other.player_ID = player_id
+                new_other.status = other.status
+                new_other.move_angle = other.move_direction.get_angle()
+                new_other.view_angle = other.face_direction.get_angle()
+                new_other.move_speed = other.move_speed
+                new_other.vocation = other.vocation
+                new_other.pos.distance, new_other.pos.angle = \
+                    player.position.get_polar_position(player.face_direction, other.position)
+
+            for arrived_sound in player_info.sounds:
+                new_sound = data.sounds.add()
+                new_sound.sender, new_sound.delay, new_sound.parameter = arrived_sound
+
+        return all_data
 
     def anti_infinite_loop(self):
         # the game can hold no more than half an hour

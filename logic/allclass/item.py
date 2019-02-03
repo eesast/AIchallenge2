@@ -12,11 +12,14 @@ class Item(Object):   # class for each equipment and goods
     # save all items' data
     all_data = []
 
+    # all items' entities
+    all_items = {}
+
     def __init__(self, item_type):
         super().__init__()
         # some important characteristics
         self.durability = None      # using durability
-        self.item_type = item_type  # 0 means equip and 1 means goods
+        self.item_type = item_type  # should be type enum
         self.damage = None          # including real damage and heal(negative number)
         pass
 
