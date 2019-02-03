@@ -67,11 +67,9 @@ remember: all containers here consist of just id, while the entities exist as cl
 
 `load_data`:load config file, character data file, item data file and map file
 
-`write_playback`: write a proto object into playback file
+`map_init`: initialize the map, mainly layout some airdrops randomly
 
 `unwrap_commands`:after receive commands from platform, use this method to unwrap them
-
-`refresh`:refresh game in each turn. Here are other functions, including `instructions`, `move`, `attack`, `damage`,` die`,` items`, `noise`,` update` for all eight stages, as well as `get_proto_data` to get `FrameInfo` data
 
 `__load_map`:load map data from file by interface
 
@@ -80,6 +78,12 @@ remember: all containers here consist of just id, while the entities exist as cl
 `generate_route`:generate the route of plane, here are other two functions, `random_route` to get a route and return start position and over position, `get_position` use a parameter as distance to get a position, whose algorithm is to find along the edge of map anti-clock-wisely for given distance
 
 `parachute`:deal with parachute event, here are other three functions, `unwrap` to unwrap player initial information and `get_pedal` to get the pedal , `get_proto_data` to get `InitialInfo` data for interface
+
+`refresh`:refresh game in each turn. Here are other functions, including `instructions`, `move`, `attack`, `damage`,` die`,` items`, `noise`,` update` for all eight stages, as well as `get_proto_data` to get `FrameInfo` data
+
+`pack_for_platform`: pack data as proto for platform to return each frame
+
+`write_playback`: write a proto object into playback file
 
 `anti_infinite_loop`:judge if the game have lasted too long
 
@@ -320,11 +324,15 @@ inherited from Object, the class of all pick-up in the map
 
 `next_id`: id should be monotone increasing, use this variable to get a new id
 
+`string_to_type`: a dictionary to get item's type(WEAPON, ARMOR, GOODS) by string from data file
+
 ##### dynamic
 
-`durability`: using durability, for vest it means how many damage it can block, for WEAPON it means bullets, and for GOODS it means rest using times
+`durability`: using durability, for vest it means how many damage it can block, for WEAPON it means bullets,and for GOODS it means rest using times
 
-`prop_type`: it should be type enumeration
+`item_type`: it should be a number according to data file
+
+`id`: id of the item
 
 `owner`: the id of player who owns it or -1 as default value
 
@@ -335,6 +343,16 @@ inherited from Object, the class of all pick-up in the map
 `load_data`: load data from data file
 
 `add`: add a new item entity and update next_id, then return this item's id
+
+##### dynamic
+
+`is_weapon`: judge if this item is a weapon
+
+`is_armor`: judge if this item is a armor
+
+`is_goods`: judge if this item is a goods
+
+
 
 ### `LandForm`
 

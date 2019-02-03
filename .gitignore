@@ -25,5 +25,5 @@
 /logic/__pycache__
 /logic/allclass/__pycache__
 /logic/proto/__pycache__
-/logic/playback
-
+/logic/playback/__pycache__
+/logic/debug/__pycache__

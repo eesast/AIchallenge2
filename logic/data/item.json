@@ -4,7 +4,7 @@
         "type":"WEAPON",
         "number":1,
         "durability":10,
-        "range":200,
+        "range":300,
         "cd":5,
         "damage":50,
         "occur":100

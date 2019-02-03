@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 from xlrd import *
-from json import dump
+# from json import dump
 
 # here give some enums
 START_ROW = 2
@@ -52,10 +52,12 @@ CHARACTER_NUMBER = 0
 CHARACTER_VOCATION = 1
 CHARACTER_MACRO = 2
 CHARACTER_HP = 3
-CHARACTER_MOVE = 4
-CHARACTER_SKILL = 5
-CHARACTER_PARAMETER = 6
-CHARACTER_COLUMN = 7
+CHARACTER_DISTANCE = 4
+CHARACTER_ANGLE = 5
+CHARACTER_MOVE = 6
+CHARACTER_SKILL = 7
+CHARACTER_PARAMETER = 8
+CHARACTER_COLUMN = 9
 
 
 def open_file(path):
@@ -151,11 +153,15 @@ def get_character_data(sheet_character):
         number = int(row[CHARACTER_NUMBER])
         macro = row[CHARACTER_MACRO]
         hp = int(row[CHARACTER_HP])
+        distance = row[CHARACTER_DISTANCE]
+        angle = row[CHARACTER_ANGLE]
         move = row[CHARACTER_MOVE]
         param = row[CHARACTER_PARAMETER]
         data[macro] = {
             'number': number,
             'hp': hp,
+            'distance': distance,
+            'angle': angle,
             'move': move,
             'skill': param,
         }

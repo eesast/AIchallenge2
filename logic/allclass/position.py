@@ -70,7 +70,14 @@ class Position:     # this is a class for position and reload some operator
         if not isinstance(other, Position):
             raise Exception("wrong type of position!")
         # get the angle for two vector
-        theta = acos(self * other/(abs(self) * abs(other))) * 180 / pi
+        cos_theta = self * other/(abs(self) * abs(other))
+        # avoid cos number > 1 because of calculate precision
+        if cos_theta > 1:
+            theta = 0
+        elif cos_theta < -1:
+            theta = 180
+        else:
+            theta = acos(cos_theta) * 180 / pi
         if cross_product(self, other) < 0:
             theta = 360 - theta
         return theta
@@ -78,9 +85,17 @@ class Position:     # this is a class for position and reload some operator
     def get_polar_position(self, direction, other):
         if not (isinstance(other, Position) and isinstance(direction, Position)):
             raise Exception("wrong type of position!")
-        distance = self.distance(other)
-        theta = direction.get_angle(other - self)
+        try:
+            distance = self.distance(other)
+            theta = direction.get_angle(other - self)
+        except ZeroDivisionError:
+            return 0, 0
         return distance, theta
+
+    def accessible(self, other):
+        if not isinstance(other, Position):
+            raise Exception("wrong type of position")
+        return self.distance(other) <= 1
 
 
 def delta_y(position1, position2):

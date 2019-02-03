@@ -29,6 +29,8 @@ def game_main(commands):
 
 def main():
     # this function is just to debug for logic
+    import debug.ai as ai
+    me = ai.AI()
     object.PRINT_DEBUG = 999
     game_init("./", "config.ini")
     file = open("./debug/input.json", 'r', encoding='utf-8')
@@ -38,31 +40,28 @@ def main():
         value["position"] = (value["position"][0], value["position"][1])
         information[int(key)] = value
     print(information)
-    game.parachute(information)
+    parachute(information)
     # for debug
-    commands = \
+    commands ={  }
+    '''\
         {
             5: [
                 {'command_type': 0, 'target': 12, "move_angle": 1.2, "view_angle": 3.6, "other": 13}
             ],
-        }
-    for i in range(12):
-        commands[i] = [
-            {'command_type': 0, "move_angle": 1.2, "view_angle": 3.6}
-        ]
+        }'''
     # start the loop
     # fight until there is only one team alive or be overtime
     while game.alive_teams() > 1 and game.anti_infinite_loop():
-        # first get information from platform
-        for i in range(12):
+        # here create random move instructions
+        '''for i in range(11):
             commands[i][0]['move_angle'] = random.randrange(0, 360)
-            commands[i][0]['view_angle'] = random.randrange(0, 360)
+            commands[i][0]['view_angle'] = random.randrange(0, 360)'''
 
-        # then refresh game
-        game.unwrap_commands(commands)
-        game.refresh()
+        # then refresh game and get current info
+        current_info = game_main(commands)
 
-        # emit information to platform
+        # here give a simple ai for player No.11
+        commands[11] = me.get_command(current_info[11])
 
     # report the final result
     print("game over")

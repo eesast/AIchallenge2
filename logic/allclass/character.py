@@ -12,8 +12,8 @@ RADIO = 3
 class Character(Object):                # the base class of all characters
     # static variables
     all_data = {}                       # save all data from setting file
-    AIRPLANE_SPEED = 50                  # flying speed, will load from file
-    JUMPING_SPEED = 1                   # jumping speed, also load from file
+    AIRPLANE_SPEED = 50                 # flying speed, will load from file
+    JUMPING_SPEED = 20                  # jumping speed, also load from file
 
     all_characters = {}                 # key: id, value: all characters' entities
 
@@ -31,7 +31,7 @@ class Character(Object):                # the base class of all characters
     JUMPING = 2
     MOVING = 3
     SHOOTING = 4
-    PICKUP = 5
+    PICKING = 5
     MOVING_SHOOTING = 6
     DEAD = 7
     REAL_DEAD = 8
@@ -50,6 +50,10 @@ class Character(Object):                # the base class of all characters
         self.shoot_cd = 0               # shoot finished after move_cd frames
         self.vocation = vocation        # save the Vocation
         self.team = -1                  # team id
+
+        # some special variables for view
+        self.view_distance = 200
+        self.view_angle = 120           # view sector's angle
 
         # initialize some inherited variables
         self.move_speed = Character.all_data[vocation]['move']
@@ -94,6 +98,9 @@ class Character(Object):                # the base class of all characters
     def is_alive(self):
         return self.status != Character.REAL_DEAD
 
+    def can_be_hit(self):
+        return self.status != Character.REAL_DEAD and self.status != Character.DEAD
+
     move_factor = [0, 0.2, 0.5, 0.3]
 
     def move(self):
@@ -124,13 +131,44 @@ class Character(Object):                # the base class of all characters
             return False
 
     def change_status(self, new_status):
+        # deal with some special new status for cd
         if new_status == Character.MOVING:
             self.move_cd = 3
             self.move_speed = Character.all_data[self.vocation]['move']
+
+        elif new_status == Character.DEAD:
+            self.move_cd = 0
+            self.shoot_cd = 0
+
+        # consider different current status
         if self.status == Character.RELAX:
             pass
+
         elif self.status == Character.MOVING:
-            pass
+            if new_status == Character.SHOOTING:
+                new_status = Character.MOVING_SHOOTING
+
+        elif self.status == Character.SHOOTING:
+            if new_status == Character.MOVING:
+                new_status = Character.MOVING_SHOOTING
+
+        elif self.status == Character.MOVING_SHOOTING:
+            if new_status == Character.RELAX:
+                if self.move_cd:
+                    new_status = Character.MOVING
+                elif self.shoot_cd:
+                    new_status = Character.SHOOTING
+            elif new_status == Character.MOVING:
+                new_status = Character.MOVING_SHOOTING
+
+        elif self.status == Character.PICKING:
+            if self.move_cd:
+                new_status = Character.MOVING
+                if self.shoot_cd:
+                    new_status = Character.MOVING_SHOOTING
+            elif self.shoot_cd:
+                new_status = Character.SHOOTING
+
         self.status = new_status
         return True
 
