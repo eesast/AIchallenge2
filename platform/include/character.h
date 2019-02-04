@@ -9,7 +9,7 @@ enum class VOCATION_TYPE
   ENGINEER = 1,
   SIGNALMAN = 2,
   HACK = 3,
-  SNIPER = 4
+  SNIPER = 4,
 };
 
 class Character : public Object
