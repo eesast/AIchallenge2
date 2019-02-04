@@ -115,7 +115,7 @@ def cross_product(position1, position2):
 
 
 def angle_to_position(angle):
-    if angle > 180:
+    while angle > 180:
         angle -= 360
     angle = angle * pi / 180
     return Position(cos(angle), sin(angle))

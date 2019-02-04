@@ -42,20 +42,22 @@ def main():
     print(information)
     parachute(information)
     # for debug
-    commands ={  }
-    '''\
-        {
-            5: [
-                {'command_type': 0, 'target': 12, "move_angle": 1.2, "view_angle": 3.6, "other": 13}
-            ],
-        }'''
+    commands = {}
+    for i in range(12):
+        commands[i] = [
+            {
+                'command_type': 0,
+                "move_angle": 0,
+                "view_angle": 0,
+            }
+        ]
     # start the loop
     # fight until there is only one team alive or be overtime
     while game.alive_teams() > 1 and game.anti_infinite_loop():
         # here create random move instructions
-        '''for i in range(11):
+        for i in range(11):
             commands[i][0]['move_angle'] = random.randrange(0, 360)
-            commands[i][0]['view_angle'] = random.randrange(0, 360)'''
+            commands[i][0]['view_angle'] = random.randrange(0, 360)
 
         # then refresh game and get current info
         current_info = game_main(commands)
