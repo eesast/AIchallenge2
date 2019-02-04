@@ -46,13 +46,13 @@ public:
     Pycalling &operator=(const Pycalling &) = delete;
     Pycalling &operator=(Pycalling &&) = delete;
     std::pair<Position, Position> init();
-    void parachute(std::map<int, COMMAND_PARACHUTE>m);
-    void do_loop();
+    std::map<int, std::string> parachute(const std::map<int, COMMAND_PARACHUTE>&m);
+    std::map<int, std::string> do_loop(const std::map<int, std::vector<COMMAND_ACTION>>& m);
 
 
 private:
     bool _check_init();
-
+    void _traceback(const std::string &err);
     Pycalling();
     bool _is_init = false;
     static Pycalling _instance;

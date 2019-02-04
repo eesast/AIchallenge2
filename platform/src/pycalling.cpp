@@ -14,61 +14,26 @@ std::pair<Position, Position> Pycalling::init()
     //get function object
     if (mod == NULL)
     {
-        std::cerr << "Cannot import module. Please check module name and module file." << std::endl;
-        PyObject *type, *value, *traceback;
-        PyObject *pystr;
-        PyErr_Fetch(&type, &value, &traceback);
-        pystr = PyObject_Str(value);
-        Py_ssize_t tmp;
-        std::wcout << PyUnicode_AsWideCharString(pystr, &tmp) << std::endl;
-        std::cin.get();
-        std::cin.get();
-        exit(1);
+        _traceback("Cannot import module. Please check module name and module file.");    
     }
     _game_main = PyObject_GetAttrString(mod, MAIN_FUNC_NAME);
     if (_game_main == NULL)
     {
-        std::cerr << "Cannot get game_main function. Please check game_main funcion name in C++ code or python code." << std::endl;
-        PyObject *type, *value, *traceback;
-        PyObject *pystr;
-        PyErr_Fetch(&type, &value, &traceback);
-        pystr = PyObject_Str(value);
-        Py_ssize_t tmp;
-        std::wcout << PyUnicode_AsWideCharString(pystr, &tmp) << std::endl;
-        std::cin.get();
-        std::cin.get();
-        exit(1);
+        _traceback("Cannot get game_main function. Please check game_main funcion name in C++ code or python code.");
     }
     _game_init = PyObject_GetAttrString(mod, INIT_FUNC_NAME);
     if (_game_init == NULL)
     {
-        std::cerr << "Cannot get game_init function. Please check game_init funcion name in C++ code or python code." << std::endl;
-        PyObject *type, *value, *traceback;
-        PyObject *pystr;
-        PyErr_Fetch(&type, &value, &traceback);
-        pystr = PyObject_Str(value);
-        Py_ssize_t tmp;
-        std::wcout << PyUnicode_AsWideCharString(pystr, &tmp) << std::endl;
-        std::cin.get();
-        std::cin.get();
-        exit(1);
+        _traceback("Cannot get game_init function. Please check game_init funcion name in C++ code or python code.");
     }
     _parachute = PyObject_GetAttrString(mod, PARACHUTE_FUNC_NAME);
     if (_parachute == NULL)
     {
-        std::cerr << "Cannot get parachute function. Please check parachute funcion name in C++ code or python code." << std::endl;
-        PyObject *type, *value, *traceback;
-        PyObject *pystr;
-        PyErr_Fetch(&type, &value, &traceback);
-        pystr = PyObject_Str(value);
-        Py_ssize_t tmp;
-        std::wcout << PyUnicode_AsWideCharString(pystr, &tmp) << std::endl;
-        std::cin.get();
-        std::cin.get();
-        exit(1);
+        _traceback("Cannot get parachute function. Please check parachute funcion name in C++ code or python code.");
     }
     Py_XDECREF(mod);
-
+    //fix a possible bug that rls does not want to fix. 
+    PyRun_SimpleString(("os.makedirs(r\"" + std::string(DATA_PATH) + "playback/\",exist_ok=True)").c_str());
     //parachute
     auto data_dir = Py_BuildValue("(s)", DATA_PATH);
     auto route = PyObject_CallObject(_game_init, data_dir);
@@ -84,15 +49,15 @@ std::pair<Position, Position> Pycalling::init()
     return route_c;
 }
 
-void Pycalling::parachute(std::map<int, COMMAND_PARACHUTE> m)
+std::map<int, std::string> Pycalling::parachute(const std::map<int, COMMAND_PARACHUTE>& m)
 {
     if (!_check_init())
-        return;
-    //package:{0:{"role":[0,1,2,3],"landing_points":(x,y)},1:...}
+        return {};
+    //package:{0:{"role":0,"landing_points":(x,y),'team':team_id},1:...}
     auto all = PyDict_New();
-    for (auto& var : m)
+    for (const auto& var : m)
     {
-        auto each = Py_BuildValue("{s:i,s:(f,f)}", "vocation", var.second.role, "position", var.second.landing_point.x, var.second.landing_point.y);
+        auto each = Py_BuildValue("{s:i,s:(f,f),s:i}", "vocation", var.second.role, "position", var.second.landing_point.x, var.second.landing_point.y, "team", var.second.team);
         auto player_ID = PyLong_FromLong(var.first);
         PyDict_SetItem(all, player_ID, each);
         Py_XDECREF(player_ID);
@@ -102,8 +67,55 @@ void Pycalling::parachute(std::map<int, COMMAND_PARACHUTE> m)
     auto state = PyObject_CallObject(_parachute, arg);
     Py_XDECREF(arg);
     Py_XDECREF(all);
-    return; //waiting for logic
+
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+    std::map<int, std::string> player_infos;
+    while (PyDict_Next(state, &pos, &key, &value))
+    {
+        player_infos[PyLong_AsLong(key)] = { PyBytes_AsString(value),PyBytes_AsString(value) + PyBytes_Size(value) };
+    }
+    Py_XDECREF(state);
+    return player_infos;
 }
+
+std::map<int, std::string> Pycalling::do_loop(const std::map<int, std::vector<COMMAND_ACTION>>& m)
+{
+    if (!_check_init())
+        return {};
+    auto all = PyDict_New();
+    for (const auto& per : m)
+    {
+        auto lst = PyList_New(0);
+        for (const auto &command : per.second)
+        {
+            auto dct = Py_BuildValue("{s:i,s:i,s:f,s:f,s:i}", "command_type", command.command_type,
+                "target", command.target_ID, "move_angle", command.move_angle,
+                "view_angle", command.view_angle, "other", command.parameter);
+            PyList_Append(lst, dct);
+            Py_XDECREF(dct);
+        }
+        auto player_ID = PyLong_FromLong(per.first);
+        PyDict_SetItem(all, player_ID, lst);
+        Py_XDECREF(player_ID);
+        Py_XDECREF(lst);
+    }
+    auto arg = PyTuple_Pack(1, all);
+    auto state = PyObject_CallObject(_game_main, arg);
+    Py_XDECREF(arg);
+    Py_XDECREF(all);
+
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+    std::map<int, std::string> player_infos;
+    while (PyDict_Next(state, &pos, &key, &value))
+    {
+        player_infos[PyLong_AsLong(key)] = { PyBytes_AsString(value),PyBytes_AsString(value) + PyBytes_Size(value) };
+    }
+    Py_XDECREF(state);
+    return player_infos;
+}
+
 
 bool Pycalling::_check_init()
 {
@@ -126,8 +138,11 @@ Pycalling::~Pycalling()
 Pycalling::Pycalling()
 {
 }
-void Pycalling::do_loop()
+
+void Pycalling::_traceback(const std::string &err)
 {
-    if (!_check_init())
-        return;
+    std::cerr << err << std::endl;
+    PyRun_SimpleString("import traceback");
+    PyRun_SimpleString("traceback.print_exc(file = sys.stdout)");
+    exit(1);
 }

@@ -542,7 +542,6 @@ class GameMain:
             if not isinstance(player, character.Character):
                 raise Exception("wrong type of player!")
             data = platform.PlayerInfo()
-            all_data[number] = data
             data.player_ID = player.number
             data.self.heal_point = player.heal_point
             data.self.heal_point_limit = player_info.hp_max
@@ -589,7 +588,7 @@ class GameMain:
             for arrived_sound in player_info.sounds:
                 new_sound = data.sounds.add()
                 new_sound.sender, new_sound.delay, new_sound.parameter = arrived_sound
-
+            all_data[number] = data.SerializeToString()
         self.print_debug(50, "return", len(all_data), "players' data back to platform")
         return all_data
 

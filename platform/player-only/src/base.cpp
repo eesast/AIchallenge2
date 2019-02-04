@@ -26,7 +26,7 @@ void player_receive(bool is_jumping, const std::string data)
     }
     else
     {
-        comm_player::TeamInfo recv;
+        comm_player::PlayerInfo recv;
         if (recv.ParseFromString(data))
         {
             //parse data

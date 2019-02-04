@@ -1,27 +1,10 @@
 #include"base.h"
 #include"./../../include/api.h"
 
-void parachute(VOCATION_TYPE role, Position landing_points)
+void parachute(VOCATION role, Position landing_points)
 {
     comm_player::Parachute sender;
-    switch (role)
-    {
-    case VOCATION_TYPE::MEDIC:
-        sender.set_role(comm_player::Vocation::MEDIC);
-        break;
-    case VOCATION_TYPE::ENGINEER:
-        sender.set_role(comm_player::Vocation::ENGINEER);
-        break;
-    case VOCATION_TYPE::SIGNALMAN:
-        sender.set_role(comm_player::Vocation::SIGNALMAN);
-        break;
-    case VOCATION_TYPE::HACK:
-        sender.set_role(comm_player::Vocation::HACK);
-        break;
-    case VOCATION_TYPE::SNIPER:
-        sender.set_role(comm_player::Vocation::SNIPER);
-        break;
-    }
+    sender.set_role(role);
     auto pos = sender.mutable_landing_point();
     pos->set_x(landing_points.x);
     pos->set_y(landing_points.y);

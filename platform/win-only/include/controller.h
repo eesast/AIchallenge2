@@ -78,6 +78,7 @@ private:
 public:
     //always choose the lastest command
     std::map<int, COMMAND_PARACHUTE> get_parachute_commands();
+    std::map<int, std::vector<COMMAND_ACTION>> get_action_commands();
 private:
     std::string _serialize_route();
 
@@ -98,6 +99,9 @@ private:
     //communication
     std::vector<COMMAND_PARACHUTE> _command_parachute[MAX_PLAYER];
     std::vector<COMMAND_ACTION> _command_action[MAX_PLAYER];
+public:     //comm with pycalling
+    std::pair<Position, Position> route;
+    std::map<int, std::string> player_infos;
 };
 
 DWORD WINAPI thread_func(LPVOID lpParameter);

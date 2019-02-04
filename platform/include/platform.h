@@ -13,8 +13,9 @@
 
 struct COMMAND_PARACHUTE
 {
-    VOCATION_TYPE role;
+    VOCATION role;
     Position landing_point;
+    int team;
 };
 
 enum class COMMAND_TYPE
