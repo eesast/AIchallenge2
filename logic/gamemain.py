@@ -5,23 +5,42 @@ import proto.interface_pb2 as interface
 import proto.platform_pb2 as platform
 from random import randrange
 from json import load
+import math
 import time
 import struct
 
 #   here define a debug level variable to debug print-oriented
 #   remember: here is just a initial level for logic
 #   platform may give another number in game_init
-PRINT_DEBUG = 50
+PRINT_DEBUG = 30
 
 
 #   level 1: only print illegal information
 #   level 2: also print some adjustment
+#   level 3: print illegal instruction for wrong format
+#   level 4: print illegal instruction for wrong logic
+#   level 5: print illegal instruction for current status
+#   level 6: print real dead information
+#   level 7: print dead information
 
 #   level 8: give all players' jumping information
 #   level 9: print initialize information for parachuting
-#   level 10: print commands for each frame
+
+#   level 10: print turns
+
+#   level 13: print damage information
+
+#   level 15: print player's new position after each move
+#   level 16: print player's new pick-up
+
+#   level 20: print player's view for other players
+#   level 21: print player's view for items
+
+#   level 29: print all non-redundant commands for each frame
+#   level 30: print all commands for each frame
 
 #   level 50: print data length for proto
+
 #   level 100: will give all information you can imagine, including config file
 
 class GameMain:
@@ -38,8 +57,8 @@ class GameMain:
         self.all_players = []  # save all teams and players
         self.all_bullets = []
         self.all_sounds = []
-        self.all_items = []
-        self.all_info = []  # save all information for platform
+        self.all_wild_items = {}
+        self.all_info = {}  # save all information for platform
         self.all_commands = {"move": {}, "shoot": {}, "pickup": {}, "radio": {}}
 
         self.number_to_team = {}  # use a number to find a team
@@ -58,6 +77,8 @@ class GameMain:
         return
 
     def load_data(self, file_path, file_name):
+        if file_path[-1] != '/' and file_path[-1] != '\\':
+            file_path = file_path + '/'
         # first load some global information
         with open(file_path + file_name) as config:
             global_config = load(config)
@@ -72,14 +93,17 @@ class GameMain:
 
         # for play back file
         GameMain.playback_file_path = global_config["PLAYBACK_FILE_PATH"] + time.strftime("%Y%m%d_%H'%M'%S") + ".pb"
-        open(GameMain.playback_file_path, 'wb').close()  # create the new playback file
+        open(file_path + GameMain.playback_file_path, 'wb').close()  # create the new playback file
 
-    def write_playback(self, interface_data):
-        data = interface_data.SerializeToString()
-        with open(self.playback_file_path, 'ab') as playback:
-            playback.write(struct.pack('i', len(data)))
-            playback.write(data)
-        self.print_debug(50, "write", len(data), "bytes into the playback file")
+    def map_init(self):
+        # here should give some items randomly according to occurrence
+        # but for debug just give some same guns
+        num = 20
+        for i in range(num):
+            for j in range(num):
+                pos = position.Position(1000 // num // 2 + i * 1000 // num, 12 + j * 1000 // num)
+                self.all_wild_items[item.Item.add('RIFLE', pos)] = item.Item.all_data['RIFLE']['number'], pos
+        # now i add 10000 well-distributed  rifle guns
 
     def unwrap_commands(self, commands):
         # here unwrap all players' commands
@@ -87,10 +111,10 @@ class GameMain:
         self.all_commands["shoot"].clear()
         self.all_commands["pickup"].clear()
         self.all_commands["radio"].clear()
-        # commands format: {teamID:{playerID:[{"command_tye":type, "target":
-        # ID, "move_angle":angle, "view_angle":angle, "other":data}]}}
+        # commands format: { playerID: [{"command_tye":type, "target":
+        # ID, "move_angle": angle, "view_angle": angle, "other": data}]}}
 
-        self.print_debug(10, commands)
+        self.print_debug(30, commands)
         for playerID, player_commands in commands.items():
             for command in player_commands:
                 command_type = command["command_type"]
@@ -106,7 +130,8 @@ class GameMain:
                 else:
                     # if command_type isn't correct, it will be ignored
                     continue
-        self.print_debug(10, "unwrap_command successfully in turn", self.__turn)
+        self.print_debug(29, "unwrap_command successfully in turn", self.__turn)
+        self.print_debug(29, self.all_commands)
         return
 
     def __load_map(self, parent_path, map_file_path):
@@ -260,8 +285,8 @@ class GameMain:
                 player.move_speed = character.Character.AIRPLANE_SPEED
                 player.move_cd = int(player.jump_position.length() / player.move_speed + 1)
                 player.face_direction = player.move_direction
-                # meanwhile deal with information list
-                self.all_info.append(info.Information(player))
+                # meanwhile deal with information dictionary
+                self.all_info[player.number] = info.Information(player)
 
         # output data for interface
         self.write_playback(get_proto_data())
@@ -271,31 +296,124 @@ class GameMain:
         return self.refresh()
 
     def refresh(self):  # refresh a new frame according to the orders
+
         def instructions():
-            for player_number, command in self.all_commands["pickup"].items():
-                # if self.number_to_player[player_number].status != c
+            # pick up
+            for player_number, command in self.all_commands['pickup'].items():
+                picked_item = item.Item.all_items[command['target']]
+                player = character.Character.all_characters[player_number]
+                if picked_item.id not in self.all_info[player_number]:
+                    self.print_debug(4, 'player', player_number, 'try to pick item out of view')
+                elif picked_item.owner != -1:
+                    self.print_debug(4, 'player', player_number, "try to pick somebody's possession")
+                elif not player.position.accessible(picked_item.position):
+                    self.print_debug(4, 'player', player_number, "tyr to pick item beyond pick range")
+                # now this player can get it
+                picked_item.owner = player_number
+                self.all_info[player_number].bag.append(picked_item.id)
+                self.all_wild_items.pop(picked_item.id)
+                character.Character.all_characters[player_number].change_status(character.Character.PICKUP)
+                self.print_debug(16, 'player', player_number, 'pick up item', picked_item.id)
+                # maybe we should deal with command['other'], now ignore it
                 pass
+            # move
+            for player_id, command in self.all_commands['move'].items():
+                move_angle, view_angle = command
+                player = character.Character.all_characters[player_id]
+                if not player.command_status_legal(character.MOVE):
+                    self.print_debug(5, 'player', player_id, 'try to move but not in right status')
+                elif not 0 <= move_angle <= 360:
+                    self.print_debug(3, 'player', player_id, 'give wrong move angle as', move_angle)
+                elif not 0 <= view_angle <= 360:
+                    self.print_debug(3, 'player', player_id, 'give wrong view angle as', view_angle)
+                else:  # now do it
+                    player.change_status(character.Character.MOVING)
+                    player.face_direction = position.angle_to_position(view_angle)
+                    player.move_direction = position.angle_to_position(move_angle)
+            # shoot
+            for player_id, command in self.all_commands['shoot'].items():
+                view_angle, item_id, other = command
+                player = character.Character.all_characters[player_id]
+                entity = item.Item.all_items.get(item_id, None)
+                if not entity:
+                    self.print_debug(4, 'player', player_id, 'try to use weapon not existing')
+                elif entity.owner != player_id:
+                    self.print_debug(4, 'player', player_id, 'try to use items not belonging to him')
+                elif not entity.is_weapon():
+                    self.print_debug(4, 'player', player_id, 'try to use not weapon-like item to shoot')
+                elif not 0 <= view_angle <= 360:
+                    self.print_debug(3, 'player', player_id, 'give wrong attack angle as', view_angle)
+                else:  # now shoot
+                    entity.durability -= 1
+                    view_angle += player.view_angle  # correct relative angle to absolute angle
+                    if view_angle >= 360:
+                        view_angle -= 360
+                    player.shoot_cd = item.Item.all_data[entity.item_type]['cd']
+                    player.change_status(character.Character.SHOOTING)
+                    self.all_bullets.append((player.position, view_angle, item_id, player_id, None))
+                    # here should deal with other parameter, just put off
+            # radio will be done after the new year
 
         def move():
             for team in self.all_players:
                 for player in team:
                     if not isinstance(player, character.Character):
                         raise Exception("wrong player!")
-                    player.move()
+                    if player.move():
+                        self.print_debug(15, 'player', player.number, 'move to', player.position)
 
         def attack():
-            pass
+            bullets = self.all_bullets
+            for index in range(len(bullets)):
+                pos, view_angle, item_id, player_id = bullets[index]
+                shortest = None
+                for team in self.all_players:
+                    if character.Character.all_characters[player_id] in team:
+                        continue
+                    for player in team:
+                        if not player.can_be_hit():
+                            continue
+                        dist, angle = pos.get_polar_position(player.position, position.angle_to_position(view_angle))
+                        delta = abs(angle - view_angle)
+                        delta = 0 if delta > 360 else 360 - delta if delta > 180 else delta
+                        if delta < 2.5:
+                            if dist > item.Item.all_data[item_id]['range']:
+                                continue
+                            if not shortest or shortest < dist:
+                                # modify hit player
+                                shortest = dist
+                                bullets[index] = pos, view_angle, item_id, player_id, player.number
+            return
 
         def damage():
-            pass
+            bullets = self.all_bullets
+            for index in range(len(bullets)):
+                pos, view_angle, item_id, player_id, hit_id = bullets[index]
+                if hit_id:
+                    direction = position.angle_to_position(view_angle)
+                    target = character.Character.all_characters[player_id].position
+                    dist = abs(position.cross_product(direction, target - pos))
+                    data = item.Item.get_data_by_item_id(item_id)
+                    value = math.exp(-dist * 100 / data['range']) * data['damage']
+                    character.Character.all_characters[player_id].heal_point -= value
+
+                    self.print_debug(13, 'player', player_id, data['name'], value, 'damage to player', hit_id)
+
+            self.all_bullets = [bullet for bullet in bullets if not bullets[4]]
 
         def die():
+            for team in self.all_players:
+                for player in team:
+                    if player.heal_point < 0:
+                        player.heal_point = 0
+                        player.change_status(character.Character.DEAD)
+                        self.print_debug(7, 'player', player.number, 'dead')
             pass
 
         def items():
             pass
 
-        def radio():
+        def noise():
             pass
 
         def update():
@@ -305,6 +423,8 @@ class GameMain:
                         raise Exception("wrong player!")
                     if player.move_cd:
                         player.move_cd -= 1
+                    if player.shoot_cd:
+                        player.shoot_cd -= 1
                     if player.move_cd == 0:
 
                         if player.is_flying():
@@ -324,6 +444,29 @@ class GameMain:
                             player.move_speed = 0
                             self.print_debug(8, "in turn", self.__turn, "player", player.number, "reach the ground at",
                                              player.position)
+            for player_id, player_info in self.all_info.items():
+                player_info.clear()
+                # ignore landform now
+                # ignore sounds now
+                player = character.Character.all_characters[player_id]
+                for item_id in self.all_wild_items:
+                    each_item = item.Item.all_items[item_id]
+                    distance, angle = player.position.get_polar_position(player.face_direction, each_item.position)
+                    if distance <= player.view_distance and abs(angle / 2) <= player.view_angle / 2:
+                        player_info.items.append(item_id)
+                        # for debug
+                        if player_id == 11:
+                            self.print_debug(21, 'player', player_id, 'see item', item_id)
+                for team in self.all_players:
+                    for other in team:
+                        if other.number == player_id:
+                            continue
+                        distance, angle = player.position.get_polar_position(player.face_direction, other.position)
+                        if distance <= player.view_distance and abs(angle / 2) <= player.view_angle / 2:
+                            player_info.items.append(other.number)
+                            # for debug
+                            if player_id == 11:
+                                self.print_debug(20, 'player', player_id, 'see player', other.number)
             return
 
         def get_proto_data():
@@ -349,7 +492,15 @@ class GameMain:
                         new_info.weapon = player.last_weapon
                         new_info.armor = player.best_armor
                         new_info.face_direction = player.face_direction.get_angle()
+            for item_id, type_pos_tuple in self.all_wild_items.items():
+                type_id, pos = type_pos_tuple
+                new_item = data.items.add()
+                new_item.id = item_id
+                new_item.type = type_id
+                new_item.pos.x, new_item.pos.y = pos.x, pos.y
             return data
+
+        self.print_debug(10, 'turn', self.__turn, 'starts!')
 
         # 1. judge and operate players' instructions
         instructions()
@@ -369,8 +520,8 @@ class GameMain:
         # 6. refresh items information
         items()
 
-        # 7. refresh radio voice
-        radio()
+        # 7. refresh radio and other sound
+        noise()
 
         # 8. update player's view, cd and etc
         update()
@@ -386,12 +537,12 @@ class GameMain:
     # here return everything as i mention in the related files
     def pack_for_platform(self):
         all_data = {}
-        for player_info in self.all_info:
-            player = character.Character.all_characters[player_info.id]
+        for number, player_info in self.all_info.items():
+            player = character.Character.all_characters[number]
             if not isinstance(player, character.Character):
                 raise Exception("wrong type of player!")
             data = platform.PlayerInfo()
-            all_data[player.number] = data
+            all_data[number] = data
             data.player_ID = player.number
             data.self.heal_point = player.heal_point
             data.self.heal_point_limit = player_info.hp_max
@@ -439,7 +590,15 @@ class GameMain:
                 new_sound = data.sounds.add()
                 new_sound.sender, new_sound.delay, new_sound.parameter = arrived_sound
 
+        self.print_debug(50, "return", len(all_data), "players' data back to platform")
         return all_data
+
+    def write_playback(self, interface_data):
+        data = interface_data.SerializeToString()
+        with open(self.playback_file_path, 'ab') as playback:
+            playback.write(struct.pack('i', len(data)))
+            playback.write(data)
+        self.print_debug(50, "write", len(data), "bytes into the playback file")
 
     def anti_infinite_loop(self):
         # the game can hold no more than half an hour
