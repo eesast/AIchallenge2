@@ -11,3 +11,9 @@
 `test.py`: 生成指令的脚本。
 
 `*.pb`：回放文件样例。
+
+`out.txt`: 一场逻辑用测试AI打完的log例。
+
+`out2.txt` ：`out.txt`去掉部分信息后便于看的版本。
+
+`filter.py`: 将out.txt转为out2.txt。

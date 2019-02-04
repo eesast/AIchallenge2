@@ -92,8 +92,9 @@ class GameMain:
         self.__load_map(file_path, global_config["MAP_FILE_PATH"])
 
         # for play back file
-        GameMain.playback_file_path = global_config["PLAYBACK_FILE_PATH"] + time.strftime("%Y%m%d_%H'%M'%S") + ".pb"
-        open(file_path + GameMain.playback_file_path, 'wb').close()  # create the new playback file
+        playback_child_path = global_config["PLAYBACK_FILE_PATH"] + time.strftime("%Y%m%d_%H'%M'%S") + ".pb"
+        GameMain.playback_file_path = file_path + playback_child_path
+        open(GameMain.playback_file_path, 'wb').close()  # create the new playback file
 
     def map_init(self):
         # here should give some items randomly according to occurrence
@@ -101,9 +102,10 @@ class GameMain:
         num = 20
         for i in range(num):
             for j in range(num):
-                pos = position.Position(1000 // num // 2 + i * 1000 // num, 12 + j * 1000 // num)
+                pos = position.Position(1000 // num // 2 + i * 1000 // num, 1000 // num // 2 + j * 1000 // num)
                 self.all_wild_items[item.Item.add('RIFLE', pos)] = item.Item.all_data['RIFLE']['number'], pos
         # now i add 10000 well-distributed  rifle guns
+        return
 
     def unwrap_commands(self, commands):
         # here unwrap all players' commands
@@ -300,22 +302,23 @@ class GameMain:
         def instructions():
             # pick up
             for player_number, command in self.all_commands['pickup'].items():
-                picked_item = item.Item.all_items[command['target']]
+                picked_item = item.Item.all_items[command[0]]
                 player = character.Character.all_characters[player_number]
-                if picked_item.id not in self.all_info[player_number]:
+                if picked_item.id not in self.all_info[player_number].items:
                     self.print_debug(4, 'player', player_number, 'try to pick item out of view')
                 elif picked_item.owner != -1:
                     self.print_debug(4, 'player', player_number, "try to pick somebody's possession")
                 elif not player.position.accessible(picked_item.position):
                     self.print_debug(4, 'player', player_number, "tyr to pick item beyond pick range")
-                # now this player can get it
-                picked_item.owner = player_number
-                self.all_info[player_number].bag.append(picked_item.id)
-                self.all_wild_items.pop(picked_item.id)
-                character.Character.all_characters[player_number].change_status(character.Character.PICKUP)
-                self.print_debug(16, 'player', player_number, 'pick up item', picked_item.id)
-                # maybe we should deal with command['other'], now ignore it
-                pass
+                else:
+                    # now this player can get it
+                    picked_item.owner = player_number
+                    player.bag.append(picked_item.id)
+                    self.all_wild_items.pop(picked_item.id)
+                    character.Character.all_characters[player_number].change_status(character.Character.PICKING)
+                    self.print_debug(16, 'player', player_number, 'pick up item', picked_item.id)
+                    # maybe we should deal with command['other'], now ignore it
+                    pass
             # move
             for player_id, command in self.all_commands['move'].items():
                 move_angle, view_angle = command
@@ -328,14 +331,17 @@ class GameMain:
                     self.print_debug(3, 'player', player_id, 'give wrong view angle as', view_angle)
                 else:  # now do it
                     player.change_status(character.Character.MOVING)
-                    player.face_direction = position.angle_to_position(view_angle)
-                    player.move_direction = position.angle_to_position(move_angle)
+                    basic_angle = player.face_direction.get_angle()
+                    player.face_direction = position.angle_to_position(view_angle + basic_angle)
+                    player.move_direction = position.angle_to_position(move_angle + basic_angle)
             # shoot
             for player_id, command in self.all_commands['shoot'].items():
                 view_angle, item_id, other = command
                 player = character.Character.all_characters[player_id]
                 entity = item.Item.all_items.get(item_id, None)
-                if not entity:
+                if player.shoot_cd:
+                    self.print_debug(4, 'player', player_id, 'try to shoot with', player.shoot_cd,' shoot cd')
+                elif not entity:
                     self.print_debug(4, 'player', player_id, 'try to use weapon not existing')
                 elif entity.owner != player_id:
                     self.print_debug(4, 'player', player_id, 'try to use items not belonging to him')
@@ -345,10 +351,11 @@ class GameMain:
                     self.print_debug(3, 'player', player_id, 'give wrong attack angle as', view_angle)
                 else:  # now shoot
                     entity.durability -= 1
-                    view_angle += player.view_angle  # correct relative angle to absolute angle
+                    view_angle += player.face_direction.get_angle()  # correct relative angle to absolute angle
                     if view_angle >= 360:
                         view_angle -= 360
                     player.shoot_cd = item.Item.all_data[entity.item_type]['cd']
+                    player.face_direction = position.angle_to_position(view_angle)
                     player.change_status(character.Character.SHOOTING)
                     self.all_bullets.append((player.position, view_angle, item_id, player_id, None))
                     # here should deal with other parameter, just put off
@@ -365,19 +372,19 @@ class GameMain:
         def attack():
             bullets = self.all_bullets
             for index in range(len(bullets)):
-                pos, view_angle, item_id, player_id = bullets[index]
+                pos, view_angle, item_id, player_id, hit_id = bullets[index]
                 shortest = None
+                data = item.Item.get_data_by_item_id(item_id)
                 for team in self.all_players:
                     if character.Character.all_characters[player_id] in team:
                         continue
                     for player in team:
                         if not player.can_be_hit():
                             continue
-                        dist, angle = pos.get_polar_position(player.position, position.angle_to_position(view_angle))
-                        delta = abs(angle - view_angle)
+                        dist, delta = pos.get_polar_position(position.angle_to_position(view_angle), player.position)
                         delta = 0 if delta > 360 else 360 - delta if delta > 180 else delta
                         if delta < 2.5:
-                            if dist > item.Item.all_data[item_id]['range']:
+                            if dist > data['range']:
                                 continue
                             if not shortest or shortest < dist:
                                 # modify hit player
@@ -389,22 +396,26 @@ class GameMain:
             bullets = self.all_bullets
             for index in range(len(bullets)):
                 pos, view_angle, item_id, player_id, hit_id = bullets[index]
-                if hit_id:
+                if hit_id is not None:
                     direction = position.angle_to_position(view_angle)
                     target = character.Character.all_characters[player_id].position
                     dist = abs(position.cross_product(direction, target - pos))
                     data = item.Item.get_data_by_item_id(item_id)
                     value = math.exp(-dist * 100 / data['range']) * data['damage']
-                    character.Character.all_characters[player_id].heal_point -= value
+                    character.Character.all_characters[hit_id].heal_point -= value
 
                     self.print_debug(13, 'player', player_id, data['name'], value, 'damage to player', hit_id)
+                else:
+                    if item.Item.all_items[item_id].item_type == 1:
+                        bullets[index] = pos, view_angle, item_id, player_id, True
 
-            self.all_bullets = [bullet for bullet in bullets if not bullets[4]]
+            self.all_bullets = [bullet for bullet in bullets if bullet[4] is None]
+            return
 
         def die():
             for team in self.all_players:
                 for player in team:
-                    if player.heal_point < 0:
+                    if player.can_be_hit() and player.heal_point <= 0:
                         player.heal_point = 0
                         player.change_status(character.Character.DEAD)
                         self.print_debug(7, 'player', player.number, 'dead')
@@ -425,6 +436,8 @@ class GameMain:
                         player.move_cd -= 1
                     if player.shoot_cd:
                         player.shoot_cd -= 1
+                    if player.is_picking():
+                        player.change_status(character.Character.RELAX)
                     if player.move_cd == 0:
 
                         if player.is_flying():
@@ -452,7 +465,7 @@ class GameMain:
                 for item_id in self.all_wild_items:
                     each_item = item.Item.all_items[item_id]
                     distance, angle = player.position.get_polar_position(player.face_direction, each_item.position)
-                    if distance <= player.view_distance and abs(angle / 2) <= player.view_angle / 2:
+                    if distance <= player.view_distance and abs(angle) <= player.view_angle / 2:
                         player_info.items.append(item_id)
                         # for debug
                         if player_id == 11:
@@ -462,8 +475,9 @@ class GameMain:
                         if other.number == player_id:
                             continue
                         distance, angle = player.position.get_polar_position(player.face_direction, other.position)
-                        if distance <= player.view_distance and abs(angle / 2) <= player.view_angle / 2:
-                            player_info.items.append(other.number)
+                        angle = 360 - angle if angle > 180 else angle
+                        if distance <= player.view_distance and angle <= player.view_angle / 2:
+                            player_info.others.append(other.number)
                             # for debug
                             if player_id == 11:
                                 self.print_debug(20, 'player', player_id, 'see player', other.number)
@@ -542,7 +556,6 @@ class GameMain:
             if not isinstance(player, character.Character):
                 raise Exception("wrong type of player!")
             data = platform.PlayerInfo()
-            all_data[number] = data
             data.player_ID = player.number
             data.self.heal_point = player.heal_point
             data.self.heal_point_limit = player_info.hp_max
@@ -579,7 +592,7 @@ class GameMain:
                     raise Exception("wrong type of player!")
                 new_other.player_ID = player_id
                 new_other.status = other.status
-                new_other.move_angle = other.move_direction.get_angle()
+                new_other.move_angle = other.move_direction.get_angle() if other.move_direction else 0
                 new_other.view_angle = other.face_direction.get_angle()
                 new_other.move_speed = other.move_speed
                 new_other.vocation = other.vocation
@@ -590,6 +603,9 @@ class GameMain:
                 new_sound = data.sounds.add()
                 new_sound.sender, new_sound.delay, new_sound.parameter = arrived_sound
 
+            proto_data = data.SerializeToString()
+            all_data[number] = proto_data
+
         self.print_debug(50, "return", len(all_data), "players' data back to platform")
         return all_data
 
@@ -599,6 +615,7 @@ class GameMain:
             playback.write(struct.pack('i', len(data)))
             playback.write(data)
         self.print_debug(50, "write", len(data), "bytes into the playback file")
+        return
 
     def anti_infinite_loop(self):
         # the game can hold no more than half an hour
