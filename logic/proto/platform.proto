@@ -37,6 +37,8 @@ message SelfInfo {
 	int32 attack_cd=9;
     XYPosition pos=10;
     repeated Item bag=11;
+	double view_width = 12;
+	double view_distance = 13;
 }
 
 message OtherInfo {

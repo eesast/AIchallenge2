@@ -6,32 +6,68 @@ from json import load
 
 class Item(Object):   # class for each equipment and goods
     # two name for different item types
-    EQUIP = 0
-    GOODS = 1
+    WEAPON = 0
+    ARMOR = 1
+    GOODS = 2
 
     # save all items' data
-    all_data = []
+    all_data = {}
 
     # all items' entities
     all_items = {}
 
-    def __init__(self, item_type):
+    # next entity's id
+    next_id = 0
+
+    # get enum data from string
+    string_to_type = {
+        'WEAPON': WEAPON,
+        'ARMOR': ARMOR,
+        'GOODS': GOODS
+    }
+
+    def __init__(self, item_type, number):
         super().__init__()
         # some important characteristics
-        self.durability = None      # using durability
-        self.item_type = item_type  # should be type enum
-        self.damage = None          # including real damage and heal(negative number)
-        pass
+        self.data = Item.all_data[item_type]
+        self.durability = Item.all_data[item_type]['durability']    # using durability
+        self.item_type = item_type                   # type id
+        self.id = number                             # item's id
+        self.owner = -1                              # owner's id
+        return
 
     @staticmethod
     def load_data(parent_path, item_file_path):
         with open(parent_path + item_file_path, "r", encoding="utf-8") as file:
             all_data = load(file)
+        for key, value in all_data.items():
+            Item.all_data[key] = value
+            Item.all_data[key]['name'] = key
+            Item.all_data[value['number']] = Item.all_data[key]
         return all_data
 
-    # enum all items' name
-    EQUIP_CHARGER = 1
-    GOODS_CHARGER = 51
+    @staticmethod
+    def add(new_type, pos):
+        if isinstance(new_type, str):
+            new_type = Item.all_data[new_type]['number']
+        new_item = Item(new_type, Item.next_id)
+        new_item.position = pos
+        Item.all_items[Item.next_id] = new_item
+        Item.next_id += 1
+        return new_item.id
+
+    def is_weapon(self):
+        return Item.all_data[self.item_type] == 'WEAPON'
+
+    def is_armor(self):
+        return Item.all_data[self.item_type] == 'ARMOR'
+
+    def is_goods(self):
+        return Item.all_data[self.item_type] == 'GOODS'
+
+    @staticmethod
+    def get_data_by_item_id(item_id):
+        return Item.all_data[Item.all_items[item_id]]
 
 
 if __name__ == '__main__':

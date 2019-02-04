@@ -9,7 +9,6 @@ class Information:
             raise Exception("wrong player type!")
         self.id = player.number
         self.hp_max = player.heal_point
-        self.bag = []
         self.items = []
         self.landform = []
         self.others = []
@@ -19,7 +18,6 @@ class Information:
         pass
 
     def clear(self):
-        self.bag.clear()
         self.items.clear()
         self.landform.clear()
         self.others.clear()
