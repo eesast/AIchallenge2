@@ -22,7 +22,6 @@ Controller::~Controller()
             shmdt(_info[i].shm);
             shmctl(_info[i].shmid, IPC_RMID, nullptr);
             dlclose(_info[i].lib);
-
         }
     }
 }
@@ -347,24 +346,8 @@ bool Controller::_parse_parachute(const std::string &data, int playerID)
         COMMAND_PARACHUTE c;
         c.landing_point.x = recv.landing_point().x();
         c.landing_point.y = recv.landing_point().y();
-        switch (recv.role())
-        {
-        case comm_platform::Vocation::MEDIC:
-            c.role = VOCATION_TYPE::MEDIC;
-            break;
-        case comm_platform::Vocation::ENGINEER:
-            c.role = VOCATION_TYPE::ENGINEER;
-            break;
-        case comm_platform::Vocation::SIGNALMAN:
-            c.role = VOCATION_TYPE::SIGNALMAN;
-            break;
-        case comm_platform::Vocation::HACK:
-            c.role = VOCATION_TYPE::HACK;
-            break;
-        case comm_platform::Vocation::SNIPER:
-            c.role = VOCATION_TYPE::SNIPER;
-            break;
-        }
+        c.role = static_cast<VOCATION>(recv.role());
+        c.team=_info[playerID].team;
         _command_parachute[playerID].push_back(c);
         return true;
     }
@@ -443,6 +426,21 @@ std::map<int, COMMAND_PARACHUTE> Controller::get_parachute_commands()
         if (!_command_parachute[i].empty())
         {
             m[i] = _command_parachute[i].back();
+        }
+    }
+    return m;
+}
+
+std::map<int, std::vector<COMMAND_ACTION>> Controller::get_action_commands()
+{
+    std::map<int, std::vector<COMMAND_ACTION>> m;
+    if (!_check_init())
+        return m;
+    for (int i = 0; i < _player_count; ++i)
+    {
+        if (!_command_action[i].empty())
+        {
+            m[i] = { _command_action[i].cbegin(),_command_action[i].cend() };
         }
     }
     return m;

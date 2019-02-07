@@ -12,7 +12,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/player-only/)
 IF(WIN32)
 find_package(Python3 REQUIRED)
 ELSEIF(UNIX)
-find_package(PythonLibs 3 REQUIRED)
+find_package(PythonLibs 3.6 REQUIRED)
 ENDIF()
 
 include_directories(${PROJECT_SOURCE_DIR}/include)

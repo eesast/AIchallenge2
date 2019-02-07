@@ -92,8 +92,8 @@ class GameMain:
         self.__load_map(file_path, global_config["MAP_FILE_PATH"])
 
         # for play back file
-        GameMain.playback_file_path = global_config["PLAYBACK_FILE_PATH"] + time.strftime("%Y%m%d_%H'%M'%S") + ".pb"
-        open(file_path + GameMain.playback_file_path, 'wb').close()  # create the new playback file
+        GameMain.playback_file_path = file_path +global_config["PLAYBACK_FILE_PATH"] + time.strftime("%Y%m%d_%H'%M'%S") + ".pb"
+        open(GameMain.playback_file_path, 'wb').close()  # create the new playback file
 
     def map_init(self):
         # here should give some items randomly according to occurrence

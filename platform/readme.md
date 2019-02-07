@@ -44,6 +44,7 @@
 3. 没有处理玩家死亡后的进程资源释放操作。
 4. 计划取消is_jumping变量，仅采用turn作为当前传输内容是否为跳伞信息。
 5. 对于每个不同的AI需要include不同包名的proto，这需要依赖自动构建程序。
+6. 对于logic与platform中的所有proto文件，为避免出现问题，需要全部采用相同版本的protoc与libprotobuf进行处理，dev-platform中暂时采用3.7rc2版本，与master分支中不同，**请勿将dev-platform合并入master分支**。
 
 ## 多个玩家的动态链接库命名
 

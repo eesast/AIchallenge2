@@ -5,6 +5,8 @@ set(CMAKE_MINOR_VERSION 1)
 
 set(CMAKE_BUILD_TYPE Debug)
 
+set(CMAKE_CXX_STANDARD 17)
+
 include_directories(${PROJECT_SOURCE_DIR}/include)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src DIR_SRC)
 aux_source_directory(${PROJECT_SOURCE_DIR}/player_only/src DIR_SRC)

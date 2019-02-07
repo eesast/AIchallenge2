@@ -20,7 +20,6 @@
 
 #define manager (Controller::get_instance())
 
-
 void notify_child_finish(int, siginfo_t *info, void *);
 
 class Controller
@@ -42,7 +41,7 @@ private:
     void *lib = nullptr;
     pid_t pid = 0;
     AI_STATE state = AI_STATE::UNUSED;
-    int turn = 0;             //turn of game
+    int turn = 0; //turn of game
     int shmid;
     COMM_BLOCK *shm = nullptr;
     AI_Func player_func = nullptr;
@@ -82,7 +81,7 @@ public:
   bool send_to_server(bool is_jumping, const std::string &data);
 
 private:
-  void _receive_from_client(int playerID);  //assume that the lock is locked
+  void _receive_from_client(int playerID); //assume that the lock is locked
   void _send_to_client(int playerID, const std::string &data);
   void _receive_from_server(); //assume that the lock is locked
   //return true on success.
@@ -92,6 +91,7 @@ private:
 public:
   //always choose the lastest command
   std::map<int, COMMAND_PARACHUTE> get_parachute_commands();
+  std::map<int, std::vector<COMMAND_ACTION>> get_action_commands();
 
 private:
   std::string _serialize_route();
@@ -114,6 +114,10 @@ private:
   //communication
   std::vector<COMMAND_PARACHUTE> _command_parachute[MAX_PLAYER];
   std::vector<COMMAND_ACTION> _command_action[MAX_PLAYER];
+
+public: //comm with pycalling
+  std::pair<Position, Position> route;
+  std::map<int, std::string> player_infos;
 };
 
 bool controller_receive(bool is_jumping, const std::string data);
