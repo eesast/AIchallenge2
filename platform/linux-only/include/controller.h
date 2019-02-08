@@ -12,7 +12,7 @@
 #include <sys/shm.h>
 #include <sys/ipc.h>
 #include <sys/time.h>
-#include "communication_platform.pb.h"
+#include "comm.pb.h"
 #include "comm_block.h"
 #include <filesystem>
 #include <dlfcn.h>
@@ -85,8 +85,7 @@ private:
   void _send_to_client(int playerID, const std::string &data);
   void _receive_from_server(); //assume that the lock is locked
   //return true on success.
-  bool _parse_parachute(const std::string &data, int playerID);
-  bool _parse_commands(const std::string &data, int playerID);
+  bool _parse(const std::string &data, int playerID);
 
 public:
   //always choose the lastest command

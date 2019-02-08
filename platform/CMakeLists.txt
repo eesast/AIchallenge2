@@ -8,6 +8,7 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 17)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/player-only/)
+add_subdirectory(${PROJECT_SOURCE_DIR}/proto/)
 
 IF(WIN32)
 find_package(Python3 REQUIRED)
@@ -40,10 +41,12 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/linux-only/src DIR_SRC)
 ENDIF()
 
 # protobuf
-IF(UNIX)
-find_package(Protobuf REQUIRED)
-ENDIF()
-include_directories(${Protobuf_INCLUDE_DIRS})
+include_directories(${PROJECT_BINARY_DIR}/proto/)
+
+# IF(UNIX)
+# find_package(Protobuf REQUIRED)
+# ENDIF()
+# include_directories(${Protobuf_INCLUDE_DIRS})
 
 
 include_directories(${PYTHON_INCLUDE_DIRS})
@@ -51,7 +54,9 @@ add_executable(platform ${DIR_SRC})
 target_link_libraries(platform ${PYTHON_LIBRARIES})
 
 IF(UNIX)
-target_link_libraries(platform ${Protobuf_LIBRARIES})
+# target_link_libraries(platform ${Protobuf_LIBRARIES})
 target_link_libraries(platform libdl.so)
 target_link_libraries(platform stdc++fs)
+target_link_libraries(platform comm)
+
 ENDIF()

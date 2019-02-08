@@ -21,7 +21,7 @@
 #define AI_EXPORTS
 #endif // !AI_EXPORTS
 #endif // WIN32
-#include "communication_player.pb.h"
+#include "comm.pb.h"
 
 #include <iostream>
 

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package comm_player;
+package comm;
 
 message PolarPosition {
     //use the system of polar coordinates
@@ -71,6 +71,7 @@ enum CommandType {
     SHOOT=1;
     PICKUP=2;
     RADIO=3;
+    PARACHUTE=4;
 }
 
 message Command {
@@ -79,14 +80,11 @@ message Command {
     double move_angle=3;
     double view_angle=4;
     int32 parameter=5;
+    int32 role=6;
+    XYPosition landing_point=7;
 }
 
 message Route {
     XYPosition start_pos=1;
     XYPosition over_pos=2;
-}
-
-message Parachute {
-    int32 role=1;
-    XYPosition landing_point=2;
 }

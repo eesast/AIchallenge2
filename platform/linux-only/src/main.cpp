@@ -10,16 +10,15 @@ int main(int argc, char *argv[])
     manager.route = logic.init();
     manager.run();
     manager.player_infos = logic.parachute(manager.get_parachute_commands());
-    //comm_platform::PlayerInfo recv;
+    //comm::PlayerInfo recv;
     //auto b=recv.ParseFromString(manager.player_infos[0]);
     //std::cout << recv.DebugString();
     for (int i = 0; i < 3; i++)
     {
         manager.run();
         manager.player_infos = logic.do_loop(manager.get_action_commands());
-        comm_platform::PlayerInfo recv;
+        comm::PlayerInfo recv;
         auto b = recv.ParseFromString(manager.player_infos[0]);
-        std::cout << recv.DebugString();
     }
     getchar();
     return 0;

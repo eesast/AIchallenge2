@@ -303,19 +303,9 @@ void Controller::_receive_from_client(int playerID)
     if (!_check_init())
         return;
     auto all = _info[playerID].shm->get_commands();
-    if (_info[playerID].turn == 0)
+    for (auto &s : all)
     {
-        for (auto &s : all)
-        {
-            _parse_parachute(s, playerID);
-        }
-    }
-    else
-    {
-        for (auto &s : all)
-        {
-            _parse_commands(s, playerID);
-        }
+        _parse(s, playerID);
     }
 }
 
@@ -337,54 +327,50 @@ void Controller::_receive_from_server()
     (*_info[_playerID].recv_func)(_info[_playerID].turn == 0, _info[_playerID].shm->get_infos());
 }
 
-bool Controller::_parse_parachute(const std::string &data, int playerID)
+bool Controller::_parse(const std::string &data, int playerID)
 {
-    comm_platform::Parachute recv;
+    comm::Command recv;
     if (playerID >= 0 && recv.ParseFromString(data))
     {
-        std::cout << recv.DebugString() << std::endl;
-        COMMAND_PARACHUTE c;
-        c.landing_point.x = recv.landing_point().x();
-        c.landing_point.y = recv.landing_point().y();
-        c.role = static_cast<VOCATION>(recv.role());
-        c.team=_info[playerID].team;
-        _command_parachute[playerID].push_back(c);
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-bool Controller::_parse_commands(const std::string &data, int playerID)
-{
-    comm_platform::Command recv;
-    if (playerID >= 0 && recv.ParseFromString(data))
-    {
-        COMMAND_ACTION c;
-        switch (recv.command_type())
+        if (recv.command_type() != comm::CommandType::PARACHUTE)
         {
-        case comm_platform::CommandType::MOVE:
-            c.command_type = COMMAND_TYPE::MOVE;
-            break;
-        case comm_platform::CommandType::SHOOT:
-            c.command_type = COMMAND_TYPE::SHOOT;
-            break;
-        case comm_platform::CommandType::PICKUP:
-            c.command_type = COMMAND_TYPE::PICKUP;
-            break;
-        case comm_platform::CommandType::RADIO:
-            c.command_type = COMMAND_TYPE::RADIO;
-            break;
-        }
-        c.move_angle = recv.move_angle();
-        c.view_angle = recv.view_angle();
-        c.target_ID = recv.target_id();
-        c.parameter = recv.parameter();
+            COMMAND_ACTION c;
+            switch (recv.command_type())
+            {
+            case comm::CommandType::MOVE:
+                c.command_type = COMMAND_TYPE::MOVE;
+                break;
+            case comm::CommandType::SHOOT:
+                c.command_type = COMMAND_TYPE::SHOOT;
+                break;
+            case comm::CommandType::PICKUP:
+                c.command_type = COMMAND_TYPE::PICKUP;
+                break;
+            case comm::CommandType::RADIO:
+                c.command_type = COMMAND_TYPE::RADIO;
+                break;
+            default:
+                break;
+            }
+            c.move_angle = recv.move_angle();
+            c.view_angle = recv.view_angle();
+            c.target_ID = recv.target_id();
+            c.parameter = recv.parameter();
 
-        _command_action[playerID].push_back(c);
-        return true;
+            _command_action[playerID].push_back(c);
+            return true;
+        }
+        else
+        {
+            std::cout << recv.DebugString() << std::endl;
+            COMMAND_PARACHUTE c;
+            c.landing_point.x = recv.landing_point().x();
+            c.landing_point.y = recv.landing_point().y();
+            c.role = static_cast<VOCATION>(recv.role());
+            c.team = _info[playerID].team;
+            _command_parachute[playerID].push_back(c);
+            return true;
+        }
     }
     else
     {
@@ -394,7 +380,7 @@ bool Controller::_parse_commands(const std::string &data, int playerID)
 
 std::string Controller::_serialize_route()
 {
-    comm_platform::Route sender;
+    comm::Route sender;
     sender.mutable_start_pos()->set_x(route.first.x);
     sender.mutable_start_pos()->set_y(route.first.y);
     sender.mutable_over_pos()->set_x(route.second.x);
@@ -404,7 +390,7 @@ std::string Controller::_serialize_route()
 
 std::string Controller::_serialize_infos(int playerID)
 {
-    comm_platform::PlayerInfo sender;
+    comm::PlayerInfo sender;
     sender.set_player_id(playerID);
     //........
     //
@@ -440,7 +426,7 @@ std::map<int, std::vector<COMMAND_ACTION>> Controller::get_action_commands()
     {
         if (!_command_action[i].empty())
         {
-            m[i] = { _command_action[i].cbegin(),_command_action[i].cend() };
+            m[i] = {_command_action[i].cbegin(), _command_action[i].cend()};
         }
     }
     return m;

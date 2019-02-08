@@ -29,13 +29,11 @@ struct COMM_BLOCK
     void lock_commands();
     bool try_lock_commands(); //return true on success
     void unlock_commands();
-    bool add_command(const std::string & data);    //return true on success, do not check if len>MAX_COMMAND_LEN
-    std::vector<std::string> get_commands();    //get all commands as a vector
+    bool add_command(const std::string &data); //return true on success, do not check if len>MAX_COMMAND_LEN
+    std::vector<std::string> get_commands();   //get all commands as a vector
     void clear_commands();
-    void set_infos(const std::string & data);
+    void set_infos(const std::string &data);
     std::string get_infos();
 };
 
 #endif // !COMM_BLOCK_H#define COMM_BLOCK_H
-
-

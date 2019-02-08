@@ -35,6 +35,8 @@
 4. client中的Controller会完成与选手AI的信息交互。
 5. Server采用近似忙等待的方法检查client是否执行结束，以加快整体速度，具体而言，server每隔CHECK_INTERVAL(Controller中的常量，ms)检查一次client状况并决定是否继续，**这可能会影响同一核心下的AI程序，暂未做核心区分**
 6. 平台将自动扫描**指定目录下**（通过平台程序的第一个参数传入）的所有命名合法的so文件，作为AI程序载入。
+7. 利用cmake将protobuf通信部分生成为动态链接库以解决同名proto冲突问题，其中proto到c的转换由cmake自动完成。
+8. 修改了proto，将所有玩家指令合并入Command，通过type区分跳伞。
 
 ---
 ## 问题
@@ -42,9 +44,8 @@
 1. 暂未设置玩家主动更新信息的API。
 2. 需要逻辑提供比赛时信息以进一步测试。
 3. 没有处理玩家死亡后的进程资源释放操作。
-4. 计划取消is_jumping变量，仅采用turn作为当前传输内容是否为跳伞信息。
-5. 对于每个不同的AI需要include不同包名的proto，这需要依赖自动构建程序。
-6. 对于logic与platform中的所有proto文件，为避免出现问题，需要全部采用相同版本的protoc与libprotobuf进行处理，dev-platform中暂时采用3.7rc2版本，与master分支中不同，**请勿将dev-platform合并入master分支**。
+4. 对于logic与platform中的所有proto文件，为避免出现问题，需要全部采用相同版本的protoc与libprotobuf进行处理，dev-platform中暂时采用3.6.1版本，**请勿将dev-platform合并入master分支**。
+5. 暂未取消is_jumping变量。
 
 ## 多个玩家的动态链接库命名
 

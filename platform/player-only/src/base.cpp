@@ -9,7 +9,7 @@ void player_receive(bool is_jumping, const std::string data)
     //if jumping, data is platform::parachute, else data is teaminfo.
     if (is_jumping)
     {
-        comm_player::Route recv;
+        comm::Route recv;
         if (recv.ParseFromString(data))
         {
             start_pos.x = recv.start_pos().x();
@@ -26,7 +26,7 @@ void player_receive(bool is_jumping, const std::string data)
     }
     else
     {
-        comm_player::PlayerInfo recv;
+        comm::PlayerInfo recv;
         if (recv.ParseFromString(data))
         {
             //parse data
