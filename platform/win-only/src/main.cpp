@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     {
         manager.run();
         manager.player_infos = logic.do_loop(manager.get_action_commands());
-        comm_platform::PlayerInfo recv;
+        comm::PlayerInfo recv;
         auto b = recv.ParseFromString(manager.player_infos[0]);
         std::cout << recv.DebugString();
     }

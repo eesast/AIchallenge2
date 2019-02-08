@@ -11,8 +11,8 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_BINARY_DIR}/../proto/)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src DIR_SRC)
 aux_source_directory(${PROJECT_SOURCE_DIR}/player_only/src DIR_SRC)
-# find_package(Protobuf REQUIRED)
-# include_directories(${Protobuf_INCLUDE_DIRS})
+find_package(Protobuf REQUIRED)
+include_directories(${Protobuf_INCLUDE_DIRS})
 
 
 IF(WIN32)

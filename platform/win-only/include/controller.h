@@ -4,7 +4,7 @@
 #include"platform.h"
 #include<Windows.h>
 #include<mutex>
-#include"communication_platform.pb.h"
+#include"comm.pb.h"
 #include<filesystem>
 #include<regex>
 
@@ -68,12 +68,11 @@ private:
 
     //communication
 public:
-    bool receive(bool is_jumping, const std::string & data);
+    bool receive(const std::string & data);
 private:
     void _send(int playerID, bool is_jumping, const std::string & data);
     //return true on success.
-    bool _parse_parachute(const std::string & data);
-    bool _parse_commands(const std::string & data);
+    bool _parse(const std::string & data);
 
 public:
     //always choose the lastest command

@@ -55,3 +55,20 @@
 4. ${team}与${number}值只要不重复即可，无特殊要求，这两个值与AI实际执行顺序无关
 5. 所有的AI文件需与platform位于同一目录下（暂时
 6. 例: *AI_3_2.dll* 表示队伍3的2号玩家AI
+
+## Cmake使用
+
+### Windows
+1. （如果采用vcpkg管理protobuf包）构建时添加"-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+2. 进入vs工程后，在comm的comm_pb.h文件开头添加如下代码
+```cpp
+#ifdef comm_EXPORTS
+#define COMM_API __declspec(dllexport)
+#else
+#define COMM_API __declspec(dllimport)
+#endif // DLL_EXPORTS
+```
+3. 依次生成comm, AI, platform
+4. 将生成的comm.dll移动到platform.exe同目录下
+5. 将生成的AI.dll移动到特定的工作目录下（由platform.exe的输入参数指定
+6. 重命名AI.dll并运行
