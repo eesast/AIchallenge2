@@ -72,3 +72,8 @@
 4. 将生成的comm.dll移动到platform.exe同目录下
 5. 将生成的AI.dll移动到特定的工作目录下（由platform.exe的输入参数指定
 6. 重命名AI.dll并运行
+
+### Linux
+1. 直接构建
+2. 移动libAI.so到特定位置
+3. 重命名libAI.so并运行
