@@ -93,7 +93,7 @@ public:
   std::map<int, std::vector<COMMAND_ACTION>> get_action_commands();
 
 private:
-  std::string _serialize_route();
+  std::string _serialize_route(int playerID);
   std::string _serialize_infos(int playerID);
 
 private:
@@ -113,9 +113,10 @@ private:
   //communication
   std::vector<COMMAND_PARACHUTE> _command_parachute[MAX_PLAYER];
   std::vector<COMMAND_ACTION> _command_action[MAX_PLAYER];
+  std::vector<int> _team[MAX_TEAM];
 
 public: //comm with pycalling
-  std::pair<Position, Position> route;
+  ROUTE_T route;
   std::map<int, std::string> player_infos;
 };
 

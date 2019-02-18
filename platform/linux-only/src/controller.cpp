@@ -1,7 +1,5 @@
 #include "controller.h"
 
-extern std::pair<Position, Position> route;
-
 Controller Controller::_instance;
 
 void notify_child_finish(int, siginfo_t *info, void *)
@@ -75,7 +73,7 @@ void Controller::init(const std::string &path, long used_core_count)
                         else
                         {
                             (*bind_api)(&controller_receive);
-                            ;
+                            _team[team].push_back(player_count);
                             ++player_count;
                             std::cout << "Load AI " << fullpath << " as team" << team << std::endl;
                         }
@@ -139,7 +137,7 @@ void Controller::run()
                     _info[offset + i].shm = reinterpret_cast<COMM_BLOCK *>(shmat(_info[offset + i].shmid, nullptr, 0));
                     _info[offset + i].shm->init();
                     std::cout << "start send" << std::endl;
-                    _send_to_client(offset + i, _serialize_route());
+                    _send_to_client(offset + i, _serialize_route(offset + i));
                     _info[offset + i].shm->set_inited();
                 }
                 else if (_info[offset + i].pid == 0) //player AI
@@ -160,8 +158,6 @@ void Controller::run()
                 break;
             case AI_STATE::SUSPENDED:
                 _send_to_client(offset + i, _serialize_infos(offset + i));
-                _send_to_client(offset + i, _serialize_route());
-
                 kill(_info[offset + i].pid, SIGCONT);
                 _info[offset + i].state = AI_STATE::ACTIVE;
                 break;
@@ -378,13 +374,17 @@ bool Controller::_parse(const std::string &data, int playerID)
     }
 }
 
-std::string Controller::_serialize_route()
+std::string Controller::_serialize_route(int playerID)
 {
     comm::Route sender;
     sender.mutable_start_pos()->set_x(route.first.x);
     sender.mutable_start_pos()->set_y(route.first.y);
     sender.mutable_over_pos()->set_x(route.second.x);
     sender.mutable_over_pos()->set_y(route.second.y);
+    for (auto teammate : _team[_info[playerID].team])
+    {
+        sender.add_teammates(teammate);
+    }
     return sender.SerializeAsString();
 }
 
