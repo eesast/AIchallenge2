@@ -78,7 +78,7 @@ private:
   //communication
 public:
   //only work in client
-  bool send_to_server(bool is_jumping, const std::string &data);
+  bool send_to_server(const std::string &data);
 
 private:
   void _receive_from_client(int playerID); //assume that the lock is locked
@@ -120,6 +120,6 @@ public: //comm with pycalling
   std::map<int, std::string> player_infos;
 };
 
-bool controller_receive(bool is_jumping, const std::string data);
+bool controller_receive(const std::string data);
 
 #endif // !CONTROLLER_H

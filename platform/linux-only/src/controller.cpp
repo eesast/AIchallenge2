@@ -121,7 +121,6 @@ void Controller::run()
         //execute some players each loop. The number is equal to the number of core(_used_core_count)
         for (int i = 0; i < _used_core_count && offset + i < _player_count; i++)
         {
-            std::cout << "enter run" << std::endl;
             _command_action[offset + i].clear();
             _command_parachute[offset + i].clear();
             switch (_info[offset + i].state)
@@ -275,18 +274,10 @@ void Controller::register_AI(int playerID, AI_Func pfunc, Recv_Func precv)
     _info[playerID].recv_func = precv;
 }
 
-bool Controller::send_to_server(bool is_jumping, const std::string &data)
+bool Controller::send_to_server(const std::string &data)
 {
     if (!_check_init())
         return false;
-    if (is_jumping && _info[_playerID].frame != 0)
-    {
-        return false;
-    }
-    else if (is_jumping)
-    {
-        ++_info[_playerID].frame;
-    }
     //send data to server
     _info[_playerID].shm->lock_commands();
     _info[_playerID].shm->add_command(data);
@@ -309,7 +300,7 @@ void Controller::_send_to_client(int playerID, const std::string &data)
 {
     if (!_check_init())
         return;
-    //send data to server
+    //send data to client
     _info[playerID].shm->lock_infos();
     _info[playerID].shm->set_infos(data);
     _info[playerID].shm->frame = _info[playerID].frame;
@@ -320,7 +311,7 @@ void Controller::_send_to_client(int playerID, const std::string &data)
 void Controller::_receive_from_server()
 {
     _info[_playerID].frame = _info[_playerID].shm->frame;
-    (*_info[_playerID].recv_func)(_info[_playerID].frame == 0, _info[_playerID].shm->get_infos());
+    (*_info[_playerID].recv_func)(_info[_playerID].frame, _info[_playerID].shm->get_infos());
 }
 
 bool Controller::_parse(const std::string &data, int playerID)
@@ -390,16 +381,7 @@ std::string Controller::_serialize_route(int playerID)
 
 std::string Controller::_serialize_infos(int playerID)
 {
-    comm::PlayerInfo sender;
-    sender.set_player_id(playerID);
-    //........
-    //
-    //
-    // L O G I C
-    //
-    //
-    //.......
-    return sender.SerializeAsString();
+    return player_infos[playerID];
 }
 
 std::map<int, COMMAND_PARACHUTE> Controller::get_parachute_commands()
@@ -432,8 +414,8 @@ std::map<int, std::vector<COMMAND_ACTION>> Controller::get_action_commands()
     return m;
 }
 
-bool controller_receive(bool is_jumping, const std::string data)
+bool controller_receive(const std::string data)
 {
     std::cout << "client receive" << data << std::endl;
-    return manager.send_to_server(is_jumping, data);
+    return manager.send_to_server(data);
 }

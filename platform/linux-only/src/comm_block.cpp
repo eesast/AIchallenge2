@@ -13,7 +13,7 @@ void COMM_BLOCK::init()
     }
     next_command_index = 0;
     infos_len = 0;
-    turn = 0;
+    frame = 0;
 }
 
 void COMM_BLOCK::set_inited()

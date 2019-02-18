@@ -45,7 +45,6 @@
 2. 需要逻辑提供比赛时信息以进一步测试。
 3. 没有处理玩家死亡后的进程资源释放操作。
 4. 对于logic与platform中的所有proto文件，为避免出现问题，需要全部采用相同版本的protoc与libprotobuf进行处理，dev-platform中暂时采用3.6.1版本，**请勿将dev-platform合并入master分支**。
-5. 暂未取消is_jumping变量。
 
 ## 多个玩家的动态链接库命名
 
