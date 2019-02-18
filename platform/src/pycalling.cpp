@@ -2,7 +2,7 @@
 
 Pycalling Pycalling::_instance;
 
-std::pair<Position, Position> Pycalling::init()
+ROUTE_T Pycalling::init()
 {
     Py_Initialize();
     //add cwd into path
@@ -39,10 +39,15 @@ std::pair<Position, Position> Pycalling::init()
     auto route = PyObject_CallObject(_game_init, data_dir);
     auto start_pos = PyTuple_GetItem(route, 0);
     auto over_pos = PyTuple_GetItem(route, 1);
-    auto route_c = std::make_pair(
-        Position{ PyFloat_AsDouble(PyObject_GetAttrString(start_pos,"x")),PyFloat_AsDouble(PyObject_GetAttrString(start_pos,"y")) },
-        Position{ PyFloat_AsDouble(PyObject_GetAttrString(over_pos,"x")),PyFloat_AsDouble(PyObject_GetAttrString(over_pos,"y")) }); //memory leak in PyObject_GetAttrString
-
+    auto start_pos_x = PyObject_GetAttrString(start_pos, "x");
+    auto start_pos_y = PyObject_GetAttrString(start_pos, "y");
+    auto over_pos_x = PyObject_GetAttrString(over_pos, "x");
+    auto over_pos_y = PyObject_GetAttrString(over_pos, "y");
+    auto route_c = ROUTE_T{ {PyFloat_AsDouble(start_pos_x),PyFloat_AsDouble(start_pos_y)},{PyFloat_AsDouble(over_pos_x),PyFloat_AsDouble(over_pos_y)} };
+    Py_XDECREF(over_pos_y);
+    Py_XDECREF(over_pos_x);
+    Py_XDECREF(start_pos_y);
+    Py_XDECREF(start_pos_x);
     Py_XDECREF(route);
     Py_XDECREF(data_dir);
     _is_init = true;

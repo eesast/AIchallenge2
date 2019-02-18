@@ -87,4 +87,5 @@ message Command {
 message Route {
     XYPosition start_pos=1;
     XYPosition over_pos=2;
+    repeated int32 teammates=3;
 }

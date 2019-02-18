@@ -4,7 +4,6 @@
 //struct, header, constant that platform needs
 
 #include "constant.h"
-#include "character.h"
 #include <map>
 #include <vector>
 #include <iostream>
@@ -14,7 +13,7 @@
 struct COMMAND_PARACHUTE
 {
     VOCATION role;
-    Position landing_point;
+    XYPosition landing_point;
     int team;
 };
 
@@ -34,6 +33,8 @@ struct COMMAND_ACTION
     double view_angle;
     int parameter;
 };
+
+using ROUTE_T = std::pair<XYPosition, XYPosition>;
 
 #ifdef WIN32
 

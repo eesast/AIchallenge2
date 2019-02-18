@@ -1,7 +1,7 @@
 #include"base.h"
 #include"./../../include/api.h"
 
-void parachute(VOCATION role, Position landing_points)
+void parachute(VOCATION role, XYPosition landing_points)
 {
     comm::Command sender;
     sender.set_command_type(comm::CommandType::PARACHUTE);

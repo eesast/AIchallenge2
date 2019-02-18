@@ -1,6 +1,11 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
+#ifdef WIN32
+#pragma warning(disable : 4251)
+#pragma warning(disable : 4996)
+#endif
+
 #include"platform.h"
 #include<Windows.h>
 #include<mutex>
@@ -99,7 +104,7 @@ private:
     std::vector<COMMAND_PARACHUTE> _command_parachute[MAX_PLAYER];
     std::vector<COMMAND_ACTION> _command_action[MAX_PLAYER];
 public:     //comm with pycalling
-    std::pair<Position, Position> route;
+    ROUTE_T route;
     std::map<int, std::string> player_infos;
 };
 

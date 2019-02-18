@@ -1,6 +1,9 @@
-#include"base.h"
+#include "base.h"
 
-Position start_pos, over_pos;
+XYPosition start_pos, over_pos;
+std::vector<int> teammates;
+int turn = 0;
+PlayerInfo info;
 
 static decltype(&player_send) _player_send = nullptr;
 
