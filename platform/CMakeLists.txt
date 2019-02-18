@@ -10,11 +10,7 @@ set(CMAKE_CXX_STANDARD 17)
 add_subdirectory(${PROJECT_SOURCE_DIR}/player-only/)
 add_subdirectory(${PROJECT_SOURCE_DIR}/proto/)
 
-IF(WIN32)
 find_package (Python3 COMPONENTS Interpreter Development)
-ELSEIF(UNIX)
-find_package(PythonLibs 3.6 REQUIRED)
-ENDIF()
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src DIR_SRC)
