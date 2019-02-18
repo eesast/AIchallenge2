@@ -32,7 +32,7 @@ message PoisonInfo{
 	double next_radius = 4;
 	int32 rest_frames = 5;
 	// if it's 1, rest_frames means rest frames to move to next status
-	// if it's 0, rest_frames means rest frames to start to move 
+	// if it's 0, rest_frames means rest frames to start to move
 	// if it's -1, the poison ring won't move(has become a node)
 	int32 move_flag = 6;
 }
