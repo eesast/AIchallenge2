@@ -75,7 +75,7 @@ private:
 public:
     bool receive(const std::string & data);
 private:
-    void _send(int playerID, bool is_jumping, const std::string & data);
+    void _send(int playerID, int new_frame, const std::string & data);
     //return true on success.
     bool _parse(const std::string & data);
 
@@ -85,6 +85,7 @@ public:
     std::map<int, std::vector<COMMAND_ACTION>> get_action_commands();
 private:
     std::string _serialize_route(int playerID);
+    std::string _serialize_info(int playerID);
 
 
     //singleton
@@ -98,7 +99,7 @@ private:
     HANDLE* _waiting_thread;    //size == _used_core_count
     int _now_offset;
     int _player_count;
-
+    int _frame;
 
     //communication
     std::vector<COMMAND_PARACHUTE> _command_parachute[MAX_PLAYER];
@@ -112,6 +113,6 @@ public:     //comm with pycalling
 DWORD WINAPI thread_func(LPVOID lpParameter);
 
 //not atomic, maybe cause bugs.
-bool controller_receive(bool is_jumping, const std::string data);
+bool controller_receive(const std::string data);
 
 #endif // !CONTROLLER_H

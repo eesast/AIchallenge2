@@ -27,8 +27,8 @@
 
 extern "C"
 {
-    PLAYERAI_API void player_receive(bool is_jumping, const std::string data);
-    PLAYERAI_API bool player_send(bool is_jumping, const std::string data);
+    PLAYERAI_API void player_receive(int new_frame, const std::string data);
+    PLAYERAI_API bool player_send(const std::string data);
     PLAYERAI_API void bind_api(decltype(&player_send) func);
 }
 

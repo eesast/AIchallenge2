@@ -8,6 +8,7 @@ void Controller::init(const std::string &path, DWORD used_core_count)
     auto PAT = std::regex(R"((AI_(\d*)_(\d*)).dll)", std::regex_constants::ECMAScript | std::regex_constants::icase);
     std::smatch m;
     int player_count = 0;
+    _frame = 0;
     for (const auto &entry : directory_iterator(path))
     {
         if (entry.is_regular_file())
@@ -137,7 +138,14 @@ void Controller::run()
         for (int i = 0; i < static_cast<int>(_used_core_count) && offset + i < _player_count; i++)
         {
             _info[offset + i].state = AI_STATE::ACTIVE;
-            (*_info[offset + i].recv_func)(true, _serialize_route(offset + i));
+            if (_frame > 0)
+            {
+                _send(offset + i, _frame, _serialize_info(offset + i));
+            }
+            else
+            {
+                _send(offset + i, _frame, _serialize_route(offset + i));
+            }
             if (ResumeThread(_info[offset + i].handle) == 0xFFFFFFFF)
             {
                 std::cerr << "Cannot resume Thread" << _info[offset + i].threadID << " Error Code: " << GetLastError() << std::endl;
@@ -175,6 +183,7 @@ void Controller::run()
             }
         }
     }
+    ++_frame;
 }
 
 bool Controller::receive(const std::string & data)
@@ -186,11 +195,11 @@ bool Controller::receive(const std::string & data)
 
 }
 
-void Controller::_send(int playerID, bool is_jumping, const std::string & data)
+void Controller::_send(int playerID, int new_frame, const std::string & data)
 {
     if (!_check_init())
         return;
-    _info[playerID].recv_func(is_jumping, data);
+    _info[playerID].recv_func(new_frame, data);
     return;
 }
 
@@ -288,7 +297,7 @@ DWORD WINAPI thread_func(LPVOID lpParameter)
     return 0;
 }
 
-bool controller_receive(bool unused, const std::string data)
+bool controller_receive(const std::string data)
 {
     return manager.receive(data);
 }
@@ -335,4 +344,9 @@ std::string Controller::_serialize_route(int playerID)
         sender.add_teammates(teammate);
     }
     return sender.SerializeAsString();
+}
+
+std::string Controller::_serialize_info(int playerID)
+{
+    return player_infos[playerID];
 }

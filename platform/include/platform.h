@@ -39,11 +39,11 @@ using ROUTE_T = std::pair<XYPosition, XYPosition>;
 #ifdef WIN32
 
 //type of "player_receive" in AI.dll
-using Recv_Func = void(*)(bool, const std::string);
+using Recv_Func = void(*)(int, const std::string);
 //type of "play_game" in AI.dll
 using AI_Func = void(*)();
 //type of "player_send" in AI.dll
-using Player_Send_Func = bool(*)(bool, const std::string);
+using Player_Send_Func = bool(*)(const std::string);
 
 #else
 

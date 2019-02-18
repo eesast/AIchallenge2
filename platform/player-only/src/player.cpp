@@ -6,14 +6,14 @@
 
 extern XYPosition start_pos, over_pos;
 extern std::vector<int> teammates;
-extern int turn;
+extern int frame;
 extern PlayerInfo info;
 
 void play_game()
 {
     srand(time(nullptr));
     int delay = rand() % 1000;
-    std::cout << "playeraaaa" << std::endl;
+    std::cout << "playeraaaa:frame" << frame << std::endl;
     VOCATION role = VOCATION::ENGINEER;
     XYPosition landing_point = { (over_pos.x + start_pos.x) / 2, (over_pos.y + start_pos.y) / 2 };
     //std::this_thread::sleep_for(std::chrono::milliseconds(delay));

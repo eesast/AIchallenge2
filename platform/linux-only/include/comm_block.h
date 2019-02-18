@@ -14,7 +14,7 @@ struct COMM_BLOCK
 {
     std::atomic_flag infos_flag, commands_flag;
     bool is_init = false;
-    int turn; //for checking if it is the lastest
+    int frame; //for checking if it is the lastest
     int infos_len;
     char infos_buf[MAX_INFOS_LEN];
     int next_command_index;

@@ -41,7 +41,7 @@ private:
     void *lib = nullptr;
     pid_t pid = 0;
     AI_STATE state = AI_STATE::UNUSED;
-    int turn = 0; //turn of game
+    int frame = 0; //frame of game
     int shmid;
     COMM_BLOCK *shm = nullptr;
     AI_Func player_func = nullptr;

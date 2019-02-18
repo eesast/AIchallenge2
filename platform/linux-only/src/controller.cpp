@@ -216,7 +216,7 @@ void Controller::run()
             _receive_from_client(offset + i);
             _info[offset + i].shm->clear_commands();
             _info[offset + i].shm->unlock_commands();
-            ++_info[offset + i].turn;
+            ++_info[offset + i].frame;
         }
     }
 }
@@ -279,13 +279,13 @@ bool Controller::send_to_server(bool is_jumping, const std::string &data)
 {
     if (!_check_init())
         return false;
-    if (is_jumping && _info[_playerID].turn != 0)
+    if (is_jumping && _info[_playerID].frame != 0)
     {
         return false;
     }
     else if (is_jumping)
     {
-        ++_info[_playerID].turn;
+        ++_info[_playerID].frame;
     }
     //send data to server
     _info[_playerID].shm->lock_commands();
@@ -312,15 +312,15 @@ void Controller::_send_to_client(int playerID, const std::string &data)
     //send data to server
     _info[playerID].shm->lock_infos();
     _info[playerID].shm->set_infos(data);
-    _info[playerID].shm->turn = _info[playerID].turn;
+    _info[playerID].shm->frame = _info[playerID].frame;
     _info[playerID].shm->unlock_infos();
     return;
 }
 
 void Controller::_receive_from_server()
 {
-    _info[_playerID].turn = _info[_playerID].shm->turn;
-    (*_info[_playerID].recv_func)(_info[_playerID].turn == 0, _info[_playerID].shm->get_infos());
+    _info[_playerID].frame = _info[_playerID].shm->frame;
+    (*_info[_playerID].recv_func)(_info[_playerID].frame == 0, _info[_playerID].shm->get_infos());
 }
 
 bool Controller::_parse(const std::string &data, int playerID)

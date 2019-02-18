@@ -12,6 +12,19 @@ struct Item
     DURABILITY_T durability;
 };
 
+struct PoisonInfo
+{
+    XYPosition current_center;
+    XYPosition next_center;
+    double current_radius;
+    double next_radius;
+    int rest_frames;
+    // if it's 1, rest_frames means rest frames to move to next status
+    // if it's 0, rest_frames means rest frames to start to move
+    // if it's -1, the poison ring won't move(has become a node)
+    int move_flag;
+};
+
 struct SelfInfo
 {
     HP_T hp;
@@ -55,6 +68,7 @@ struct PlayerInfo
     std::vector<Item> items;        //MAYBE items on the ground
     std::vector<OtherInfo> others;
     std::vector<Sound> sounds;
+    PoisonInfo poison;
 };
 
 
