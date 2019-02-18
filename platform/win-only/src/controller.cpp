@@ -17,7 +17,7 @@ void Controller::init(const std::string &path, DWORD used_core_count)
             {
                 int team = atoi(m[2].str().c_str());
                 int number = atoi(m[3].str().c_str());
-                if (0 <= team && team <= 15 && 0 <= number && number <= 3)
+                if (0 <= team && team < MAX_TEAM && 0 <= number && number <= MEMBER_COUNT)
                 {
                     _info[player_count].team = team;
                     std::string fullpath = entry.path().root_directory().string() + m[1].str();
@@ -39,6 +39,7 @@ void Controller::init(const std::string &path, DWORD used_core_count)
                         }
                         else
                         {
+                            _team[team].push_back(player_count);
                             (*bind_api)(&controller_receive);
                             ++player_count;
                             std::cout << "Load AI " << fullpath << " as team" << team << std::endl;
@@ -136,7 +137,7 @@ void Controller::run()
         for (int i = 0; i < static_cast<int>(_used_core_count) && offset + i < _player_count; i++)
         {
             _info[offset + i].state = AI_STATE::ACTIVE;
-            (*_info[offset + i].recv_func)(true, _serialize_route());
+            (*_info[offset + i].recv_func)(true, _serialize_route(offset + i));
             if (ResumeThread(_info[offset + i].handle) == 0xFFFFFFFF)
             {
                 std::cerr << "Cannot resume Thread" << _info[offset + i].threadID << " Error Code: " << GetLastError() << std::endl;
@@ -322,12 +323,16 @@ std::map<int, std::vector<COMMAND_ACTION>> Controller::get_action_commands()
     return m;
 }
 
-std::string Controller::_serialize_route()
+std::string Controller::_serialize_route(int playerID)
 {
     comm::Route sender;
     sender.mutable_start_pos()->set_x(route.first.x);
     sender.mutable_start_pos()->set_y(route.first.y);
     sender.mutable_over_pos()->set_x(route.second.x);
     sender.mutable_over_pos()->set_y(route.second.y);
+    for (auto teammate : _team[_info[playerID].team])
+    {
+        sender.add_teammates(teammate);
+    }
     return sender.SerializeAsString();
 }

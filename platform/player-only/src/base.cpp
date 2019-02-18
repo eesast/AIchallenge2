@@ -19,6 +19,13 @@ void player_receive(bool is_jumping, const std::string data)
             start_pos.y = recv.start_pos().y();
             over_pos.x = recv.over_pos().x();
             over_pos.y = recv.over_pos().y();
+            std::cout << "teammate:";
+            for (auto teammate : recv.teammates())
+            {
+                teammates.push_back(teammate);
+                std::cout << teammate << ' ';
+            }
+            std::cout << std::endl;
             std::cout << "start_pos" << start_pos.x << ' ' << start_pos.y << std::endl;
             std::cout << "over_pos" << over_pos.x << ' ' << over_pos.y << std::endl;
         }

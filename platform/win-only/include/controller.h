@@ -84,7 +84,7 @@ public:
     std::map<int, COMMAND_PARACHUTE> get_parachute_commands();
     std::map<int, std::vector<COMMAND_ACTION>> get_action_commands();
 private:
-    std::string _serialize_route();
+    std::string _serialize_route(int playerID);
 
 
     //singleton
@@ -103,6 +103,7 @@ private:
     //communication
     std::vector<COMMAND_PARACHUTE> _command_parachute[MAX_PLAYER];
     std::vector<COMMAND_ACTION> _command_action[MAX_PLAYER];
+    std::vector<int> _team[MAX_TEAM];
 public:     //comm with pycalling
     ROUTE_T route;
     std::map<int, std::string> player_infos;
