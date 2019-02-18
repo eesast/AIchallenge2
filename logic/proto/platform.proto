@@ -17,12 +17,24 @@ message XYPosition {
 
 message Item {
     //items like gun, etc.
+	// for bag, just type and durability
     int32 item_ID=1;
     int32 type=2;
     PolarPosition pos=3;
     int32 durability=4;
 }
 
+message PoisonInfo{
+	// information for poison ring
+	XYPosition current_center = 1;
+	XYPosition next_center = 2;
+	double current_radius = 3;
+	double next_radius = 4;
+	int32 rest_frames = 5;
+	// if it's 1, rest_frames means rest frames to move to next status
+	// if it's 0, rest_frames means rest frames to start to move 
+	int32 move_flag = 6;
+}
 
 message SelfInfo {
     //complete info of self
@@ -39,6 +51,7 @@ message SelfInfo {
     repeated Item bag=11;
 	double view_width = 12;
 	double view_distance = 13;
+	PoisonInfo poison = 14;
 }
 
 message OtherInfo {
