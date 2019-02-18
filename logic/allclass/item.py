@@ -57,17 +57,17 @@ class Item(Object):   # class for each equipment and goods
         return new_item.id
 
     def is_weapon(self):
-        return Item.all_data[self.item_type] == 'WEAPON'
+        return Item.all_data[self.item_type]['type'] == 'WEAPON'
 
     def is_armor(self):
-        return Item.all_data[self.item_type] == 'ARMOR'
+        return Item.all_data[self.item_type]['type'] == 'ARMOR'
 
     def is_goods(self):
-        return Item.all_data[self.item_type] == 'GOODS'
+        return Item.all_data[self.item_type]['type'] == 'GOODS'
 
     @staticmethod
     def get_data_by_item_id(item_id):
-        return Item.all_data[Item.all_items[item_id]]
+        return Item.all_data[Item.all_items[item_id].item_type]
 
 
 if __name__ == '__main__':

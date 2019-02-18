@@ -167,6 +167,8 @@ also, I use some other functions to deal with two postioin
 
 `cross_product`:get the cross product of two vector
 
+`angle_to_position`: get a unit vector by angle
+
 ### `Character`
 
 inherited from Object(CIRCLE), define player's entity
@@ -251,6 +253,10 @@ inherited from Object(CIRCLE), define player's entity
 `is_jumping`: judge if the player is jumping to the land
 
 `is_alive`: judge if the player is still alive(not real dead)
+
+`is_piking`: judge if player is picking something
+
+`can_be_hit`: judge if player is alive so that can be bullet hit
 
 `move`: deal with player move event, it will be complex, hasn't started to code yet
 
@@ -351,8 +357,6 @@ inherited from Object, the class of all pick-up in the map
 `is_armor`: judge if this item is a armor
 
 `is_goods`: judge if this item is a goods
-
-
 
 ### `LandForm`
 

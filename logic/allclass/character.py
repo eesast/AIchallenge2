@@ -36,7 +36,7 @@ class Character(Object):                # the base class of all characters
     DEAD = 7
     REAL_DEAD = 8
 
-    MOVE_PERMITTED_STATUS = [RELAX, MOVING, MOVING_SHOOTING]
+    MOVE_PERMITTED_STATUS = [RELAX, MOVING, MOVING_SHOOTING, SHOOTING]
     SHOOTING_PERMITTED_STATUS = [RELAX, MOVING]
 
     def __init__(self, vocation):
@@ -97,6 +97,9 @@ class Character(Object):                # the base class of all characters
 
     def is_alive(self):
         return self.status != Character.REAL_DEAD
+
+    def is_picking(self):
+        return self.status == self.PICKING
 
     def can_be_hit(self):
         return self.status != Character.REAL_DEAD and self.status != Character.DEAD
