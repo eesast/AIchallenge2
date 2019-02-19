@@ -1,11 +1,59 @@
 #include "controller.h"
 
-extern std::pair<Position, Position> route;
-
 Controller Controller::_instance;
 
-void Controller::init(int player_count, DWORD used_core_count)
+void Controller::init(const std::string &path, DWORD used_core_count)
 {
+    using namespace std::filesystem;
+    auto PAT = std::regex(R"((AI_(\d*)_(\d*)).dll)", std::regex_constants::ECMAScript | std::regex_constants::icase);
+    std::smatch m;
+    int player_count = 0;
+    _frame = 0;
+    for (const auto &entry : directory_iterator(path))
+    {
+        if (entry.is_regular_file())
+        {
+            auto name = entry.path().filename().string();
+            if (std::regex_match(name, m, PAT) && m.size() == 4)
+            {
+                int team = atoi(m[2].str().c_str());
+                int number = atoi(m[3].str().c_str());
+                if (0 <= team && team < MAX_TEAM && 0 <= number && number <= MEMBER_COUNT)
+                {
+                    _info[player_count].team = team;
+                    std::string fullpath = entry.path().root_directory().string() + m[1].str();
+                    _info[player_count].lib = LoadLibrary(fullpath.c_str());
+                    if (_info[player_count].lib == NULL)
+                    {
+                        std::cerr << "LoadLibrary " + fullpath + " error:" << GetLastError() << std::endl;
+                        continue;
+                    }
+                    else
+                    {
+                        auto bind_api = (void(*)(Player_Send_Func))GetProcAddress(_info[player_count].lib, "bind_api");
+                        _info[player_count].player_func = (AI_Func)GetProcAddress(_info[player_count].lib, "play_game");
+                        _info[player_count].recv_func = (Recv_Func)GetProcAddress(_info[player_count].lib, "player_receive");
+                        if (bind_api == NULL || _info[player_count].player_func == NULL || _info[player_count].recv_func == NULL)
+                        {
+                            std::cerr << "Cannot Get AI API from " << _info[player_count].lib << " Error Code:" << GetLastError() << std::endl;
+                            continue;
+                        }
+                        else
+                        {
+                            _team[team].push_back(player_count);
+                            (*bind_api)(&controller_receive);
+                            ++player_count;
+                            std::cout << "Load AI " << fullpath << " as team" << team << std::endl;
+                        }
+                    }
+                }
+                else
+                {
+                    std::cerr << "Wrong filename:" << m[0] << std::endl;
+                }
+            }
+        }
+    }
     _player_count = player_count;
     _waiting_thread = nullptr;
     //get core number
@@ -43,6 +91,7 @@ Controller::~Controller()
         {
             TerminateThread(_info[i].handle, 0);
             CloseHandle(_info[i].handle);
+            FreeLibrary(_info[i].lib);
         }
     }
     delete _waiting_thread;
@@ -61,6 +110,7 @@ void Controller::run()
         {
             //clear commands vector
             _command_parachute[offset + i].clear();
+            _command_action[offset + i].clear();
             //offset + i == playerID
             if (_info[offset + i].state == AI_STATE::UNUSED)
             {
@@ -68,14 +118,19 @@ void Controller::run()
                 _info[offset + i].handle = CreateThread(nullptr, 0, thread_func, nullptr, CREATE_SUSPENDED, &_info[offset + i].threadID);
                 if (_info[offset + i].handle == NULL)
                 {
-                    DWORD errorCode = GetLastError();
-                    std::cerr << "Cannot create thread. Error Code: " << errorCode << std::endl;
+                    std::cerr << "Cannot create thread. Error Code: " << GetLastError() << std::endl;
                     system("pause");
                     exit(1);
                 }
                 _info[offset + i].state = AI_STATE::SUSPENDED;
                 //CPU control, choose the core which the thread uses. When the used core number is less than that CPU actually has, using core with higher ID firstly 
-                SetThreadAffinityMask(_info[offset + i].handle, (static_cast<DWORD_PTR>(1) << ((_total_core_count - _used_core_count) + i)));
+                if (SetThreadAffinityMask(_info[offset + i].handle, (static_cast<DWORD_PTR>(1) << ((_total_core_count - _used_core_count) + i))))
+                {
+                }
+                else
+                {
+                    std::cerr << "CPU core setting fails. Error Code: " << GetLastError() << std::endl;
+                }
             }
             _waiting_thread[i] = _info[offset + i].handle;    //if the player's thread is suspended, just resume it
         }
@@ -83,8 +138,18 @@ void Controller::run()
         for (int i = 0; i < static_cast<int>(_used_core_count) && offset + i < _player_count; i++)
         {
             _info[offset + i].state = AI_STATE::ACTIVE;
-            (*_info[offset + i].recv_func)(true, _serialize_route());
-            ResumeThread(_info[offset + i].handle);
+            if (_frame > 0)
+            {
+                _send(offset + i, _frame, _serialize_info(offset + i));
+            }
+            else
+            {
+                _send(offset + i, _frame, _serialize_route(offset + i));
+            }
+            if (ResumeThread(_info[offset + i].handle) == 0xFFFFFFFF)
+            {
+                std::cerr << "Cannot resume Thread" << _info[offset + i].threadID << " Error Code: " << GetLastError() << std::endl;
+            }
         }
         DWORD threadNumber = (_player_count - offset >= static_cast<int>(_used_core_count) ? _used_core_count : static_cast<DWORD>(_player_count - offset));
         //let sunthreads run TIMEOUT ms.
@@ -97,7 +162,10 @@ void Controller::run()
                 if (exitCode == STILL_ACTIVE)
                 {
                     _info[offset + i].state = AI_STATE::SUSPENDED;
-                    SuspendThread(_info[offset + i].handle);
+                    if (SuspendThread(_info[offset + i].handle) == 0xFFFFFFFF)
+                    {
+                        std::cerr << "Cannot suspend Thread" << _info[offset + i].threadID << " Error Code: " << GetLastError() << std::endl;
+                    }
                 }
                 else
                 {
@@ -115,95 +183,69 @@ void Controller::run()
             }
         }
     }
+    ++_frame;
 }
 
-bool Controller::receive(bool is_jumping, const std::string & data)
+bool Controller::receive(const std::string & data)
 {
     if (!_check_init())
         return false;
-    if (is_jumping)
-    {
-        return _parse_parachute(data);
-    }
-    else
-    {
-        return _parse_commands(data);
-    }
+    std::cout << "receive" << std::endl;
+    return _parse(data);
+
 }
 
-void Controller::_send(int playerID, bool is_jumping, const std::string & data)
+void Controller::_send(int playerID, int new_frame, const std::string & data)
 {
     if (!_check_init())
         return;
-    _info[playerID].recv_func(is_jumping, data);
+    _info[playerID].recv_func(new_frame, data);
     return;
 }
 
-bool Controller::_parse_parachute(const std::string & data)
+bool Controller::_parse(const std::string & data)
 {
-    comm_platform::Parachute recv;
+    comm::Command recv;
     auto playerID = _get_playerID_by_threadID();
     if (playerID >= 0 && recv.ParseFromString(data))
     {
-        COMMAND_PARACHUTE c;
-        c.landing_point.x = recv.landing_point().x();
-        c.landing_point.y = recv.landing_point().y();
-        switch (recv.role())
+        if (recv.command_type() != comm::CommandType::PARACHUTE)
         {
-        case comm_platform::Vocation::MEDIC:
-            c.role = VOCATION_TYPE::MEDIC;
-            break;
-        case comm_platform::Vocation::ENGINEER:
-            c.role = VOCATION_TYPE::ENGINEER;
-            break;
-        case comm_platform::Vocation::SIGNALMAN:
-            c.role = VOCATION_TYPE::SIGNALMAN;
-            break;
-        case comm_platform::Vocation::HACK:
-            c.role = VOCATION_TYPE::HACK;
-            break;
-        case comm_platform::Vocation::SNIPER:
-            c.role = VOCATION_TYPE::SNIPER;
-            break;
+            COMMAND_ACTION c;
+            switch (recv.command_type())
+            {
+            case comm::CommandType::MOVE:
+                c.command_type = COMMAND_TYPE::MOVE;
+                break;
+            case comm::CommandType::SHOOT:
+                c.command_type = COMMAND_TYPE::SHOOT;
+                break;
+            case comm::CommandType::PICKUP:
+                c.command_type = COMMAND_TYPE::PICKUP;
+                break;
+            case comm::CommandType::RADIO:
+                c.command_type = COMMAND_TYPE::RADIO;
+                break;
+            default:
+                break;
+            }
+            c.move_angle = recv.move_angle();
+            c.view_angle = recv.view_angle();
+            c.target_ID = recv.target_id();
+            c.parameter = recv.parameter();
+            _command_action[playerID].push_back(c);
+            return true;
         }
-        _command_parachute[playerID].push_back(c);
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-bool Controller::_parse_commands(const std::string & data)
-{
-    comm_platform::Command recv;
-    auto playerID = _get_playerID_by_threadID();
-    if (playerID >= 0 && recv.ParseFromString(data))
-    {
-        COMMAND_ACTION c;
-        switch (recv.command_type())
+        else
         {
-        case comm_platform::CommandType::MOVE:
-            c.command_type = COMMAND_TYPE::MOVE;
-            break;
-        case comm_platform::CommandType::SHOOT:
-            c.command_type = COMMAND_TYPE::SHOOT;
-            break;
-        case comm_platform::CommandType::PICKUP:
-            c.command_type = COMMAND_TYPE::PICKUP;
-            break;
-        case comm_platform::CommandType::RADIO:
-            c.command_type = COMMAND_TYPE::RADIO;
-            break;
+            COMMAND_PARACHUTE c;
+            c.landing_point.x = recv.landing_point().x();
+            c.landing_point.y = recv.landing_point().y();
+            c.role = static_cast<VOCATION>(recv.role());
+            c.team = _info[playerID].team;
+            _command_parachute[playerID].push_back(c);
+            return true;
         }
-        c.move_angle = recv.move_angle();
-        c.view_angle = recv.view_angle();
-        c.target_ID = recv.target_id();
-        c.parameter = recv.parameter();
-
-        _command_action[playerID].push_back(c);
-        return true;
     }
     else
     {
@@ -255,9 +297,9 @@ DWORD WINAPI thread_func(LPVOID lpParameter)
     return 0;
 }
 
-bool controller_receive(bool is_jumping, const std::string data)
+bool controller_receive(const std::string data)
 {
-    return manager.receive(is_jumping, data);
+    return manager.receive(data);
 }
 
 std::map<int, COMMAND_PARACHUTE> Controller::get_parachute_commands()
@@ -265,7 +307,7 @@ std::map<int, COMMAND_PARACHUTE> Controller::get_parachute_commands()
     std::map<int, COMMAND_PARACHUTE> m;
     if (!_check_init())
         return m;
-    for (int i = 0; i < _player_count; i++)
+    for (int i = 0; i < _player_count; ++i)
     {
         if (!_command_parachute[i].empty())
         {
@@ -275,12 +317,36 @@ std::map<int, COMMAND_PARACHUTE> Controller::get_parachute_commands()
     return m;
 }
 
-std::string Controller::_serialize_route()
+std::map<int, std::vector<COMMAND_ACTION>> Controller::get_action_commands()
 {
-    comm_platform::Route sender;
+    std::map<int, std::vector<COMMAND_ACTION>> m;
+    if (!_check_init())
+        return m;
+    for (int i = 0; i < _player_count; ++i)
+    {
+        if (!_command_action[i].empty())
+        {
+            m[i] = { _command_action[i].cbegin(),_command_action[i].cend() };
+        }
+    }
+    return m;
+}
+
+std::string Controller::_serialize_route(int playerID)
+{
+    comm::Route sender;
     sender.mutable_start_pos()->set_x(route.first.x);
     sender.mutable_start_pos()->set_y(route.first.y);
     sender.mutable_over_pos()->set_x(route.second.x);
     sender.mutable_over_pos()->set_y(route.second.y);
+    for (auto teammate : _team[_info[playerID].team])
+    {
+        sender.add_teammates(teammate);
+    }
     return sender.SerializeAsString();
+}
+
+std::string Controller::_serialize_info(int playerID)
+{
+    return player_infos[playerID];
 }

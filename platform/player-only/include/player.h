@@ -3,8 +3,8 @@
 
 //header for players coding their AI.
 
-#include"base.h"
-#include"./../../include/api.h"
+#include "base.h"
+#include "./../../include/api.h"
 
 extern "C"
 {

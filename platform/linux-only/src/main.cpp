@@ -1,33 +1,25 @@
-#include <iostream>
 #include "controller.h"
 #include "pycalling.h"
-#include "item.h"
-#include "character.h"
 
-void PlayGame()
+int main(int argc, char *argv[])
 {
-}
-
-int main()
-{
-    int player_count;
-    int turn = 0;
-
-    std::cout << "input the number of players:";
-    std::cin >> player_count;
-    if (player_count > MAX_PLAYER)
-    {
-        player_count = MAX_PLAYER;
-        std::cerr << "The maxinum number of players is " << MAX_PLAYER << ".Will use " << MAX_PLAYER << " instead." << std::endl;
-    }
-    manager.init(player_count);
-    for (int i = 0; i < player_count; i++)
-    {
-        manager.register_AI(i, &PlayGame);
-    }
-    for (logic.init("GameLogic", "game_main"); turn++ < MAX_TURN; logic.do_loop())
+    std::string path = ".";
+    if(argc>1)
+        path = argv[1];
+    manager.init(path);
+    manager.route = logic.init();
+    manager.run();
+    manager.player_infos = logic.parachute(manager.get_parachute_commands());
+    //comm::PlayerInfo recv;
+    //auto b=recv.ParseFromString(manager.player_infos[0]);
+    //std::cout << recv.DebugString();
+    for (int i = 0; i < 3; i++)
     {
         manager.run();
+        manager.player_infos = logic.do_loop(manager.get_action_commands());
+        comm::PlayerInfo recv;
+        auto b = recv.ParseFromString(manager.player_infos[0]);
     }
+    getchar();
     return 0;
 }

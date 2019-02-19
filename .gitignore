@@ -18,6 +18,8 @@
 /platform/player-only/AI/build
 /platform/player-only/.vscode
 /platform/player-only/build
+/logic/.ipynb_checkpoints
+/logic/platform_test.ipynb
 
 
 # logic
@@ -25,4 +27,5 @@
 /logic/__pycache__
 /logic/allclass/__pycache__
 /logic/proto/__pycache__
+/logic/.vscode/settings.json
 /logic/debug/__pycache__

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package comm_player;
+package comm;
 
 message PolarPosition {
     //use the system of polar coordinates
@@ -14,94 +14,71 @@ message XYPosition {
     double y=2;
 }
 
-enum Vocation {
-    MEDIC = 0;
-    ENGINEER = 1;
-    SIGNALMAN = 2;
-    HACK = 3;
-    SNIPER = 4;
-}
-
-message Object {
-    //object like tree, wall, etc.
-    enum ObjectType {
-        WALL=0;
-        TREE=1;
-    }
-    enum ObjectShape {
-        CIRCLE=0;
-        RECTANGLE=1;
-    }
-    PolarPosition pos=1;
-    double radius=2;
-    ObjectType type=3;
-    ObjectShape shape=4;
-}
-
 message Item {
     //items like gun, etc.
-    enum ItemType {
-        WEAPON=0;
-        GOODS=1;
-    }
+    // for bag, just type and durability
     int32 item_ID=1;
-    ItemType type=2;
+    int32 type=2;
     PolarPosition pos=3;
     int32 durability=4;
 }
 
-enum PlayerState {
-    RELAXING = 0;
-    ON_PLANE = 1;
-    JUMPING = 2;
-    MOVING = 3;
-    SHOOTING = 4;
-    PICKINGUP = 5;
+message PoisonInfo {
+	// information for poison ring
+	XYPosition current_center = 1;
+	XYPosition next_center = 2;
+	double current_radius = 3;
+	double next_radius = 4;
+	int32 rest_frames = 5;
+	// if it's 1, rest_frames means rest frames to move to next status
+    // if it's 0, rest_frames means rest frames to start to move
+    // if it's -1, the poison ring won't move(has become a node)
+	int32 move_flag = 6;
 }
 
 message SelfInfo {
     //complete info of self
-    int32 heal_point=1;
-    int32 heal_point_limit=2;
+    double heal_point=1;
+    double heal_point_limit=2;
     double move_angle=3;
     double view_angle=4;
     double move_speed=5;
-    Vocation vocation=6;
-    PlayerState state=7;
-    int32 state_cd=8;
-    XYPosition pos=9;
-    repeated Item bag=10;
+    int32 vocation=6;
+    int32 status=7;
+    int32 move_cd=8;
+	int32 attack_cd=9;
+    XYPosition pos=10;
+    repeated Item bag=11;
+	double view_width = 12;
+	double view_distance = 13;
 }
 
 message OtherInfo {
     //basic info of other characters in visual field
     int32 player_ID=1;
-    PlayerState state=2;
+    int32 status=2;
     double move_angle=3;
     double view_angle=4;
     double move_speed=5;
-    PolarPosition pos=6;
+	int32 vocation=6;
+    PolarPosition pos=7;
 }
 
 message Sound {
-    int32 sender_ID=1;
-    int32 time_delay=2;
+    int32 sender=1;
+    int32 delay=2;
     int32 parameter=3;
 }
 
 message PlayerInfo {
     //all info that send to each player per turn
-    int32 player_ID=6;
-    SelfInfo self_info=1;
-    repeated Object objects=2;
+    SelfInfo self=1;
+    repeated int32 landform_id=2;
     repeated Item items=3;
     repeated OtherInfo others=4;
     repeated Sound sounds=5;
-}
-
-message TeamInfo {
-    //4 PlayerInfo in general
-    repeated PlayerInfo infos=1;
+    int32 player_ID=6;
+    PoisonInfo poison = 7;
 }
 
 enum CommandType {
@@ -109,6 +86,7 @@ enum CommandType {
     SHOOT=1;
     PICKUP=2;
     RADIO=3;
+    PARACHUTE=4;
 }
 
 message Command {
@@ -117,14 +95,12 @@ message Command {
     double move_angle=3;
     double view_angle=4;
     int32 parameter=5;
+    int32 role=6;
+    XYPosition landing_point=7;
 }
 
 message Route {
     XYPosition start_pos=1;
     XYPosition over_pos=2;
-}
-
-message Parachute {
-    Vocation role=1;
-    XYPosition landing_point=2;
+    repeated int32 teammates=3;
 }

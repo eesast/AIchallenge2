@@ -5,49 +5,43 @@ set(CMAKE_MINOR_VERSION 1)
 
 set(CMAKE_BUILD_TYPE Debug)
 
-add_subdirectory(${PROJECT_SOURCE_DIR}/player-only/)
+set(CMAKE_CXX_STANDARD 17)
 
-IF(WIN32)
-find_package(Python3 REQUIRED)
-ELSEIF(UNIX)
-find_package(PythonLibs 3 REQUIRED)
-ENDIF()
+add_subdirectory(${PROJECT_SOURCE_DIR}/player-only/)
+add_subdirectory(${PROJECT_SOURCE_DIR}/proto/)
+
+find_package (Python3 COMPONENTS Interpreter Development)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src DIR_SRC)
 
 IF(WIN32)
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/win-only/build)
-# set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} /Od /MDd /D "_DEBUG" /ZI /GZ /Gm")
-# set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} /O2 /MD /D "NDEBUG" /GF")
 
 include_directories(${PROJECT_SOURCE_DIR}/win-only/include)
 aux_source_directory(${PROJECT_SOURCE_DIR}/win-only/src DIR_SRC)
 
-
 ELSEIF(UNIX)
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/linux-only/build)
 
 set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -o0 -Wall -Wextra -g -ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -o3 -Wall -Wextra")
-
-
 include_directories(${PROJECT_SOURCE_DIR}/linux-only/include)
 aux_source_directory(${PROJECT_SOURCE_DIR}/linux-only/src DIR_SRC)
 
 ENDIF()
 
 # protobuf
-IF(UNIX)
 find_package(Protobuf REQUIRED)
-ENDIF()
 include_directories(${Protobuf_INCLUDE_DIRS})
+include_directories(${PROJECT_BINARY_DIR}/proto/)
 
-
-include_directories(${PYTHON_INCLUDE_DIRS})
+include_directories(${Python3_INCLUDE_DIRS})
 add_executable(platform ${DIR_SRC})
-target_link_libraries(platform ${PYTHON_LIBRARIES})
+target_link_libraries(platform ${Python3_LIBRARIES})
 
 IF(UNIX)
-target_link_libraries(platform ${Protobuf_LIBRARIES})
+target_link_libraries(platform libdl.so)
+target_link_libraries(platform stdc++fs)
 ENDIF()
+
+target_link_libraries(platform comm)
