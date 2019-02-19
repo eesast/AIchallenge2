@@ -132,7 +132,7 @@ class GameMain:
                 else:
                     # if command_type isn't correct, it will be ignored
                     continue
-        self.print_debug(29, "unwrap_command successfully in turn", self.__turn)
+        self.print_debug(29, "unwrap_command successfully")
         self.print_debug(29, self.all_commands)
         return
 
@@ -146,7 +146,7 @@ class GameMain:
         for team in self.all_players:
             for player in team:
                 # check if there is at least one alive player in this team
-                if player.heal_point > 0:
+                if player.health_point > 0:
                     alive_count = alive_count + 1
                     break
                 else:
@@ -266,7 +266,7 @@ class GameMain:
                     player_info.id = each_player.number
                     player_info.team = each_player.team
                     player_info.vocation = each_player.vocation
-                    player_info.HP_max = int(each_player.heal_point)  # now HP == HP_max
+                    player_info.HP_max = int(each_player.health_point)  # now HP == HP_max
             return data
 
         self.print_debug(9, 'parachute:' + str(information))
@@ -304,19 +304,20 @@ class GameMain:
             for player_number, command in self.all_commands['pickup'].items():
                 picked_item = item.Item.all_items[command[0]]
                 player = character.Character.all_characters[player_number]
+                if self.all_wild_items.get(picked_item.id, None) is None:
+                    self.print_debug(4, 'player', player_number, 'try to pick item not existing or belonging to others')
                 if picked_item.id not in self.all_info[player_number].items:
                     self.print_debug(4, 'player', player_number, 'try to pick item out of view')
-                elif picked_item.owner != -1:
-                    self.print_debug(4, 'player', player_number, "try to pick somebody's possession")
                 elif not player.position.accessible(picked_item.position):
                     self.print_debug(4, 'player', player_number, "tyr to pick item beyond pick range")
                 else:
                     # now this player can get it
-                    picked_item.owner = player_number
-                    player.bag.append(picked_item.id)
+                    player.bag[picked_item.item_type] = player.bag.setdefault(picked_item.item_type, 0) + \
+                                                        picked_item.durability
                     self.all_wild_items.pop(picked_item.id)
+                    item.Item.remove(picked_item.id)
                     character.Character.all_characters[player_number].change_status(character.Character.PICKING)
-                    self.print_debug(16, 'player', player_number, 'pick up item', picked_item.id)
+                    self.print_debug(16, 'player', player_number, 'pick up', picked_item.data['name'], picked_item.id)
                     # maybe we should deal with command['other'], now ignore it
                     pass
             # move
@@ -340,7 +341,7 @@ class GameMain:
                 player = character.Character.all_characters[player_id]
                 entity = item.Item.all_items.get(item_id, None)
                 if player.shoot_cd:
-                    self.print_debug(4, 'player', player_id, 'try to shoot with', player.shoot_cd,' shoot cd')
+                    self.print_debug(4, 'player', player_id, 'try to shoot with', player.shoot_cd, ' shoot cd')
                 elif not entity:
                     self.print_debug(4, 'player', player_id, 'try to use weapon not existing')
                 elif entity.owner != player_id:
@@ -402,7 +403,7 @@ class GameMain:
                     dist = abs(position.cross_product(direction, target - pos))
                     data = item.Item.get_data_by_item_id(item_id)
                     value = math.exp(-dist * 100 / data['range']) * data['damage']
-                    character.Character.all_characters[hit_id].heal_point -= value
+                    character.Character.all_characters[hit_id].health_point -= value
 
                     self.print_debug(13, 'player', player_id, data['name'], value, 'damage to player', hit_id)
                 else:
@@ -415,8 +416,8 @@ class GameMain:
         def die():
             for team in self.all_players:
                 for player in team:
-                    if player.can_be_hit() and player.heal_point <= 0:
-                        player.heal_point = 0
+                    if player.can_be_hit() and player.health_point <= 0:
+                        player.health_point = 0
                         player.change_status(character.Character.DEAD)
                         self.print_debug(7, 'player', player.number, 'dead')
             pass
@@ -493,7 +494,7 @@ class GameMain:
                     elif player.is_jumping():
                         new_info = data.parachutists.add()
                         new_info.id = player.number
-                        new_info.HP = int(player.heal_point)
+                        new_info.HP = int(player.health_point)
                         new_info.face_direction = player.face_direction.get_angle()
                         new_info.pos.x, new_info.pos.y = player.position.x, player.position.y
                         new_info.jump_pos.x, new_info.jump_pos.y = player.jump_position.x, player.jump_position.y
@@ -501,7 +502,7 @@ class GameMain:
                     else:
                         new_info = data.players.add()
                         new_info.id = player.number
-                        new_info.HP = int(player.heal_point)
+                        new_info.HP = int(player.health_point)
                         new_info.pos.x, new_info.pos.y = player.position.x, player.position.y
                         new_info.weapon = player.last_weapon
                         new_info.armor = player.best_armor
@@ -557,8 +558,8 @@ class GameMain:
                 raise Exception("wrong type of player!")
             data = platform.PlayerInfo()
             data.player_ID = player.number
-            data.self.heal_point = player.heal_point
-            data.self.heal_point_limit = player_info.hp_max
+            data.self.health_point = player.health_point
+            data.self.health_point_limit = player_info.hp_max
             data.self.move_angle = player.move_direction.get_angle() if player.move_direction else 0
             data.self.view_angle = player.face_direction.get_angle()
             data.self.move_speed = player.move_speed

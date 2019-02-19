@@ -39,8 +39,8 @@ message PoisonInfo{
 
 message SelfInfo {
     //complete info of self
-    double heal_point=1;
-    double heal_point_limit=2;
+    double health_point=1;
+    double health_point_limit=2;
     double move_angle=3;
     double view_angle=4;
     double move_speed=5;

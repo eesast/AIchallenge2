@@ -218,9 +218,9 @@ inherited from Object(CIRCLE), define player's entity
 
 ##### dynamic
 
-`__heal_point_limit`: max HP
+`__health_point_limit`: max HP
 
-`heal_point`: current HP
+`health_point`: current HP
 
 `bag`: a list for player's bag
 
@@ -334,21 +334,23 @@ inherited from Object, the class of all pick-up in the map
 
 ##### dynamic
 
+`data`: point to data for this type of item
+
 `durability`: using durability, for vest it means how many damage it can block, for WEAPON it means bullets,and for GOODS it means rest using times
 
 `item_type`: it should be a number according to data file
 
 `id`: id of the item
 
-`owner`: the id of player who owns it or -1 as default value
-
-##### method
+#### method
 
 ##### static
 
 `load_data`: load data from data file
 
 `add`: add a new item entity and update next_id, then return this item's id
+
+`remove`: remove a item from `all_items` by id
 
 ##### dynamic
 
