@@ -38,6 +38,8 @@ remember: all containers here consist of just id, while the entities exist as cl
 
 `die_order`:save the order of players' death by player id
 
+`die_list`: die order in this frame, this will be given to platform
+
 `map_items`:save id for all items in the map by multiway tree
 
 `all_players`: save all teams as list, in which are all players' pointers
@@ -466,3 +468,4 @@ this is the information for the circle
 
 `get_next_center`: get next circle center after stage changed
 
+`safe`: judge if a player's position is safe

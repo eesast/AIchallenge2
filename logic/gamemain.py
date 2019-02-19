@@ -32,6 +32,7 @@ PRINT_DEBUG = 30
 
 #   level 15: print player's new position after each move
 #   level 16: print player's new pick-up
+#   level 17: print circle dynamic changing
 
 #   level 20: print player's view for other players
 #   level 21: print player's view for items
@@ -52,6 +53,7 @@ class GameMain:
 
         # it's more like a define instead of an initialization
         self.die_order = []  # save the player's dying order
+        self.die_list = []   # die order in this frame for platform
         self.map_items = [[[] for i in range(16)] for j in range(16)]  # try to divide map into 256 parts
 
         self.all_players = []  # save all teams and players
@@ -65,7 +67,7 @@ class GameMain:
         self.number_to_player = {}  # use a number to find a player
         self.__start_position, self.__over_position = None, None
         self.__turn = 0
-        self.poison = circle.Circle
+        self.poison = circle.Circle(GameMain.map_size)
 
         # initialize debug level for logic to use directly and for platform to change it
         self.__debug_level = PRINT_DEBUG
@@ -413,12 +415,22 @@ class GameMain:
             return
 
         def die():
+            self.die_list = []
             for team in self.all_players:
                 for player in team:
-                    if player.can_be_hit() and player.health_point <= 0:
-                        player.health_point = 0
-                        player.change_status(character.Character.DEAD)
-                        self.print_debug(7, 'player', player.number, 'dead')
+                    if self.poison.safe(player):
+                        if player.can_be_hit() and player.health_point <= 0:
+                            player.health_point = 0
+                            player.change_status(character.Character.DEAD)
+                            self.print_debug(7, 'player', player.number, 'dead')
+                    else:
+                        player.health_point -= self.poison.damage_per_frame
+                        if player.can_be_hit() and player.health_point <= 0:
+                            player.health_point = 0
+                            self.die_order.append(player.id)
+                            self.die_list.append(player.id)
+                            player.change_status(character.Character.REAL_DEAD)
+                            self.print_debug(7, 'player', player.number, 'dead out of circle')
             pass
 
         def items():
@@ -477,6 +489,8 @@ class GameMain:
                         if distance <= player.view_distance and angle <= player.view_angle / 2:
                             player_info.others.append(other.number)
                             self.print_debug(20, 'player', player_id, 'see player', other.number)
+            if self.poison.update():
+                self.print_debug(17, "the circle's center:", self.poison.center_now, 'radius:', self.poison.radius_now)
             return
 
         def get_proto_data():
@@ -508,6 +522,7 @@ class GameMain:
                 new_item.id = item_id
                 new_item.type = type_id
                 new_item.pos.x, new_item.pos.y = pos.x, pos.y
+            data['dead'] = self.die_list
             return data
 
         self.print_debug(10, 'turn', self.__turn, 'starts!')

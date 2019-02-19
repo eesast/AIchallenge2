@@ -34,7 +34,7 @@
 
 `parachute`:逻辑传给平台所有队伍选手的信息，中间包含队伍编号、角色编号、职业信息、跳伞坐标，格式为`{player_id:{'vocation': vocation_number, 'position': (x, y), 'team': team_id},...}`，其中`team_id`和`player_id`由平台钦定一系列编号数字，`vocation_number`是参考自`character.py`的职业枚举值。逻辑将回传第一回合的信息，信息格式与后面一致，见下。
 
-`game_main`:其输入参数是平台传给逻辑的所有玩家指令信息，格式为`{player_id: [{"command_tye": type, "target": ID, "move_angle": angle, "view_angle": angle, "other": data},...]},...}`其中`player_number`应当是与前面钦定的一致的编号。返回值是逻辑传给平台的玩家需要获取到的信息，此处将直接传入一个字典，字典键为角色id，值为一个proto文件，详见proto部分。
+`game_main`:其输入参数是平台传给逻辑的所有玩家指令信息，格式为`{player_id: [{"command_tye": type, "target": ID, "move_angle": angle, "view_angle": angle, "other": data},...]},...}`其中`player_number`应当是与前面钦定的一致的编号。返回值是逻辑传给平台的玩家需要获取到的信息，此处将直接传入一个字典，字典键为角色id，值为一个proto文件，详见proto部分。此外，这个大字典除了传`player_id:info`对之外，附加一个`'dead':list`用来传本回合彻底死亡的玩家id列表以便平台终止进程。
 
 ## debug
 

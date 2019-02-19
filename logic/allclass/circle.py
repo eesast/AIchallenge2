@@ -53,7 +53,7 @@ class Circle:
         assert 0 <= self.flag <= 3 and isinstance(self.flag, int)
         if self.flag == 3:
             # -1 means all over
-            return
+            return False
         elif self.flag == 2:
             # 2 means the circle is waiting
             self.rest_frames -= 1
@@ -63,6 +63,7 @@ class Circle:
                 self.rest_frames = self.all_data[self.stage]['move']
                 self.move = (self.center_next - self.center_now) / self.rest_frames
                 self.shrink = (self.radius_now - self.radius_next) / self.rest_frames
+                return True
         elif self.flag == 1:
             # 1 means the circle is shrinking
             self.rest_frames -= 1
@@ -71,7 +72,7 @@ class Circle:
                 self.stage += 1
                 if not self.all_data.get(self.stage, None):
                     self.flag = 3
-                    return
+                    return True
                 self.radius_now = self.radius_next
                 self.center_now = self.center_next
                 self.radius_next = self.radius_now * self.all_data[self.stage]['shrink']
@@ -79,6 +80,7 @@ class Circle:
                 self.flag = 2
                 self.rest_frames = self.all_data[self.stage]['wait']
                 self.damage_per_frame = self.all_data[self.stage]['damage']
+                return True
             else:
                 self.radius_now -= self.shrink
                 self.center_now += self.move
@@ -87,12 +89,16 @@ class Circle:
             self.rest_frames -= 1
             if not self.rest_frames:
                 self.start()
-        return
+                return True
+        return False
 
     def get_next_center(self):
         # get next center randomly
         rho = random() ** 0.5 * (self.radius_now - self.radius_next)
         return self.center_now + angle_to_position(random() * 360) * rho
+
+    def safe(self, player):
+        return (player.position - self.center_now).length2() < self.radius_now * self.radius_now
 
 
 if __name__ == '__main__':
