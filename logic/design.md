@@ -16,6 +16,7 @@ This file is for logic to organize the whole project.
 8. `position.py`:define class `Position` for game position process
 9. `sound.py`:define class `Sound` for footstep, gun, radio and etc.
 10. `vision.py`:define class `LandForm` for static items in the map and `Vision` for character's vision
+11. `circle.py`: define class `Circle` for the circle
 
 ## Class
 
@@ -48,6 +49,8 @@ remember: all containers here consist of just id, while the entities exist as cl
 `all_wild_items`: a dictionary to save all items on the ground(maybe not wild but discarded)
 
 `all_info`: a dictionary to save all players basic information for platform
+
+`circle`: data for poison circle
 
 `number_to_team`:use team id to find a team's pointer
 
@@ -422,3 +425,44 @@ this is the information package for platform
 #### method
 
 `clear`: clear the lists
+
+### `Circle`
+
+this is the information for the circle
+
+#### attribute
+
+`center_now`: current circle's center position
+
+`center_next`: next circle's center position
+
+`radius_now`: current circle's radius
+
+`radius_next`: next circle's radius
+
+`flag`: status flag for circle
+
+`shrink`: radius' shrinking speed
+
+`move`: center's moving speed
+
+`edge`: the edge of the map
+
+`damager_per_frame`: player out of circle get such damage per frame
+
+`rest_frames`: rest frames for current status
+
+`all_data`: all_data load from data file
+
+`stage`: means circle stage to get data
+
+#### method
+
+`load_data`: load data file
+
+`start`: start generate the circle
+
+`update`: update the circle per frame
+
+`get_next_center`: get next circle center after stage changed
+

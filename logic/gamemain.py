@@ -65,6 +65,7 @@ class GameMain:
         self.number_to_player = {}  # use a number to find a player
         self.__start_position, self.__over_position = None, None
         self.__turn = 0
+        self.poison = circle.Circle
 
         # initialize debug level for logic to use directly and for platform to change it
         self.__debug_level = PRINT_DEBUG
@@ -337,28 +338,26 @@ class GameMain:
                     player.move_direction = position.angle_to_position(move_angle + basic_angle)
             # shoot
             for player_id, command in self.all_commands['shoot'].items():
-                view_angle, item_id, other = command
+                view_angle, item_type, other = command
                 player = character.Character.all_characters[player_id]
-                entity = item.Item.all_items.get(item_id, None)
+                rest = player.bag.get(item_type, 0)
                 if player.shoot_cd:
                     self.print_debug(4, 'player', player_id, 'try to shoot with', player.shoot_cd, ' shoot cd')
-                elif not entity:
-                    self.print_debug(4, 'player', player_id, 'try to use weapon not existing')
-                elif entity.owner != player_id:
-                    self.print_debug(4, 'player', player_id, 'try to use items not belonging to him')
-                elif not entity.is_weapon():
+                elif not rest:
+                    self.print_debug(4, 'player', player_id, 'try to use weapon without durability')
+                elif item.Item.all_data[item_type]['type'] != 'weapon':
                     self.print_debug(4, 'player', player_id, 'try to use not weapon-like item to shoot')
                 elif not 0 <= view_angle <= 360:
                     self.print_debug(3, 'player', player_id, 'give wrong attack angle as', view_angle)
                 else:  # now shoot
-                    entity.durability -= 1
+                    player.bag[item_type] -= 1
                     view_angle += player.face_direction.get_angle()  # correct relative angle to absolute angle
                     if view_angle >= 360:
                         view_angle -= 360
-                    player.shoot_cd = item.Item.all_data[entity.item_type]['cd']
+                    player.shoot_cd = item.Item.all_data[item_type]['cd']
                     player.face_direction = position.angle_to_position(view_angle)
                     player.change_status(character.Character.SHOOTING)
-                    self.all_bullets.append((player.position, view_angle, item_id, player_id, None))
+                    self.all_bullets.append((player.position, view_angle, item_type, player_id, None))
                     # here should deal with other parameter, just put off
             # radio will be done after the new year
 
@@ -373,9 +372,9 @@ class GameMain:
         def attack():
             bullets = self.all_bullets
             for index in range(len(bullets)):
-                pos, view_angle, item_id, player_id, hit_id = bullets[index]
+                pos, view_angle, item_type, player_id, hit_id = bullets[index]
                 shortest = None
-                data = item.Item.get_data_by_item_id(item_id)
+                data = item.Item.all_data[item_type]
                 for team in self.all_players:
                     if character.Character.all_characters[player_id] in team:
                         continue
@@ -390,7 +389,7 @@ class GameMain:
                             if not shortest or shortest < dist:
                                 # modify hit player
                                 shortest = dist
-                                bullets[index] = pos, view_angle, item_id, player_id, player.number
+                                bullets[index] = pos, view_angle, item_type, player_id, player.number
             return
 
         def damage():
@@ -468,9 +467,7 @@ class GameMain:
                     distance, angle = player.position.get_polar_position(player.face_direction, each_item.position)
                     if distance <= player.view_distance and abs(angle) <= player.view_angle / 2:
                         player_info.items.append(item_id)
-                        # for debug
-                        if player_id == 11:
-                            self.print_debug(21, 'player', player_id, 'see item', item_id)
+                        self.print_debug(21, 'player', player_id, 'see item', item_id)
                 for team in self.all_players:
                     for other in team:
                         if other.number == player_id:
@@ -479,9 +476,7 @@ class GameMain:
                         angle = 360 - angle if angle > 180 else angle
                         if distance <= player.view_distance and angle <= player.view_angle / 2:
                             player_info.others.append(other.number)
-                            # for debug
-                            if player_id == 11:
-                                self.print_debug(20, 'player', player_id, 'see player', other.number)
+                            self.print_debug(20, 'player', player_id, 'see player', other.number)
             return
 
         def get_proto_data():
