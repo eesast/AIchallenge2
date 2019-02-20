@@ -29,10 +29,10 @@ def game_main(commands):
 
 def main():
     # this function is just to debug for logic
-    import debug.ai as ai
-    me = ai.AI()
+    # import debug.ai as ai
+    # me = ai.AI()
     game_init("./", "config.ini")
-    '''file = open("./debug/input.json", 'r', encoding='utf-8')
+    file = open("./debug/input.json", 'r', encoding='utf-8')
     information_tem = load(file)
     information = {}
     for key, value in information_tem.items():
@@ -52,9 +52,9 @@ def main():
         ]
     # start the loop
     # fight until there is only one team alive or be overtime
-    while game.alive_teams() > 1 and game.anti_infinite_loop():
+    while len(game.alive_teams()) > 1 and game.anti_infinite_loop():
         # here create random move instructions
-        for i in range(11):
+        for i in range(12):
             commands[i][0]['move_angle'] = random.randrange(0, 360)
             commands[i][0]['view_angle'] = random.randrange(0, 360)
 
@@ -62,11 +62,14 @@ def main():
         current_info = game_main(commands)
 
         # here give a simple ai for player No.11
-        commands[11] = me.get_command(current_info[11])
+        # commands[11] = me.get_command(current_info[11])
 
     # report the final result
-    print("game over")'''
+    print('alive players:', game.alive_teams())
+    print("game over")
+
     # test for circle
+    '''
     import matplotlib.pyplot as plt
     import numpy as np
     fig = plt.figure(figsize=(6, 6))
@@ -87,6 +90,7 @@ def main():
             plt.contour(x, y, (x - cent_x) * (x - cent_x) + (y - cent_y) * (y - cent_y), [r * r])
     plt.axis('scaled')
     plt.show()
+    '''
 
     return
 

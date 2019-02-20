@@ -98,7 +98,7 @@ class Circle:
         return self.center_now + angle_to_position(random() * 360) * rho
 
     def safe(self, player):
-        return (player.position - self.center_now).length2() < self.radius_now * self.radius_now
+        return self.flag == 0 or (player.position - self.center_now).length2() < self.radius_now * self.radius_now
 
     def is_processing(self):
         return self.flag == 1 or self.flag == 2

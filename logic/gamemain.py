@@ -12,7 +12,7 @@ import struct
 #   here define a debug level variable to debug print-oriented
 #   remember: here is just a initial level for logic
 #   platform may give another number in game_init
-PRINT_DEBUG = 30
+PRINT_DEBUG = 13
 
 
 #   level 1: only print illegal information
@@ -148,16 +148,19 @@ class GameMain:
             pass
 
     def alive_teams(self):
-        alive_count = 0
+        teams = []
         for team in self.all_players:
+            alive = []
             for player in team:
                 # check if there is at least one alive player in this team
                 if player.health_point > 0:
-                    alive_count = alive_count + 1
+                    alive.append(player.number)
                     break
                 else:
                     continue
-        return alive_count
+            if len(alive):
+                teams.append(alive)
+        return teams
 
     def generate_route(self):
         # a function to get random position for airplane's route
@@ -428,10 +431,11 @@ class GameMain:
                             self.print_debug(7, 'player', player.number, 'dead')
                     else:
                         player.health_point -= self.poison.damage_per_frame
+                        self.print_debug(13, 'circle caused', self.poison.damage_per_frame, 'damage to', player.number)
                         if player.can_be_hit() and player.health_point <= 0:
                             player.health_point = 0
-                            self.die_order.append(player.id)
-                            self.die_list.append(player.id)
+                            self.die_order.append(player.number)
+                            self.die_list.append(player.number)
                             player.change_status(character.Character.REAL_DEAD)
                             self.print_debug(7, 'player', player.number, 'dead out of circle')
             pass
@@ -498,12 +502,15 @@ class GameMain:
 
         def pack_for_interface():
             data = interface.FrameInfo()
+            # give frame
             data.frame = self.__turn
+            # give information for each player
             for team in self.all_players:
                 for player in team:
                     if player.is_flying() or not player.is_alive():
                         continue
                     elif player.is_jumping():
+                        # give parachute information
                         new_info = data.parachutists.add()
                         new_info.id = player.number
                         new_info.HP = int(player.health_point)
@@ -512,6 +519,7 @@ class GameMain:
                         new_info.jump_pos.x, new_info.jump_pos.y = player.jump_position.x, player.jump_position.y
                         new_info.land_pos.x, new_info.land_pos.y = player.land_position.x, player.land_position.y
                     else:
+                        # give normal player information
                         new_info = data.players.add()
                         new_info.id = player.number
                         new_info.HP = int(player.health_point)
@@ -519,12 +527,22 @@ class GameMain:
                         new_info.weapon = player.last_weapon
                         new_info.armor = player.best_armor
                         new_info.face_direction = player.face_direction.get_angle()
+            # give all items information
             for item_id, type_pos_tuple in self.all_wild_items.items():
                 type_id, pos = type_pos_tuple
                 new_item = data.items.add()
                 new_item.id = item_id
                 new_item.type = type_id
                 new_item.pos.x, new_item.pos.y = pos.x, pos.y
+
+            # give circle's information
+            data.circle.status = self.poison.flag
+            data.circle.frames = self.poison.rest_frames
+            if self.poison.is_processing():
+                data.circle.now.center.x, data.circle.now.center.y = self.poison.center_now.x, self.poison.center_now.y
+                data.circle.next.center.x, data.circle.next.center.y = self.poison.center_next.x, self.poison.center_next.y
+                data.circle.now.radius = self.poison.radius_now
+                data.circle.next.radius = self.poison.radius_next
             return data
 
         self.print_debug(10, 'turn', self.__turn, 'starts!')
