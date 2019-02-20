@@ -367,11 +367,20 @@ class GameMain:
                     player.change_status(character.Character.SHOOTING)
                     self.all_bullets.append((player.position, view_angle, item_type, player_id, None))
                     # here should deal with other parameter, just put off
-            # radio will be done after the new year
+            # radio
+            for emitter_id, command in self.all_commands['radio'].items():
+                # here receiver_id include some other data for signalman, awaiting to process
+                receiver_id, data = command
+                emitter = character.Character.all_characters[emitter_id]
+                receiver = character.Character.all_characters[receiver_id]
+                self.all_sounds.append(sound.Sound(sound.Sound.RADIO_VOICE, receiver_id, emitter.position,
+                                                   abs(emitter.position - receiver.posistion), emitter_id, data))
+            return
 
         def move():
             for team in self.all_players:
                 for player in team:
+                    self.all_info[player.number].clear()
                     if not isinstance(player, character.Character):
                         raise Exception("wrong player!")
                     if player.move():
@@ -444,7 +453,14 @@ class GameMain:
             pass
 
         def noise():
-            pass
+            for _sound in self.all_sounds:
+                assert isinstance(_sound, sound.Sound)
+                _sound.update()
+                if _sound.arrived():
+                    pos = character.Character.all_characters[_sound.receiver].position
+                    self.all_info[_sound.receiver].sounds.append(_sound.emitter, _sound.delay, _sound.get_data(pos))
+            self.all_sounds = [_sound for _sound in self.all_sounds if not _sound.arrived()]
+            return
 
         def update():
             for team in self.all_players:
@@ -477,7 +493,6 @@ class GameMain:
                             self.print_debug(8, "in turn", self.__turn, "player", player.number, "reach the ground at",
                                              player.position)
             for player_id, player_info in self.all_info.items():
-                player_info.clear()
                 # ignore landform now
                 # ignore sounds now
                 player = character.Character.all_characters[player_id]
