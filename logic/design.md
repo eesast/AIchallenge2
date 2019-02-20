@@ -469,3 +469,5 @@ this is the information for the circle
 `get_next_center`: get next circle center after stage changed
 
 `safe`: judge if a player's position is safe
+
+`is_processing`: judge if the circle is shrinking or waiting

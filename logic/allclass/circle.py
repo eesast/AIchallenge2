@@ -24,13 +24,13 @@ class Circle:
         # stage number to query data
         self.stage = None
 
-    def load_data(self, parent_path, character_file_path):
-        with open(parent_path + character_file_path, "r", encoding="utf-8") as file:
+    def load_data(self, parent_path, circle_file_path):
+        with open(parent_path + circle_file_path, "r", encoding="utf-8") as file:
             data = load(file)
         for key, value in data.items():
             self.all_data[int(key)] = value
-        self.rest_frames = self.all_data['delay']
-        return
+        self.rest_frames = self.all_data[0]['delay']
+        return self.all_data
 
     def start(self):
         # start the circle after the initial waiting frames
@@ -100,19 +100,23 @@ class Circle:
     def safe(self, player):
         return (player.position - self.center_now).length2() < self.radius_now * self.radius_now
 
+    def is_processing(self):
+        return self.flag == 1 or self.flag == 2
+
 
 if __name__ == '__main__':
     # test place
-    # install matplotlib and import matplotlib.pyplot as plt first before test
+    # install matplotlib before test
+    import matplotlib.pyplot as plt
     c = Circle(1000)
     c.center_now = Position(500, 500)
     c.radius_now = 500
     c.radius_next = 300
-    '''plt.figure(figsize=(6, 6))
+    plt.figure(figsize=(6, 6))
     for i in range(1000):
         pos = c.get_next_center()
         print(pos, i)
         plt.plot(pos.x, pos.y, '*', color='black')
     plt.legend()
-    plt.show()'''
+    plt.show()
 

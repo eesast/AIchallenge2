@@ -99,6 +99,9 @@ class GameMain:
         GameMain.playback_file_path = file_path + playback_child_path
         open(GameMain.playback_file_path, 'wb').close()  # create the new playback file
 
+        # for circle data
+        self.print_debug(100, self.poison.load_data(file_path, global_config["CIRCLE_FILE_PATH"]))
+
     def map_init(self):
         # here should give some items randomly according to occurrence
         # but for debug just give some same guns
@@ -493,7 +496,7 @@ class GameMain:
                 self.print_debug(17, "the circle's center:", self.poison.center_now, 'radius:', self.poison.radius_now)
             return
 
-        def get_proto_data():
+        def pack_for_interface():
             data = interface.FrameInfo()
             data.frame = self.__turn
             for team in self.all_players:
@@ -522,7 +525,6 @@ class GameMain:
                 new_item.id = item_id
                 new_item.type = type_id
                 new_item.pos.x, new_item.pos.y = pos.x, pos.y
-            data['dead'] = self.die_list
             return data
 
         self.print_debug(10, 'turn', self.__turn, 'starts!')
@@ -554,7 +556,7 @@ class GameMain:
         self.__turn = self.__turn + 1
 
         # output data for playback file
-        self.write_playback(get_proto_data())
+        self.write_playback(pack_for_interface())
 
         # return pack data after refreshing
         return self.pack_for_platform()
@@ -578,6 +580,7 @@ class GameMain:
             data.self.attack_cd = player.shoot_cd
             data.self.pos.x, data.self.pos.y = player.position.x, player.position.y
 
+            # player's bag information
             for item_id in player.bag:
                 new_item = data.self.bag.add()
                 entity = item.Item.all_items[item_id]
@@ -585,8 +588,10 @@ class GameMain:
                 new_item.type = entity.item_type
                 new_item.durability = entity.durability
 
+            # player's vision for landform
             data.landform_id.extend(player_info.landform)
 
+            # player's vision for items
             for item_id in player_info.items:
                 new_item = data.items.add()
                 entity = item.Item.all_items[item_id]
@@ -596,6 +601,7 @@ class GameMain:
                 new_item.pos.distance, new_item.pos.angle = \
                     player.position.get_polar_position(player.face_direction, entity.position)
 
+            # player's vision for other players
             for player_id in player_info.others:
                 new_other = data.others.add()
                 other = character.Character.all_characters[player_id]
@@ -610,13 +616,25 @@ class GameMain:
                 new_other.pos.distance, new_other.pos.angle = \
                     player.position.get_polar_position(player.face_direction, other.position)
 
+            # player's audition
             for arrived_sound in player_info.sounds:
                 new_sound = data.sounds.add()
                 new_sound.sender, new_sound.delay, new_sound.parameter = arrived_sound
 
+            # the circle's information
+            data.poison.move_flag = self.poison.flag
+            data.poison.rest_frames = self.poison.rest_frames
+            if self.poison.is_processing():
+                data.poison.current_center.x = self.poison.center_now.x
+                data.poison.current_center.y = self.poison.center_now.y
+                data.poison.next_center.x = self.poison.center_next.x
+                data.poison.next_center.y = self.poison.center_next.y
+                data.poison.current_radius = self.poison.radius_now
+                data.poison.next_radius = self.poison.radius_next
+
             proto_data = data.SerializeToString()
             all_data[number] = proto_data
-
+        all_data['dead'] = self.die_list
         self.print_debug(50, "return", len(all_data), "players' data back to platform")
         return all_data
 
