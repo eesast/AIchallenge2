@@ -44,8 +44,8 @@ void player_receive(int new_frame, const std::string data)
             //SelfInfo
             const auto & self = recv.self();
             auto & self_c = info.self;
-            self_c.hp = self.heal_point();
-            self_c.hp_limit = self.heal_point_limit();
+            self_c.hp = self.health_point();
+            self_c.hp_limit = self.health_point_limit();
             self_c.move_angle = self.move_angle();
             self_c.view_angle = self.view_angle();
             self_c.move_angle = self.move_speed();

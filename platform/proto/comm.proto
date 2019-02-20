@@ -30,16 +30,17 @@ message PoisonInfo {
 	double current_radius = 3;
 	double next_radius = 4;
 	int32 rest_frames = 5;
+	// if it's 0, rest_frames means rest frames to generate circle
 	// if it's 1, rest_frames means rest frames to move to next status
-    // if it's 0, rest_frames means rest frames to start to move
-    // if it's -1, the poison ring won't move(has become a node)
+	// if it's 2, rest_frames means rest frames to start to move
+	// if it's 3, the poison ring won't move(has become a node)
 	int32 move_flag = 6;
 }
 
 message SelfInfo {
     //complete info of self
-    double heal_point=1;
-    double heal_point_limit=2;
+    double health_point=1;
+    double health_point_limit=2;
     double move_angle=3;
     double view_angle=4;
     double move_speed=5;

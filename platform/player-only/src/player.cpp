@@ -11,13 +11,15 @@ extern PlayerInfo info;
 
 void play_game()
 {
-    srand(time(nullptr));
-    int delay = rand() % 1000;
-    std::cout << "playeraaaa:frame" << frame << std::endl;
-    VOCATION role = VOCATION::ENGINEER;
-    XYPosition landing_point = { (over_pos.x + start_pos.x) / 2, (over_pos.y + start_pos.y) / 2 };
-    //std::this_thread::sleep_for(std::chrono::milliseconds(delay));
-    parachute(role, landing_point);
-    move(12, 23, 0);
-    return;
+	srand(time(nullptr));
+	int delay = rand() % 10000;
+	std::cout << "playeraaaa:frame" << frame << "\nhp:" << info.self.hp << std::endl;
+	VOCATION role = VOCATION::ENGINEER;
+	XYPosition landing_point = { 5,5 };
+	if (frame == 0)
+		parachute(role, landing_point);
+	else
+		move(12, 23, 0);
+	std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+	return;
 }

@@ -67,9 +67,11 @@ private:
     //thread control
 public:
     void run();
+	bool has_living_player();
 private:
     //return -1 if failed
     int _get_playerID_by_threadID();
+	void _kill_one(int playerID);
 
     //communication
 public:
@@ -97,9 +99,9 @@ private:
     DWORD _total_core_count;
     AI_INFO _info[MAX_PLAYER];
     HANDLE* _waiting_thread;    //size == _used_core_count
-    int _now_offset;
     int _player_count;
     int _frame;
+	std::vector<int> _batch;
 
     //communication
     std::vector<COMMAND_PARACHUTE> _command_parachute[MAX_PLAYER];
@@ -108,6 +110,7 @@ private:
 public:     //comm with pycalling
     ROUTE_T route;
     std::map<int, std::string> player_infos;
+	std::vector<int> dead;
 };
 
 DWORD WINAPI thread_func(LPVOID lpParameter);
