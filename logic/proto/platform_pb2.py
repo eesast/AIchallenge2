@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='logic_to_platform',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0eplatform.proto\x12\x11logic_to_platform\"0\n\rPolarPosition\x12\x10\n\x08\x64istance\x18\x01 \x01(\x01\x12\r\n\x05\x61ngle\x18\x02 \x01(\x01\"\"\n\nXYPosition\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\"h\n\x04Item\x12\x0f\n\x07item_ID\x18\x01 \x01(\x05\x12\x0c\n\x04type\x18\x02 \x01(\x05\x12-\n\x03pos\x18\x03 \x01(\x0b\x32 .logic_to_platform.PolarPosition\x12\x12\n\ndurability\x18\x04 \x01(\x05\"\xcc\x01\n\nPoisonInfo\x12\x35\n\x0e\x63urrent_center\x18\x01 \x01(\x0b\x32\x1d.logic_to_platform.XYPosition\x12\x32\n\x0bnext_center\x18\x02 \x01(\x0b\x32\x1d.logic_to_platform.XYPosition\x12\x16\n\x0e\x63urrent_radius\x18\x03 \x01(\x01\x12\x13\n\x0bnext_radius\x18\x04 \x01(\x01\x12\x13\n\x0brest_frames\x18\x05 \x01(\x05\x12\x11\n\tmove_flag\x18\x06 \x01(\x05\"\xb7\x02\n\x08SelfInfo\x12\x12\n\nheal_point\x18\x01 \x01(\x01\x12\x18\n\x10heal_point_limit\x18\x02 \x01(\x01\x12\x12\n\nmove_angle\x18\x03 \x01(\x01\x12\x12\n\nview_angle\x18\x04 \x01(\x01\x12\x12\n\nmove_speed\x18\x05 \x01(\x01\x12\x10\n\x08vocation\x18\x06 \x01(\x05\x12\x0e\n\x06status\x18\x07 \x01(\x05\x12\x0f\n\x07move_cd\x18\x08 \x01(\x05\x12\x11\n\tattack_cd\x18\t \x01(\x05\x12*\n\x03pos\x18\n \x01(\x0b\x32\x1d.logic_to_platform.XYPosition\x12$\n\x03\x62\x61g\x18\x0b \x03(\x0b\x32\x17.logic_to_platform.Item\x12\x12\n\nview_width\x18\x0c \x01(\x01\x12\x15\n\rview_distance\x18\r \x01(\x01\"\xab\x01\n\tOtherInfo\x12\x11\n\tplayer_ID\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\x05\x12\x12\n\nmove_angle\x18\x03 \x01(\x01\x12\x12\n\nview_angle\x18\x04 \x01(\x01\x12\x12\n\nmove_speed\x18\x05 \x01(\x01\x12\x10\n\x08vocation\x18\x06 \x01(\x05\x12-\n\x03pos\x18\x07 \x01(\x0b\x32 .logic_to_platform.PolarPosition\"9\n\x05Sound\x12\x0e\n\x06sender\x18\x01 \x01(\x05\x12\r\n\x05\x64\x65lay\x18\x02 \x01(\x05\x12\x11\n\tparameter\x18\x03 \x01(\x05\"\x8e\x02\n\nPlayerInfo\x12\x11\n\tplayer_ID\x18\x06 \x01(\x05\x12)\n\x04self\x18\x01 \x01(\x0b\x32\x1b.logic_to_platform.SelfInfo\x12\x13\n\x0blandform_id\x18\x02 \x03(\x05\x12&\n\x05items\x18\x03 \x03(\x0b\x32\x17.logic_to_platform.Item\x12,\n\x06others\x18\x04 \x03(\x0b\x32\x1c.logic_to_platform.OtherInfo\x12(\n\x06sounds\x18\x05 \x03(\x0b\x32\x18.logic_to_platform.Sound\x12-\n\x06poison\x18\x07 \x01(\x0b\x32\x1d.logic_to_platform.PoisonInfob\x06proto3')
+  serialized_pb=_b('\n\x0eplatform.proto\x12\x11logic_to_platform\"0\n\rPolarPosition\x12\x10\n\x08\x64istance\x18\x01 \x01(\x01\x12\r\n\x05\x61ngle\x18\x02 \x01(\x01\"\"\n\nXYPosition\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\"h\n\x04Item\x12\x0f\n\x07item_ID\x18\x01 \x01(\x05\x12\x0c\n\x04type\x18\x02 \x01(\x05\x12-\n\x03pos\x18\x03 \x01(\x0b\x32 .logic_to_platform.PolarPosition\x12\x12\n\ndurability\x18\x04 \x01(\x05\"\xcc\x01\n\nPoisonInfo\x12\x35\n\x0e\x63urrent_center\x18\x01 \x01(\x0b\x32\x1d.logic_to_platform.XYPosition\x12\x32\n\x0bnext_center\x18\x02 \x01(\x0b\x32\x1d.logic_to_platform.XYPosition\x12\x16\n\x0e\x63urrent_radius\x18\x03 \x01(\x01\x12\x13\n\x0bnext_radius\x18\x04 \x01(\x01\x12\x13\n\x0brest_frames\x18\x05 \x01(\x05\x12\x11\n\tmove_flag\x18\x06 \x01(\x05\"\xbb\x02\n\x08SelfInfo\x12\x14\n\x0chealth_point\x18\x01 \x01(\x01\x12\x1a\n\x12health_point_limit\x18\x02 \x01(\x01\x12\x12\n\nmove_angle\x18\x03 \x01(\x01\x12\x12\n\nview_angle\x18\x04 \x01(\x01\x12\x12\n\nmove_speed\x18\x05 \x01(\x01\x12\x10\n\x08vocation\x18\x06 \x01(\x05\x12\x0e\n\x06status\x18\x07 \x01(\x05\x12\x0f\n\x07move_cd\x18\x08 \x01(\x05\x12\x11\n\tattack_cd\x18\t \x01(\x05\x12*\n\x03pos\x18\n \x01(\x0b\x32\x1d.logic_to_platform.XYPosition\x12$\n\x03\x62\x61g\x18\x0b \x03(\x0b\x32\x17.logic_to_platform.Item\x12\x12\n\nview_width\x18\x0c \x01(\x01\x12\x15\n\rview_distance\x18\r \x01(\x01\"\xab\x01\n\tOtherInfo\x12\x11\n\tplayer_ID\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\x05\x12\x12\n\nmove_angle\x18\x03 \x01(\x01\x12\x12\n\nview_angle\x18\x04 \x01(\x01\x12\x12\n\nmove_speed\x18\x05 \x01(\x01\x12\x10\n\x08vocation\x18\x06 \x01(\x05\x12-\n\x03pos\x18\x07 \x01(\x0b\x32 .logic_to_platform.PolarPosition\"9\n\x05Sound\x12\x0e\n\x06sender\x18\x01 \x01(\x05\x12\r\n\x05\x64\x65lay\x18\x02 \x01(\x05\x12\x11\n\tparameter\x18\x03 \x01(\x05\"\x8e\x02\n\nPlayerInfo\x12\x11\n\tplayer_ID\x18\x06 \x01(\x05\x12)\n\x04self\x18\x01 \x01(\x0b\x32\x1b.logic_to_platform.SelfInfo\x12\x13\n\x0blandform_id\x18\x02 \x03(\x05\x12&\n\x05items\x18\x03 \x03(\x0b\x32\x17.logic_to_platform.Item\x12,\n\x06others\x18\x04 \x03(\x0b\x32\x1c.logic_to_platform.OtherInfo\x12(\n\x06sounds\x18\x05 \x03(\x0b\x32\x18.logic_to_platform.Sound\x12-\n\x06poison\x18\x07 \x01(\x0b\x32\x1d.logic_to_platform.PoisonInfob\x06proto3')
 )
 
 
@@ -228,14 +228,14 @@ _SELFINFO = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='heal_point', full_name='logic_to_platform.SelfInfo.heal_point', index=0,
+      name='health_point', full_name='logic_to_platform.SelfInfo.health_point', index=0,
       number=1, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='heal_point_limit', full_name='logic_to_platform.SelfInfo.heal_point_limit', index=1,
+      name='health_point_limit', full_name='logic_to_platform.SelfInfo.health_point_limit', index=1,
       number=2, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
@@ -331,7 +331,7 @@ _SELFINFO = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=437,
-  serialized_end=748,
+  serialized_end=752,
 )
 
 
@@ -403,8 +403,8 @@ _OTHERINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=751,
-  serialized_end=922,
+  serialized_start=755,
+  serialized_end=926,
 )
 
 
@@ -448,8 +448,8 @@ _SOUND = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=924,
-  serialized_end=981,
+  serialized_start=928,
+  serialized_end=985,
 )
 
 
@@ -521,8 +521,8 @@ _PLAYERINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=984,
-  serialized_end=1254,
+  serialized_start=988,
+  serialized_end=1258,
 )
 
 _ITEM.fields_by_name['pos'].message_type = _POLARPOSITION

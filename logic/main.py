@@ -29,9 +29,8 @@ def game_main(commands):
 
 def main():
     # this function is just to debug for logic
-    import debug.ai as ai
-    me = ai.AI()
-    object.PRINT_DEBUG = 999
+    # import debug.ai as ai
+    # me = ai.AI()
     game_init("./", "config.ini")
     file = open("./debug/input.json", 'r', encoding='utf-8')
     information_tem = load(file)
@@ -53,9 +52,9 @@ def main():
         ]
     # start the loop
     # fight until there is only one team alive or be overtime
-    while game.alive_teams() > 1 and game.anti_infinite_loop():
+    while len(game.alive_teams()) > 1 and game.anti_infinite_loop():
         # here create random move instructions
-        for i in range(11):
+        for i in range(12):
             commands[i][0]['move_angle'] = random.randrange(0, 360)
             commands[i][0]['view_angle'] = random.randrange(0, 360)
 
@@ -63,10 +62,36 @@ def main():
         current_info = game_main(commands)
 
         # here give a simple ai for player No.11
-        commands[11] = me.get_command(current_info[11])
+        # commands[11] = me.get_command(current_info[11])
 
     # report the final result
+    print('alive players:', game.alive_teams())
     print("game over")
+
+    # test for circle
+    '''
+    import matplotlib.pyplot as plt
+    import numpy as np
+    fig = plt.figure(figsize=(6, 6))
+    plt.xlim(1000)
+    plt.ylim(1000)
+    c = game.poison
+    x = y = np.arange(0, 1000, 0.1)
+    x, y = np.meshgrid(x, y)
+    cnt = 0
+    while c.flag != 3:
+        flag = c.flag
+        c.update()
+        cnt += 1
+        if c.flag != flag and c.flag == 2:
+            cent_x, cent_y = c.center_now.x, c.center_now.y
+            r = c.radius_now
+            print('(', cent_x, ',', cent_y, ')', r, sep='')
+            plt.contour(x, y, (x - cent_x) * (x - cent_x) + (y - cent_y) * (y - cent_y), [r * r])
+    plt.axis('scaled')
+    plt.show()
+    '''
+
     return
 
 

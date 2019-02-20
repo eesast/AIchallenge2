@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='logic_to_interface',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0finterface.proto\x12\x12logic_to_interface\"\x1b\n\x03Pos\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\"M\n\x0fPlayerBasicInfo\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04team\x18\x02 \x01(\x05\x12\x10\n\x08vocation\x18\x03 \x01(\x05\x12\x0e\n\x06HP_max\x18\x04 \x01(\x05\"\xc1\x01\n\x13PlayerParachuteInfo\x12\n\n\x02id\x18\x01 \x01(\x05\x12\n\n\x02HP\x18\x02 \x01(\x05\x12\x16\n\x0e\x66\x61\x63\x65_direction\x18\x03 \x01(\x01\x12$\n\x03pos\x18\x04 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12)\n\x08jump_pos\x18\x05 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12)\n\x08land_pos\x18\x06 \x01(\x0b\x32\x17.logic_to_interface.Pos\"\x81\x01\n\nPlayerInfo\x12\n\n\x02id\x18\x01 \x01(\x05\x12\n\n\x02HP\x18\x02 \x01(\x05\x12$\n\x03pos\x18\x03 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12\x0e\n\x06weapon\x18\x04 \x01(\x05\x12\r\n\x05\x61rmor\x18\x05 \x01(\x05\x12\x16\n\x0e\x66\x61\x63\x65_direction\x18\x06 \x01(\x01\"F\n\x04Item\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04type\x18\x02 \x01(\x05\x12$\n\x03pos\x18\x03 \x01(\x0b\x32\x17.logic_to_interface.Pos\"\x8e\x01\n\x06\x42ullet\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04type\x18\x02 \x01(\x05\x12)\n\x08\x65mit_pos\x18\x03 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12,\n\x0b\x63urrent_pos\x18\x04 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12\x11\n\tdirection\x18\x05 \x01(\x01\"\x92\x01\n\x0bInitialInfo\x12&\n\x05start\x18\x01 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12%\n\x04over\x18\x02 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12\x34\n\x07players\x18\x03 \x03(\x0b\x32#.logic_to_interface.PlayerBasicInfo\"\xe0\x01\n\tFrameInfo\x12\r\n\x05\x66rame\x18\x01 \x01(\x05\x12=\n\x0cparachutists\x18\x02 \x03(\x0b\x32\'.logic_to_interface.PlayerParachuteInfo\x12/\n\x07players\x18\x03 \x03(\x0b\x32\x1e.logic_to_interface.PlayerInfo\x12\'\n\x05items\x18\x04 \x03(\x0b\x32\x18.logic_to_interface.Item\x12+\n\x07\x62ullets\x18\x05 \x03(\x0b\x32\x1a.logic_to_interface.Bulletb\x06proto3')
+  serialized_pb=_b('\n\x0finterface.proto\x12\x12logic_to_interface\"\x1b\n\x03Pos\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\"M\n\x0fPlayerBasicInfo\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04team\x18\x02 \x01(\x05\x12\x10\n\x08vocation\x18\x03 \x01(\x05\x12\x0e\n\x06HP_max\x18\x04 \x01(\x05\"\xc1\x01\n\x13PlayerParachuteInfo\x12\n\n\x02id\x18\x01 \x01(\x05\x12\n\n\x02HP\x18\x02 \x01(\x05\x12\x16\n\x0e\x66\x61\x63\x65_direction\x18\x03 \x01(\x01\x12$\n\x03pos\x18\x04 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12)\n\x08jump_pos\x18\x05 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12)\n\x08land_pos\x18\x06 \x01(\x0b\x32\x17.logic_to_interface.Pos\"\x81\x01\n\nPlayerInfo\x12\n\n\x02id\x18\x01 \x01(\x05\x12\n\n\x02HP\x18\x02 \x01(\x05\x12$\n\x03pos\x18\x03 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12\x0e\n\x06weapon\x18\x04 \x01(\x05\x12\r\n\x05\x61rmor\x18\x05 \x01(\x05\x12\x16\n\x0e\x66\x61\x63\x65_direction\x18\x06 \x01(\x01\"F\n\x04Item\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04type\x18\x02 \x01(\x05\x12$\n\x03pos\x18\x03 \x01(\x0b\x32\x17.logic_to_interface.Pos\"A\n\x06\x43ircle\x12\'\n\x06\x63\x65nter\x18\x01 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12\x0e\n\x06radius\x18\x02 \x01(\x01\"\x7f\n\nCircleInfo\x12\x0e\n\x06status\x18\x01 \x01(\x05\x12\x0e\n\x06\x66rames\x18\x02 \x01(\x05\x12\'\n\x03now\x18\x03 \x01(\x0b\x32\x1a.logic_to_interface.Circle\x12(\n\x04next\x18\x04 \x01(\x0b\x32\x1a.logic_to_interface.Circle\"\x8e\x01\n\x06\x42ullet\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04type\x18\x02 \x01(\x05\x12)\n\x08\x65mit_pos\x18\x03 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12,\n\x0b\x63urrent_pos\x18\x04 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12\x11\n\tdirection\x18\x05 \x01(\x01\"\x92\x01\n\x0bInitialInfo\x12&\n\x05start\x18\x01 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12%\n\x04over\x18\x02 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12\x34\n\x07players\x18\x03 \x03(\x0b\x32#.logic_to_interface.PlayerBasicInfo\"\x90\x02\n\tFrameInfo\x12\r\n\x05\x66rame\x18\x01 \x01(\x05\x12=\n\x0cparachutists\x18\x02 \x03(\x0b\x32\'.logic_to_interface.PlayerParachuteInfo\x12/\n\x07players\x18\x03 \x03(\x0b\x32\x1e.logic_to_interface.PlayerInfo\x12\'\n\x05items\x18\x04 \x03(\x0b\x32\x18.logic_to_interface.Item\x12+\n\x07\x62ullets\x18\x05 \x03(\x0b\x32\x1a.logic_to_interface.Bullet\x12.\n\x06\x63ircle\x18\x06 \x01(\x0b\x32\x1e.logic_to_interface.CircleInfob\x06proto3')
 )
 
 
@@ -293,6 +293,96 @@ _ITEM = _descriptor.Descriptor(
 )
 
 
+_CIRCLE = _descriptor.Descriptor(
+  name='Circle',
+  full_name='logic_to_interface.Circle',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='center', full_name='logic_to_interface.Circle.center', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='radius', full_name='logic_to_interface.Circle.radius', index=1,
+      number=2, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=547,
+  serialized_end=612,
+)
+
+
+_CIRCLEINFO = _descriptor.Descriptor(
+  name='CircleInfo',
+  full_name='logic_to_interface.CircleInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='status', full_name='logic_to_interface.CircleInfo.status', index=0,
+      number=1, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='frames', full_name='logic_to_interface.CircleInfo.frames', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='now', full_name='logic_to_interface.CircleInfo.now', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='next', full_name='logic_to_interface.CircleInfo.next', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=614,
+  serialized_end=741,
+)
+
+
 _BULLET = _descriptor.Descriptor(
   name='Bullet',
   full_name='logic_to_interface.Bullet',
@@ -347,8 +437,8 @@ _BULLET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=548,
-  serialized_end=690,
+  serialized_start=744,
+  serialized_end=886,
 )
 
 
@@ -392,8 +482,8 @@ _INITIALINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=693,
-  serialized_end=839,
+  serialized_start=889,
+  serialized_end=1035,
 )
 
 
@@ -439,6 +529,13 @@ _FRAMEINFO = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='circle', full_name='logic_to_interface.FrameInfo.circle', index=5,
+      number=6, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -451,8 +548,8 @@ _FRAMEINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=842,
-  serialized_end=1066,
+  serialized_start=1038,
+  serialized_end=1310,
 )
 
 _PLAYERPARACHUTEINFO.fields_by_name['pos'].message_type = _POS
@@ -460,6 +557,9 @@ _PLAYERPARACHUTEINFO.fields_by_name['jump_pos'].message_type = _POS
 _PLAYERPARACHUTEINFO.fields_by_name['land_pos'].message_type = _POS
 _PLAYERINFO.fields_by_name['pos'].message_type = _POS
 _ITEM.fields_by_name['pos'].message_type = _POS
+_CIRCLE.fields_by_name['center'].message_type = _POS
+_CIRCLEINFO.fields_by_name['now'].message_type = _CIRCLE
+_CIRCLEINFO.fields_by_name['next'].message_type = _CIRCLE
 _BULLET.fields_by_name['emit_pos'].message_type = _POS
 _BULLET.fields_by_name['current_pos'].message_type = _POS
 _INITIALINFO.fields_by_name['start'].message_type = _POS
@@ -469,11 +569,14 @@ _FRAMEINFO.fields_by_name['parachutists'].message_type = _PLAYERPARACHUTEINFO
 _FRAMEINFO.fields_by_name['players'].message_type = _PLAYERINFO
 _FRAMEINFO.fields_by_name['items'].message_type = _ITEM
 _FRAMEINFO.fields_by_name['bullets'].message_type = _BULLET
+_FRAMEINFO.fields_by_name['circle'].message_type = _CIRCLEINFO
 DESCRIPTOR.message_types_by_name['Pos'] = _POS
 DESCRIPTOR.message_types_by_name['PlayerBasicInfo'] = _PLAYERBASICINFO
 DESCRIPTOR.message_types_by_name['PlayerParachuteInfo'] = _PLAYERPARACHUTEINFO
 DESCRIPTOR.message_types_by_name['PlayerInfo'] = _PLAYERINFO
 DESCRIPTOR.message_types_by_name['Item'] = _ITEM
+DESCRIPTOR.message_types_by_name['Circle'] = _CIRCLE
+DESCRIPTOR.message_types_by_name['CircleInfo'] = _CIRCLEINFO
 DESCRIPTOR.message_types_by_name['Bullet'] = _BULLET
 DESCRIPTOR.message_types_by_name['InitialInfo'] = _INITIALINFO
 DESCRIPTOR.message_types_by_name['FrameInfo'] = _FRAMEINFO
@@ -513,6 +616,20 @@ Item = _reflection.GeneratedProtocolMessageType('Item', (_message.Message,), dic
   # @@protoc_insertion_point(class_scope:logic_to_interface.Item)
   ))
 _sym_db.RegisterMessage(Item)
+
+Circle = _reflection.GeneratedProtocolMessageType('Circle', (_message.Message,), dict(
+  DESCRIPTOR = _CIRCLE,
+  __module__ = 'interface_pb2'
+  # @@protoc_insertion_point(class_scope:logic_to_interface.Circle)
+  ))
+_sym_db.RegisterMessage(Circle)
+
+CircleInfo = _reflection.GeneratedProtocolMessageType('CircleInfo', (_message.Message,), dict(
+  DESCRIPTOR = _CIRCLEINFO,
+  __module__ = 'interface_pb2'
+  # @@protoc_insertion_point(class_scope:logic_to_interface.CircleInfo)
+  ))
+_sym_db.RegisterMessage(CircleInfo)
 
 Bullet = _reflection.GeneratedProtocolMessageType('Bullet', (_message.Message,), dict(
   DESCRIPTOR = _BULLET,

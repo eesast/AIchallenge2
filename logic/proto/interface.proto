@@ -49,6 +49,24 @@ message Item
 	Pos pos = 3;
 }
 
+message Circle
+{
+	Pos center = 1;
+	double radius = 2;
+}
+
+message CircleInfo
+{
+	// if it's 0, frames means rest frames to generate circle
+	// if it's 1, frames means rest frames to move to next status
+	// if it's 2, frames means rest frames to start to move
+	// if it's 3, the poison ring won't move(has become a node)
+	int32 status = 1;
+	int32 frames = 2;
+	Circle now = 3;
+	Circle next = 4;
+}
+
 // all bullets and shells
 message Bullet
 {
@@ -75,6 +93,7 @@ message FrameInfo
 	repeated PlayerInfo players = 3;
 	repeated Item items = 4;
 	repeated Bullet bullets = 5;
+	CircleInfo circle = 6;
 }
 
    

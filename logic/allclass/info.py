@@ -8,7 +8,7 @@ class Information:
         if not isinstance(player, Character):
             raise Exception("wrong player type!")
         self.id = player.number
-        self.hp_max = player.heal_point
+        self.hp_max = player.health_point
         self.items = []
         self.landform = []
         self.others = []

@@ -59,6 +59,19 @@ CHARACTER_SKILL = 7
 CHARACTER_PARAMETER = 8
 CHARACTER_COLUMN = 9
 
+# for circle
+CIRCLE_INDEX = 4
+CIRCLE_STAGE = 0
+CIRCLE_DELAY = 1
+CIRCLE_MOVE = 2
+CIRCLE_WAIT = 3
+CIRCLE_DAMAGE = 4
+CIRCLE_SHRINK = 5
+CIRCLE_RADIUS = 6
+CIRCLE_SPEED = 7
+CIRCLE_FRAMES = 8
+CIRCLE_TOTAL = 9
+
 
 def open_file(path):
     return open_workbook(path)
@@ -168,7 +181,29 @@ def get_character_data(sheet_character):
     return data
 
 
-def output_character_data(data, path):
+def get_circle_data(sheet_circle):
+    data = {}
+    for i in range(START_ROW, sheet_circle.nrows):
+        row = sheet_circle.row_values(i)
+        if int(row[CIRCLE_MOVE]) < 1:
+            break
+        stage = int(row[CIRCLE_STAGE])
+        delay = int(row[CIRCLE_DELAY])
+        wait = int(row[CIRCLE_WAIT])
+        move = int(row[CIRCLE_MOVE])
+        damage = row[CIRCLE_DAMAGE]
+        shrink = row[CIRCLE_SHRINK]
+        data[stage] = {
+            'delay': delay,
+            'wait': wait,
+            'move': move,
+            'damage': damage,
+            'shrink': shrink,
+        }
+    return data
+
+
+def output_data(data, path):
     formatter = JsonFormatter(data=data)
     data = formatter.render()
     with open(path, 'w') as fp:
@@ -254,7 +289,9 @@ def main():
     data = get_item_data(file)
     output_item_data(data, '../data/item.json')
     data = get_character_data(file.sheet_by_index(CHARACTER_INDEX))
-    output_character_data(data, '../data/character.json')
+    output_data(data, '../data/character.json')
+    data = get_circle_data(file.sheet_by_index(CIRCLE_INDEX))
+    output_item_data(data, '../data/circle.json')
     return
 
 

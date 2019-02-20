@@ -33,7 +33,6 @@ class Item(Object):   # class for each equipment and goods
         self.durability = Item.all_data[item_type]['durability']    # using durability
         self.item_type = item_type                   # type id
         self.id = number                             # item's id
-        self.owner = -1                              # owner's id
         return
 
     @staticmethod
@@ -48,6 +47,7 @@ class Item(Object):   # class for each equipment and goods
 
     @staticmethod
     def add(new_type, pos):
+        # generate a new item in the map
         if isinstance(new_type, str):
             new_type = Item.all_data[new_type]['number']
         new_item = Item(new_type, Item.next_id)
@@ -56,14 +56,18 @@ class Item(Object):   # class for each equipment and goods
         Item.next_id += 1
         return new_item.id
 
+    @staticmethod
+    def remove(item_id):
+        pass
+
     def is_weapon(self):
-        return Item.all_data[self.item_type]['type'] == 'WEAPON'
+        return self.data['type'] == 'WEAPON'
 
     def is_armor(self):
-        return Item.all_data[self.item_type]['type'] == 'ARMOR'
+        return self.data['type'] == 'ARMOR'
 
     def is_goods(self):
-        return Item.all_data[self.item_type]['type'] == 'GOODS'
+        return self.data['type'] == 'GOODS'
 
     @staticmethod
     def get_data_by_item_id(item_id):

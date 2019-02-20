@@ -12,7 +12,7 @@ import struct
 #   here define a debug level variable to debug print-oriented
 #   remember: here is just a initial level for logic
 #   platform may give another number in game_init
-PRINT_DEBUG = 30
+PRINT_DEBUG = 13
 
 
 #   level 1: only print illegal information
@@ -32,6 +32,7 @@ PRINT_DEBUG = 30
 
 #   level 15: print player's new position after each move
 #   level 16: print player's new pick-up
+#   level 17: print circle dynamic changing
 
 #   level 20: print player's view for other players
 #   level 21: print player's view for items
@@ -52,6 +53,7 @@ class GameMain:
 
         # it's more like a define instead of an initialization
         self.die_order = []  # save the player's dying order
+        self.die_list = []   # die order in this frame for platform
         self.map_items = [[[] for i in range(16)] for j in range(16)]  # try to divide map into 256 parts
 
         self.all_players = []  # save all teams and players
@@ -65,6 +67,7 @@ class GameMain:
         self.number_to_player = {}  # use a number to find a player
         self.__start_position, self.__over_position = None, None
         self.__turn = 0
+        self.poison = circle.Circle(GameMain.map_size)
 
         # initialize debug level for logic to use directly and for platform to change it
         self.__debug_level = PRINT_DEBUG
@@ -95,6 +98,9 @@ class GameMain:
         playback_child_path = global_config["PLAYBACK_FILE_PATH"] + time.strftime("%Y%m%d_%H'%M'%S") + ".pb"
         GameMain.playback_file_path = file_path + playback_child_path
         open(GameMain.playback_file_path, 'wb').close()  # create the new playback file
+
+        # for circle data
+        self.print_debug(100, self.poison.load_data(file_path, global_config["CIRCLE_FILE_PATH"]))
 
     def map_init(self):
         # here should give some items randomly according to occurrence
@@ -132,7 +138,7 @@ class GameMain:
                 else:
                     # if command_type isn't correct, it will be ignored
                     continue
-        self.print_debug(29, "unwrap_command successfully in turn", self.__turn)
+        self.print_debug(29, "unwrap_command successfully")
         self.print_debug(29, self.all_commands)
         return
 
@@ -142,16 +148,19 @@ class GameMain:
             pass
 
     def alive_teams(self):
-        alive_count = 0
+        teams = []
         for team in self.all_players:
+            alive = []
             for player in team:
                 # check if there is at least one alive player in this team
-                if player.heal_point > 0:
-                    alive_count = alive_count + 1
+                if player.health_point > 0:
+                    alive.append(player.number)
                     break
                 else:
                     continue
-        return alive_count
+            if len(alive):
+                teams.append(alive)
+        return teams
 
     def generate_route(self):
         # a function to get random position for airplane's route
@@ -266,7 +275,7 @@ class GameMain:
                     player_info.id = each_player.number
                     player_info.team = each_player.team
                     player_info.vocation = each_player.vocation
-                    player_info.HP_max = int(each_player.heal_point)  # now HP == HP_max
+                    player_info.HP_max = int(each_player.health_point)  # now HP == HP_max
             return data
 
         self.print_debug(9, 'parachute:' + str(information))
@@ -304,19 +313,20 @@ class GameMain:
             for player_number, command in self.all_commands['pickup'].items():
                 picked_item = item.Item.all_items[command[0]]
                 player = character.Character.all_characters[player_number]
+                if self.all_wild_items.get(picked_item.id, None) is None:
+                    self.print_debug(4, 'player', player_number, 'try to pick item not existing or belonging to others')
                 if picked_item.id not in self.all_info[player_number].items:
                     self.print_debug(4, 'player', player_number, 'try to pick item out of view')
-                elif picked_item.owner != -1:
-                    self.print_debug(4, 'player', player_number, "try to pick somebody's possession")
                 elif not player.position.accessible(picked_item.position):
                     self.print_debug(4, 'player', player_number, "tyr to pick item beyond pick range")
                 else:
                     # now this player can get it
-                    picked_item.owner = player_number
-                    player.bag.append(picked_item.id)
+                    player.bag[picked_item.item_type] = player.bag.setdefault(picked_item.item_type, 0) + \
+                                                        picked_item.durability
                     self.all_wild_items.pop(picked_item.id)
+                    item.Item.remove(picked_item.id)
                     character.Character.all_characters[player_number].change_status(character.Character.PICKING)
-                    self.print_debug(16, 'player', player_number, 'pick up item', picked_item.id)
+                    self.print_debug(16, 'player', player_number, 'pick up', picked_item.data['name'], picked_item.id)
                     # maybe we should deal with command['other'], now ignore it
                     pass
             # move
@@ -336,28 +346,26 @@ class GameMain:
                     player.move_direction = position.angle_to_position(move_angle + basic_angle)
             # shoot
             for player_id, command in self.all_commands['shoot'].items():
-                view_angle, item_id, other = command
+                view_angle, item_type, other = command
                 player = character.Character.all_characters[player_id]
-                entity = item.Item.all_items.get(item_id, None)
+                rest = player.bag.get(item_type, 0)
                 if player.shoot_cd:
-                    self.print_debug(4, 'player', player_id, 'try to shoot with', player.shoot_cd,' shoot cd')
-                elif not entity:
-                    self.print_debug(4, 'player', player_id, 'try to use weapon not existing')
-                elif entity.owner != player_id:
-                    self.print_debug(4, 'player', player_id, 'try to use items not belonging to him')
-                elif not entity.is_weapon():
+                    self.print_debug(4, 'player', player_id, 'try to shoot with', player.shoot_cd, ' shoot cd')
+                elif not rest:
+                    self.print_debug(4, 'player', player_id, 'try to use weapon without durability')
+                elif item.Item.all_data[item_type]['type'] != 'weapon':
                     self.print_debug(4, 'player', player_id, 'try to use not weapon-like item to shoot')
                 elif not 0 <= view_angle <= 360:
                     self.print_debug(3, 'player', player_id, 'give wrong attack angle as', view_angle)
                 else:  # now shoot
-                    entity.durability -= 1
+                    player.bag[item_type] -= 1
                     view_angle += player.face_direction.get_angle()  # correct relative angle to absolute angle
                     if view_angle >= 360:
                         view_angle -= 360
-                    player.shoot_cd = item.Item.all_data[entity.item_type]['cd']
+                    player.shoot_cd = item.Item.all_data[item_type]['cd']
                     player.face_direction = position.angle_to_position(view_angle)
                     player.change_status(character.Character.SHOOTING)
-                    self.all_bullets.append((player.position, view_angle, item_id, player_id, None))
+                    self.all_bullets.append((player.position, view_angle, item_type, player_id, None))
                     # here should deal with other parameter, just put off
             # radio will be done after the new year
 
@@ -372,9 +380,9 @@ class GameMain:
         def attack():
             bullets = self.all_bullets
             for index in range(len(bullets)):
-                pos, view_angle, item_id, player_id, hit_id = bullets[index]
+                pos, view_angle, item_type, player_id, hit_id = bullets[index]
                 shortest = None
-                data = item.Item.get_data_by_item_id(item_id)
+                data = item.Item.all_data[item_type]
                 for team in self.all_players:
                     if character.Character.all_characters[player_id] in team:
                         continue
@@ -389,7 +397,7 @@ class GameMain:
                             if not shortest or shortest < dist:
                                 # modify hit player
                                 shortest = dist
-                                bullets[index] = pos, view_angle, item_id, player_id, player.number
+                                bullets[index] = pos, view_angle, item_type, player_id, player.number
             return
 
         def damage():
@@ -402,7 +410,7 @@ class GameMain:
                     dist = abs(position.cross_product(direction, target - pos))
                     data = item.Item.get_data_by_item_id(item_id)
                     value = math.exp(-dist * 100 / data['range']) * data['damage']
-                    character.Character.all_characters[hit_id].heal_point -= value
+                    character.Character.all_characters[hit_id].health_point -= value
 
                     self.print_debug(13, 'player', player_id, data['name'], value, 'damage to player', hit_id)
                 else:
@@ -413,12 +421,23 @@ class GameMain:
             return
 
         def die():
+            self.die_list = []
             for team in self.all_players:
                 for player in team:
-                    if player.can_be_hit() and player.heal_point <= 0:
-                        player.heal_point = 0
-                        player.change_status(character.Character.DEAD)
-                        self.print_debug(7, 'player', player.number, 'dead')
+                    if self.poison.safe(player):
+                        if player.can_be_hit() and player.health_point <= 0:
+                            player.health_point = 0
+                            player.change_status(character.Character.DEAD)
+                            self.print_debug(7, 'player', player.number, 'dead')
+                    else:
+                        player.health_point -= self.poison.damage_per_frame
+                        self.print_debug(13, 'circle caused', self.poison.damage_per_frame, 'damage to', player.number)
+                        if player.can_be_hit() and player.health_point <= 0:
+                            player.health_point = 0
+                            self.die_order.append(player.number)
+                            self.die_list.append(player.number)
+                            player.change_status(character.Character.REAL_DEAD)
+                            self.print_debug(7, 'player', player.number, 'dead out of circle')
             pass
 
         def items():
@@ -467,9 +486,7 @@ class GameMain:
                     distance, angle = player.position.get_polar_position(player.face_direction, each_item.position)
                     if distance <= player.view_distance and abs(angle) <= player.view_angle / 2:
                         player_info.items.append(item_id)
-                        # for debug
-                        if player_id == 11:
-                            self.print_debug(21, 'player', player_id, 'see item', item_id)
+                        self.print_debug(21, 'player', player_id, 'see item', item_id)
                 for team in self.all_players:
                     for other in team:
                         if other.number == player_id:
@@ -478,40 +495,54 @@ class GameMain:
                         angle = 360 - angle if angle > 180 else angle
                         if distance <= player.view_distance and angle <= player.view_angle / 2:
                             player_info.others.append(other.number)
-                            # for debug
-                            if player_id == 11:
-                                self.print_debug(20, 'player', player_id, 'see player', other.number)
+                            self.print_debug(20, 'player', player_id, 'see player', other.number)
+            if self.poison.update():
+                self.print_debug(17, "the circle's center:", self.poison.center_now, 'radius:', self.poison.radius_now)
             return
 
-        def get_proto_data():
+        def pack_for_interface():
             data = interface.FrameInfo()
+            # give frame
             data.frame = self.__turn
+            # give information for each player
             for team in self.all_players:
                 for player in team:
                     if player.is_flying() or not player.is_alive():
                         continue
                     elif player.is_jumping():
+                        # give parachute information
                         new_info = data.parachutists.add()
                         new_info.id = player.number
-                        new_info.HP = int(player.heal_point)
+                        new_info.HP = int(player.health_point)
                         new_info.face_direction = player.face_direction.get_angle()
                         new_info.pos.x, new_info.pos.y = player.position.x, player.position.y
                         new_info.jump_pos.x, new_info.jump_pos.y = player.jump_position.x, player.jump_position.y
                         new_info.land_pos.x, new_info.land_pos.y = player.land_position.x, player.land_position.y
                     else:
+                        # give normal player information
                         new_info = data.players.add()
                         new_info.id = player.number
-                        new_info.HP = int(player.heal_point)
+                        new_info.HP = int(player.health_point)
                         new_info.pos.x, new_info.pos.y = player.position.x, player.position.y
                         new_info.weapon = player.last_weapon
                         new_info.armor = player.best_armor
                         new_info.face_direction = player.face_direction.get_angle()
+            # give all items information
             for item_id, type_pos_tuple in self.all_wild_items.items():
                 type_id, pos = type_pos_tuple
                 new_item = data.items.add()
                 new_item.id = item_id
                 new_item.type = type_id
                 new_item.pos.x, new_item.pos.y = pos.x, pos.y
+
+            # give circle's information
+            data.circle.status = self.poison.flag
+            data.circle.frames = self.poison.rest_frames
+            if self.poison.is_processing():
+                data.circle.now.center.x, data.circle.now.center.y = self.poison.center_now.x, self.poison.center_now.y
+                data.circle.next.center.x, data.circle.next.center.y = self.poison.center_next.x, self.poison.center_next.y
+                data.circle.now.radius = self.poison.radius_now
+                data.circle.next.radius = self.poison.radius_next
             return data
 
         self.print_debug(10, 'turn', self.__turn, 'starts!')
@@ -543,7 +574,7 @@ class GameMain:
         self.__turn = self.__turn + 1
 
         # output data for playback file
-        self.write_playback(get_proto_data())
+        self.write_playback(pack_for_interface())
 
         # return pack data after refreshing
         return self.pack_for_platform()
@@ -557,8 +588,8 @@ class GameMain:
                 raise Exception("wrong type of player!")
             data = platform.PlayerInfo()
             data.player_ID = player.number
-            data.self.heal_point = player.heal_point
-            data.self.heal_point_limit = player_info.hp_max
+            data.self.health_point = player.health_point
+            data.self.health_point_limit = player_info.hp_max
             data.self.move_angle = player.move_direction.get_angle() if player.move_direction else 0
             data.self.view_angle = player.face_direction.get_angle()
             data.self.move_speed = player.move_speed
@@ -567,6 +598,7 @@ class GameMain:
             data.self.attack_cd = player.shoot_cd
             data.self.pos.x, data.self.pos.y = player.position.x, player.position.y
 
+            # player's bag information
             for item_id in player.bag:
                 new_item = data.self.bag.add()
                 entity = item.Item.all_items[item_id]
@@ -574,8 +606,10 @@ class GameMain:
                 new_item.type = entity.item_type
                 new_item.durability = entity.durability
 
+            # player's vision for landform
             data.landform_id.extend(player_info.landform)
 
+            # player's vision for items
             for item_id in player_info.items:
                 new_item = data.items.add()
                 entity = item.Item.all_items[item_id]
@@ -585,6 +619,7 @@ class GameMain:
                 new_item.pos.distance, new_item.pos.angle = \
                     player.position.get_polar_position(player.face_direction, entity.position)
 
+            # player's vision for other players
             for player_id in player_info.others:
                 new_other = data.others.add()
                 other = character.Character.all_characters[player_id]
@@ -599,13 +634,25 @@ class GameMain:
                 new_other.pos.distance, new_other.pos.angle = \
                     player.position.get_polar_position(player.face_direction, other.position)
 
+            # player's audition
             for arrived_sound in player_info.sounds:
                 new_sound = data.sounds.add()
                 new_sound.sender, new_sound.delay, new_sound.parameter = arrived_sound
 
+            # the circle's information
+            data.poison.move_flag = self.poison.flag
+            data.poison.rest_frames = self.poison.rest_frames
+            if self.poison.is_processing():
+                data.poison.current_center.x = self.poison.center_now.x
+                data.poison.current_center.y = self.poison.center_now.y
+                data.poison.next_center.x = self.poison.center_next.x
+                data.poison.next_center.y = self.poison.center_next.y
+                data.poison.current_radius = self.poison.radius_now
+                data.poison.next_radius = self.poison.radius_next
+
             proto_data = data.SerializeToString()
             all_data[number] = proto_data
-
+        all_data['dead'] = self.die_list
         self.print_debug(50, "return", len(all_data), "players' data back to platform")
         return all_data
 
