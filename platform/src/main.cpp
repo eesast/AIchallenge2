@@ -1,5 +1,3 @@
-#include <iostream>
-#include"constant.h"
 #include "controller.h"
 #include "pycalling.h"
 
@@ -26,6 +24,7 @@ int main(int argc, char *argv[])
 		manager.player_infos = state_c.first;
 		manager.dead = state_c.second;
     }
+	logic.~Pycalling();		//avoid SEGFAULT about Protobuf when calling Py_Finalize() after "return 0"
     getchar();
     return 0;
 }

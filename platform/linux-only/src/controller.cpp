@@ -12,15 +12,9 @@ Controller::~Controller()
 {
     if (!_check_init())
         return;
-    for (int i = 0; i < _player_count; i++)
+    for (int i = 0; i < _player_count; ++i)
     {
-        if (_info[i].state != AI_STATE::UNUSED)
-        {
-            kill(_info[i].pid, SIGKILL);
-            shmdt(_info[i].shm);
-            shmctl(_info[i].shmid, IPC_RMID, nullptr);
-            dlclose(_info[i].lib);
-        }
+        _kill_one(i);
     }
 }
 
@@ -75,7 +69,7 @@ void Controller::init(const std::string &path, long used_core_count)
                             (*bind_api)(&controller_receive);
                             _team[team].push_back(player_count);
                             ++player_count;
-                            std::cout << "Load AI " << fullpath << " as team" << team << std::endl;
+                            std::cerr << "Load AI " << fullpath << " as team" << team << std::endl;
                         }
                     }
                 }
@@ -111,39 +105,94 @@ Controller::Controller()
     sigaction(SIGUSR1, &act, nullptr);
 }
 
+void Controller::_kill_one(int playerID)
+{
+    if (_info[playerID].state != AI_STATE::DEAD)
+    {
+        std::cerr << playerID << std::endl;
+        kill(_info[playerID].pid, SIGKILL);
+        std::cerr << "kill" << std::endl;
+        shmdt(_info[playerID].shm);
+        shmctl(_info[playerID].shmid, IPC_RMID, nullptr);
+        std::cerr << "shm" << std::endl;
+        dlclose(_info[playerID].lib);
+        std::cerr << "lib" << std::endl;
+        _info[playerID].state = AI_STATE::DEAD;
+    }
+}
+
+bool Controller::has_living_player()
+{
+    for (int i = 0; i < _player_count; i++)
+    {
+        if (_info[i].state != AI_STATE::DEAD)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 void Controller::run()
 {
     if (!_check_init())
         return;
-    for (int offset = 0; offset < _player_count; offset += _used_core_count)
+    for (int playerID : dead)
     {
-        _now_offset = offset;
-        //execute some players each loop. The number is equal to the number of core(_used_core_count)
-        for (int i = 0; i < _used_core_count && offset + i < _player_count; i++)
+        _kill_one(playerID);
+    }
+    //clear something
+    for (int i = 0; i < _player_count; ++i)
+    {
+        _command_parachute[i].clear();
+        _command_action[i].clear();
+    }
+    int now = 0;
+    //main_loop
+    while (now < _player_count)
+    {
+        //set batch
+        _batch.clear();
+        for (int i = 0; i < static_cast<int>(_used_core_count);)
         {
-            _command_action[offset + i].clear();
-            _command_parachute[offset + i].clear();
-            switch (_info[offset + i].state)
+            if (now >= _player_count)
+            {
+                break;
+            }
+            else if (_info[now].state != AI_STATE::DEAD)
+            {
+                _batch.push_back(now);
+                ++now;
+                ++i;
+            }
+            else
+            {
+                ++now;
+            }
+        }
+        int core_num = _total_core_count - _used_core_count;
+        //execute some players each loop. The number is equal to the number of core(_used_core_count)
+        for (int i : _batch)
+        {
+            switch (_info[i].state)
             {
             case AI_STATE::UNUSED: //only first time
-                _used_cpuID = _total_core_count - _used_core_count + i;
-                _info[offset + i].shmid = shmget(IPC_PRIVATE, sizeof(COMM_BLOCK), IPC_CREAT | 0600);
-                _info[offset + i].pid = fork();
-                if (_info[offset + i].pid > 0) //manager
+                _used_cpuID = core_num++;
+                _info[i].shmid = shmget(IPC_PRIVATE, sizeof(COMM_BLOCK), IPC_CREAT | 0600);
+                _info[i].pid = fork();
+                if (_info[i].pid > 0) //manager
                 {
-                    std::cout << "manager report" << std::endl;
-                    _info[offset + i].state = AI_STATE::ACTIVE;
-                    _info[offset + i].shm = reinterpret_cast<COMM_BLOCK *>(shmat(_info[offset + i].shmid, nullptr, 0));
-                    _info[offset + i].shm->init();
-                    std::cout << "start send" << std::endl;
-                    _send_to_client(offset + i, _serialize_route(offset + i));
-                    _info[offset + i].shm->set_inited();
+                    std::cerr << "manager report" << std::endl;
+                    _info[i].shm = reinterpret_cast<COMM_BLOCK *>(shmat(_info[i].shmid, nullptr, 0));
+                    _info[i].shm->init();
+                    std::cerr << "start send" << std::endl;
+                    _send_to_client(i, _serialize_route(i));
                 }
-                else if (_info[offset + i].pid == 0) //player AI
+                else if (_info[i].pid == 0) //player AI
                 {
-                    std::cout << "client report" << std::endl;
-                    _playerID = offset + i;
-                    _info[offset + i].shm = reinterpret_cast<COMM_BLOCK *>(shmat(_info[offset + i].shmid, nullptr, 0));
+                    std::cerr << "client report" << std::endl;
+                    _playerID = i;
+                    _info[i].shm = reinterpret_cast<COMM_BLOCK *>(shmat(_info[i].shmid, nullptr, 0));
                     _run_player();
                     return;
                 }
@@ -156,20 +205,43 @@ void Controller::run()
                 }
                 break;
             case AI_STATE::SUSPENDED:
-                _send_to_client(offset + i, _serialize_infos(offset + i));
-                kill(_info[offset + i].pid, SIGCONT);
-                _info[offset + i].state = AI_STATE::ACTIVE;
+                _send_to_client(i, _serialize_infos(i));
                 break;
             default:
                 std::cerr << "process state error" << std::endl;
+                std::cerr << (int)_info[i].state;
                 std::cin.get();
                 std::cin.get();
                 exit(1);
                 break;
             }
         }
-        std::cout << "enter waiting" << std::endl;
-
+        //real start
+        for (int i : _batch)
+        {
+            switch (_info[i].state)
+            {
+            case AI_STATE::UNUSED: //only first time
+                _info[i].shm->set_inited();
+                _info[i].state = AI_STATE::ACTIVE;
+                std::cerr << "set ACTIVE:" << i << std::endl;
+                break;
+            case AI_STATE::SUSPENDED:
+                kill(_info[i].pid, SIGCONT);
+                _info[i].state = AI_STATE::ACTIVE;
+                std::cerr << "set ACTIVE:" << i << std::endl;
+                break;
+            default:
+                std::cerr << "process state error" << std::endl;
+                std::cerr << (int)_info[i].state;
+                std::cin.get();
+                std::cin.get();
+                exit(1);
+                break;
+            }
+        }
+        //timeout
+        std::cerr << "enter waiting" << std::endl;
         bool all_finish = true;
         timeval start, now;
         gettimeofday(&start, nullptr);
@@ -179,43 +251,51 @@ void Controller::run()
             gettimeofday(&now, nullptr);
             if (now.tv_sec > start.tv_sec || now.tv_usec - start.tv_usec > 1000 * TIMEOUT)
             {
-                std::cout << "TIMEOUT LOOP!!!!!" << std::endl;
+                std::cerr << "TIMEOUT LOOP!!!!!" << std::endl;
+                all_finish = false;
                 break;
             }
             all_finish = true;
-            for (int i = 0; i < _used_core_count && offset + i < _player_count; ++i)
+            for (int i : _batch)
             {
-                if (_info[offset + i].state == AI_STATE::ACTIVE)
+                if (_info[i].state == AI_STATE::ACTIVE)
                 {
                     all_finish = false;
                     break;
                 }
             }
         } while (!all_finish);
-        std::cout << "TIMEOUT!!!!!\n";
+        std::cerr << "TIMEOUT!!!!!\n";
         if (!all_finish)
         {
-            for (int i = 0; i < _used_core_count && offset + i < _player_count; ++i)
+            for (int i : _batch)
             {
-                if (_info[offset + i].state == AI_STATE::ACTIVE)
+                if (_info[i].state == AI_STATE::ACTIVE)
                 {
                     //get all locks before stopping clients, avoid deadlocks(if the client has locked it but stopped)
-                    _info[offset + i].shm->lock_commands();
-                    _info[offset + i].shm->lock_infos();
-                    kill(_info[offset + i].pid, SIGSTOP);
-                    _info[offset + i].state = AI_STATE::SUSPENDED;
-                    _info[offset + i].shm->unlock_infos();
-                    _info[offset + i].shm->unlock_commands();
+                    _info[i].shm->lock_commands();
+                    _info[i].shm->lock_infos();
+                }
+            }
+            for (int i : _batch)
+            {
+                if (_info[i].state == AI_STATE::ACTIVE)
+                {
+                    kill(_info[i].pid, SIGSTOP);
+                    _info[i].state = AI_STATE::SUSPENDED;
+                    std::cerr << "set SUSPENDED:" << i << std::endl;
+                    _info[i].shm->unlock_infos();
+                    _info[i].shm->unlock_commands();
                 }
             }
         }
-        for (int i = 0; i < _used_core_count && offset + i < _player_count; i++)
+        for (int i : _batch)
         {
-            _info[offset + i].shm->lock_commands();
-            _receive_from_client(offset + i);
-            _info[offset + i].shm->clear_commands();
-            _info[offset + i].shm->unlock_commands();
-            ++_info[offset + i].frame;
+            _info[i].shm->lock_commands();
+            _receive_from_client(i);
+            _info[i].shm->clear_commands();
+            _info[i].shm->unlock_commands();
+            ++_info[i].frame;
         }
     }
 }
@@ -248,19 +328,21 @@ void Controller::notify_one_finish(pid_t pid)
 {
     if (!_check_init())
         return;
-    for (int i = _now_offset; i < _now_offset + _used_core_count && i < _player_count; i++)
+    for (int i : _batch)
     {
         if (_info[i].pid == pid)
         {
             _info[i].state = AI_STATE::SUSPENDED;
+            std::cerr << "SIGUSR1:" << i << std::endl;
             return;
         }
     }
-    for (int i = 0; i < _player_count; i++)
+    for (int i = 0; i < _player_count; ++i)
     {
         if (_info[i].pid == pid)
         {
             _info[i].state = AI_STATE::SUSPENDED;
+            std::cerr << "SIGUSR1:" << i << std::endl;
             return;
         }
     }
@@ -349,7 +431,7 @@ bool Controller::_parse(const std::string &data, int playerID)
         }
         else
         {
-            std::cout << recv.DebugString() << std::endl;
+            std::cerr << recv.DebugString() << std::endl;
             COMMAND_PARACHUTE c;
             c.landing_point.x = recv.landing_point().x();
             c.landing_point.y = recv.landing_point().y();
@@ -416,6 +498,6 @@ std::map<int, std::vector<COMMAND_ACTION>> Controller::get_action_commands()
 
 bool controller_receive(const std::string data)
 {
-    std::cout << "client receive" << data << std::endl;
+    std::cerr << "client receive" << data << std::endl;
     return manager.send_to_server(data);
 }

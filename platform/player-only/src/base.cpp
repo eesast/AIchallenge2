@@ -40,7 +40,7 @@ void player_receive(int new_frame, const std::string data)
         comm::PlayerInfo recv;
         if (recv.ParseFromString(data))
         {
-            std::cout << "recv playerinfo***********************************\n" << recv.DebugString() << "\n*********************************" << std::endl;
+            std::cout << "recv playerinfo**" << std::endl;
             //SelfInfo
             const auto & self = recv.self();
             auto & self_c = info.self;

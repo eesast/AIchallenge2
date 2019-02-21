@@ -15,11 +15,14 @@ void play_game()
 	int delay = rand() % 10000;
 	std::cout << "playeraaaa:frame" << frame << "\nhp:" << info.self.hp << std::endl;
 	VOCATION role = VOCATION::ENGINEER;
-	XYPosition landing_point = { 5,5 };
+	XYPosition landing_point = {5, 5};
 	if (frame == 0)
 		parachute(role, landing_point);
 	else
 		move(12, 23, 0);
-	std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+	//std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+	int i = 0;
+	while (++i < 100000000000)
+		;
 	return;
 }

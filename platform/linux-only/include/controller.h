@@ -71,9 +71,11 @@ private:
 public:
   void run();
   void notify_one_finish(pid_t pid);
+  bool has_living_player();
 
 private:
   void _run_player();
+  void _kill_one(int playerID);
 
   //communication
 public:
@@ -107,8 +109,8 @@ private:
   long _used_core_count;
   long _total_core_count;
   long _used_cpuID;
-  int _now_offset;
   int _playerID = -1; //just for childprocess
+  std::vector<int> _batch;
 
   //communication
   std::vector<COMMAND_PARACHUTE> _command_parachute[MAX_PLAYER];
@@ -118,6 +120,7 @@ private:
 public: //comm with pycalling
   ROUTE_T route;
   std::map<int, std::string> player_infos;
+  std::vector<int> dead;
 };
 
 bool controller_receive(const std::string data);
