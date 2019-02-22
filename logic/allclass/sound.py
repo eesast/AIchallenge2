@@ -1,14 +1,17 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 from math import ceil
+from json import load
 
 
 class Sound:
     # some static variables as enum
-    FOOTSTEP_SOUND = 0
-    GUN_SOUND = 1
-    RADIO_VOICE = 2
-    SPEED = {}
+    RADIO_VOICE = 0
+    FOOTSTEP_SOUND = 1
+    GUN_SOUND = 2
+    BOOM_SOUND = 3
+    speed = {}
+    farthest = {}
 
     def __init__(self, sound_type, receiver, pos, distance, emitter=None, data=None):
         self.sound_type = sound_type
@@ -16,7 +19,7 @@ class Sound:
         self.receiver = receiver
         self.emitter_position = pos
         self.data = data    # this is radio signal's data
-        self.delay = ceil(distance / Sound.SPEED[self.sound_type])
+        self.delay = ceil(distance / Sound.speed[self.sound_type])
         self.__delay = self.delay
         return
 
@@ -32,9 +35,17 @@ class Sound:
         return not self.__delay
 
     @staticmethod
-    def __load_data(parent_path="./"):
-        # load SPEED
-        pass
+    def load_data(parent_path, sound_file_path):
+        with open(parent_path + sound_file_path, "r", encoding="utf-8") as file:
+            data = load(file)
+        Sound.RADIO_VOICE = data['RADIO_VOICE']['number']
+        Sound.FOOTSTEP_SOUND = data['FOOTSTEP_SOUND']['number']
+        Sound.GUN_SOUND = data['GUN_SOUND']['number']
+        Sound.BOOM_SOUND = data['BOOM_SOUND']['number']
+        for key, value in data.items():
+            Sound.speed[value['number']] = value['speed']
+            Sound.farthest[key[0: key.find('_')].lower()] = value['distance']
+        return data
 
     def get_data(self, position):
         if not self.data:

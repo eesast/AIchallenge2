@@ -277,15 +277,18 @@ inherited from Object(CIRCLE), define player's entity
 
 ##### sound type
 
+- RADIO_VOICE
 - FOOTSTEP_SOUND
 - GUN_SOUND
-- RADIO_VOICE
+- BOOM_SOUND
 
 #### attribute
 
 ##### static
 
-`SPEED`:a list to save different sounds' speed, assigned by data file
+`speed`:a dictionary to save different sounds' speed, assigned by data file
+
+`farthest`: a dictionary to save different sounds' max transmission distance
 
 ##### dynamic
 

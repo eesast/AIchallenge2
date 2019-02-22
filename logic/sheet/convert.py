@@ -61,6 +61,7 @@ CHARACTER_COLUMN = 9
 
 # for circle
 CIRCLE_INDEX = 4
+
 CIRCLE_STAGE = 0
 CIRCLE_DELAY = 1
 CIRCLE_MOVE = 2
@@ -71,6 +72,16 @@ CIRCLE_RADIUS = 6
 CIRCLE_SPEED = 7
 CIRCLE_FRAMES = 8
 CIRCLE_TOTAL = 9
+
+# for sound
+SOUND_INDEX = 5
+
+SOUND_NUMBER = 0
+SOUND_TYPE = 1
+SOUND_MACRO = 2
+SOUND_SPEED = 3
+SOUND_DISTANCE = 4
+SOUND_DESCRIPTION = 5
 
 
 def open_file(path):
@@ -203,6 +214,24 @@ def get_circle_data(sheet_circle):
     return data
 
 
+def get_sound_data(sheet_sound):
+    data = {}
+    for i in range(START_ROW, sheet_sound.nrows):
+        row = sheet_sound.row_values(i)
+        if len(row[SOUND_MACRO]) < 1:
+            break
+        number = int(row[SOUND_NUMBER])
+        macro = row[SOUND_MACRO]
+        speed = row[SOUND_SPEED]
+        distance = row[SOUND_DISTANCE]
+        data[macro] = {
+            'number': number,
+            'speed': speed,
+            'distance': distance,
+        }
+    return data
+
+
 def output_data(data, path):
     formatter = JsonFormatter(data=data)
     data = formatter.render()
@@ -292,6 +321,8 @@ def main():
     output_data(data, '../data/character.json')
     data = get_circle_data(file.sheet_by_index(CIRCLE_INDEX))
     output_item_data(data, '../data/circle.json')
+    data = get_sound_data(file.sheet_by_index(SOUND_INDEX))
+    output_item_data(data, '../data/sound.json')
     return
 
 

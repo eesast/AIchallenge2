@@ -1,0 +1,26 @@
+{
+    "RADIO_VOICE":
+    {
+        "number":0,
+        "speed":500.0,
+        "distance":3000.0
+    },
+    "FOOTSTEP_SOUND":
+    {
+        "number":1,
+        "speed":50.0,
+        "distance":100.0
+    },
+    "GUN_SOUND":
+    {
+        "number":2,
+        "speed":100.0,
+        "distance":300.0
+    },
+    "BOOM_SOUND":
+    {
+        "number":3,
+        "speed":200.0,
+        "distance":600.0
+    }
+}
