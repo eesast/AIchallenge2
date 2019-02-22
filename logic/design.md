@@ -277,15 +277,18 @@ inherited from Object(CIRCLE), define player's entity
 
 ##### sound type
 
+- RADIO_VOICE
 - FOOTSTEP_SOUND
 - GUN_SOUND
-- RADIO_VOICE
+- BOOM_SOUND
 
 #### attribute
 
 ##### static
 
-`SPEED`:a list to save different sounds' speed, assigned by data file
+`speed`:a dictionary to save different sounds' speed, assigned by data file
+
+`farthest`: a dictionary to save different sounds' max transmission distance
 
 ##### dynamic
 
@@ -295,13 +298,13 @@ inherited from Object(CIRCLE), define player's entity
 
 `receiver`: the id of receiver
 
-`distance`: the distance between emitter and receiver
+`emitter_position`: emitter's position
 
-`__speed`: the speed of this type of sound
+`data`: the signal of radio
 
 `__delay`: the delay frames for this sound to transmit
 
-`data`: the signal of radio
+`delay`: save the total delay
 
 #### method
 
@@ -311,7 +314,11 @@ inherited from Object(CIRCLE), define player's entity
 
 ##### dynamic
 
-`arrive`: judge if the signal has arrived in this frame
+`update`: update __delay
+
+`arrived`: judge if the signal has arrived in this frame
+
+`get_data`: for radio, it will return data; for environment sound, it will generate data by bit manipulation
 
 ### `Item`
 

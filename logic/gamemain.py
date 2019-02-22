@@ -53,7 +53,7 @@ class GameMain:
 
         # it's more like a define instead of an initialization
         self.die_order = []  # save the player's dying order
-        self.die_list = []   # die order in this frame for platform
+        self.die_list = []  # die order in this frame for platform
         self.map_items = [[[] for i in range(16)] for j in range(16)]  # try to divide map into 256 parts
 
         self.all_players = []  # save all teams and players
@@ -90,6 +90,7 @@ class GameMain:
         # then load some module data here
         self.print_debug(100, character.Character.load_data(file_path, global_config["CHARACTER_FILE_PATH"]))
         self.print_debug(100, item.Item.load_data(file_path, global_config["ITEM_FILE_PATH"]))
+        self.print_debug(100, sound.Sound.load_data(file_path, global_config["SOUND_FILE_PATH"]))
 
         # here load map data
         self.__load_map(file_path, global_config["MAP_FILE_PATH"])
@@ -249,7 +250,6 @@ class GameMain:
             return
 
         def get_pedal(aim_position, number=-1):
-            # these formulas are transformed from internet, I hope they're right
             aim_x, aim_y = aim_position.x, aim_position.y
             a = position.delta_y(self.__over_position, self.__start_position)
             b = - position.delta_x(self.__over_position, self.__start_position)
@@ -290,12 +290,12 @@ class GameMain:
                     raise Exception("wrong object for dict number_to_player, get a", type(player))
                 # I hope it's a pointer, otherwise it's a huge bug
                 player.jump_position = get_pedal(player.land_position, player.number)
-                player.status = character.Character.ON_PLANE
                 player.move_direction = (self.__over_position - self.__start_position).unitize()
                 player.position = self.__start_position
                 player.move_speed = character.Character.AIRPLANE_SPEED
-                player.move_cd = int(player.jump_position.length() / player.move_speed + 1)
+                player.move_cd = int((player.jump_position - self.__start_position).length() / player.move_speed + 1)
                 player.face_direction = player.move_direction
+                player.status = character.Character.ON_PLANE
                 # meanwhile deal with information dictionary
                 self.all_info[player.number] = info.Information(player)
 
@@ -367,15 +367,44 @@ class GameMain:
                     player.change_status(character.Character.SHOOTING)
                     self.all_bullets.append((player.position, view_angle, item_type, player_id, None))
                     # here should deal with other parameter, just put off
-            # radio will be done after the new year
+
+                    # here deal with gun sound
+                    for team in self.all_players:
+                        for receiver in team:
+                            if receiver is player:
+                                continue
+                            if abs(receiver.position - player.position) < sound.Sound.farthest['gun']:
+                                self.all_sounds.append(sound.Sound(sound.Sound.GUN_SOUND, receiver.number,
+                                                                   player.position,
+                                                                   abs(player.position - receiver.position)))
+            # radio
+            for emitter_id, command in self.all_commands['radio'].items():
+                # here receiver_id include some other data for signalman, awaiting to process
+                receiver_id, data = command
+                emitter = character.Character.all_characters[emitter_id]
+                receiver = character.Character.all_characters[receiver_id]
+                self.all_sounds.append(sound.Sound(sound.Sound.RADIO_VOICE, receiver_id, emitter.position,
+                                                   abs(emitter.position - receiver.posistion), emitter_id, data))
+            return
 
         def move():
             for team in self.all_players:
                 for player in team:
+                    self.all_info[player.number].clear()
                     if not isinstance(player, character.Character):
                         raise Exception("wrong player!")
                     if player.move():
                         self.print_debug(15, 'player', player.number, 'move to', player.position)
+                        if player.move_cd == 1 and not (player.is_flying() or player.is_jumping()):
+                            # for foot step sound
+                            for _team in self.all_players:
+                                for receiver in _team:
+                                    if receiver is player:
+                                        continue
+                                    if abs(receiver.position - player.position) < sound.Sound.farthest['footstep']:
+                                        self.all_sounds.append(sound.Sound(sound.Sound.FOOTSTEP_SOUND, receiver.number,
+                                                                           player.position,
+                                                                           abs(player.position - receiver.position)))
 
         def attack():
             bullets = self.all_bullets
@@ -444,13 +473,18 @@ class GameMain:
             pass
 
         def noise():
-            pass
+            for _sound in self.all_sounds:
+                assert isinstance(_sound, sound.Sound)
+                _sound.update()
+                if _sound.arrived():
+                    pos = character.Character.all_characters[_sound.receiver].position
+                    self.all_info[_sound.receiver].sounds.append(_sound.emitter, _sound.delay, _sound.get_data(pos))
+            self.all_sounds = [_sound for _sound in self.all_sounds if not _sound.arrived()]
+            return
 
         def update():
             for team in self.all_players:
                 for player in team:
-                    if not isinstance(player, character.Character):
-                        raise Exception("wrong player!")
                     if player.move_cd:
                         player.move_cd -= 1
                     if player.shoot_cd:
@@ -463,7 +497,11 @@ class GameMain:
                             # this is change from flying to jumping
                             player.status = character.Character.JUMPING
                             player.position = player.jump_position
-                            player.move_direction = (player.land_position - player.jump_position).unitize()
+                            try:
+                                player.move_direction = (player.land_position - player.jump_position).unitize()
+                            except ZeroDivisionError:
+                                player.move_direction.x = player.move_direction.y
+                                player.move_direction.y = -player.move_direction.x
                             player.move_speed = character.Character.JUMPING_SPEED
                             player.move_cd = int((player.land_position - player.jump_position).length() /
                                                  player.move_speed + 1)
@@ -477,7 +515,6 @@ class GameMain:
                             self.print_debug(8, "in turn", self.__turn, "player", player.number, "reach the ground at",
                                              player.position)
             for player_id, player_info in self.all_info.items():
-                player_info.clear()
                 # ignore landform now
                 # ignore sounds now
                 player = character.Character.all_characters[player_id]
