@@ -56,7 +56,7 @@ void Controller::init(const std::string &path, long used_core_count)
                     }
                     else
                     {
-                        auto bind_api = (void (*)(Player_Send_Func))dlsym(_info[player_count].lib, "bind_api");
+                        auto bind_api = (void (*)(Player_Send_Func, Player_Update))dlsym(_info[player_count].lib, "bind_api");
                         _info[player_count].player_func = (AI_Func)dlsym(_info[player_count].lib, "play_game");
                         _info[player_count].recv_func = (Recv_Func)dlsym(_info[player_count].lib, "player_receive");
                         if (bind_api == NULL || _info[player_count].player_func == NULL || _info[player_count].recv_func == NULL)
@@ -66,7 +66,7 @@ void Controller::init(const std::string &path, long used_core_count)
                         }
                         else
                         {
-                            (*bind_api)(&controller_receive);
+                            (*bind_api)(&controller_receive,&controller_update);
                             _team[team].push_back(player_count);
                             ++player_count;
                             std::cerr << "Load AI " << fullpath << " as team" << team << std::endl;
@@ -392,8 +392,11 @@ void Controller::_send_to_client(int playerID, const std::string &data)
 
 void Controller::_receive_from_server()
 {
-    _info[_playerID].frame = _info[_playerID].shm->frame;
-    (*_info[_playerID].recv_func)(_info[_playerID].frame, _info[_playerID].shm->get_infos());
+    if (_info[_playerID].frame != _info[_playerID].shm->frame)
+    {
+        _info[_playerID].frame = _info[_playerID].shm->frame;
+        (*_info[_playerID].recv_func)(_info[_playerID].frame, _info[_playerID].shm->get_infos());
+    }
 }
 
 bool Controller::_parse(const std::string &data, int playerID)
@@ -500,4 +503,12 @@ bool controller_receive(const std::string data)
 {
     std::cerr << "client receive" << data << std::endl;
     return manager.send_to_server(data);
+}
+
+void controller_update(int)
+{
+    manager._info[manager._playerID].shm->lock_infos();
+    manager._receive_from_server();
+    manager._info[manager._playerID].shm->unlock_infos();
+    
 }

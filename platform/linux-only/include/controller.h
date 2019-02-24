@@ -121,8 +121,13 @@ public: //comm with pycalling
   ROUTE_T route;
   std::map<int, std::string> player_infos;
   std::vector<int> dead;
+
+public:
+  friend void controller_update(int);
 };
 
 bool controller_receive(const std::string data);
+//send data to player immediately
+void controller_update(int);
 
 #endif // !CONTROLLER_H
