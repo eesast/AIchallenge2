@@ -19,11 +19,10 @@ class Character(Object):                # the base class of all characters
 
     # enum for vocation
     MEDIC = 0
-    ENGINEER = 1
-    SIGNALMAN = 2
-    HACK = 3
-    SNIPER = 4
-    VOCATION_COUNT = 5  # an important number to save how many vocations in total
+    SIGNALMAN = 1
+    HACK = 2
+    SNIPER = 3
+    VOCATION_COUNT = 4  # an important number to save how many vocations in total
 
     # enum for status
     RELAX = 0

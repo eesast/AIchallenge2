@@ -42,6 +42,8 @@ remember: all containers here consist of just id, while the entities exist as cl
 
 `map_items`:save id for all items in the map by multiway tree
 
+`map`: map information for the game, an instance of class Map
+
 `all_players`: save all teams as list, in which are all players' pointers
 
 `all_bullets`:save id for all bullets(mainly shells) in the map
@@ -372,50 +374,67 @@ inherited from Object, the class of all pick-up in the map
 
 `is_goods`: judge if this item is a goods
 
-### `LandForm`
+### `Block`
 
-this method defined all static entity in the map
-
-#### enumeration
-
-##### type
-
-- WALL
-- TREE
+class for each single
 
 #### attribute
 
 ##### static
 
-`CIRCLE_SHAPE`: the list for all circle landform
-
-`RECTANGLE_SHAPE`: the list for all rectangle landform
+`tree_radius`: tree's radius, map file will omit this data
 
 ##### dynamic
 
-`land_type`: it should be type enumeration
+`name`: type name of a block imported from interface
 
 #### method
 
-<!--to be finished-->
+##### static
 
-### `Vision`
+`genarate_block`: get a Block instance by name and parameter
 
-player's vision should be updated every frame
+`set_rectangle`: set block position data as a rectangle
+
+`set_circle`: set block position data as a circle
+
+### `Area`
 
 #### attribute
 
+##### static
+
+`all_areas`: save all name:area pair for different kinds of areas
+
 ##### dynamic
 
-`ID`: id of the entity
+`blocks`: a list to save all blocks in an area
 
-`distance`: the distance between the player and entity
-
-`angle`: the angle between player's `face_direction` and the entity
+`name`: type name of a area imported from interface
 
 #### method
 
-<!--to be finished-->
+#####  static
+
+`load_data`: load interface's data file to get all map information
+
+### `Map`
+
+#### attribute
+
+dynamic
+
+`all_areas`: a list to save all areas in the map
+
+`__getitem__`: get an area in the map by area index or (x, y) index pair or position
+
+`get_block`: get a temporary block by area index and block index whose coordinate is absolute coordinate 
+
+#### method
+
+##### dynamic
+
+`initialize`: add all areas in the map by file data
 
 ### `Information`
 

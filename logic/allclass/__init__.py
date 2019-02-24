@@ -1,3 +1,3 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
-__all__ = ["character", "object", "item", "sound", "position", "info", "vision", "circle"]
+__all__ = ["character", "object", "item", "sound", "position", "info", "terrain", "circle"]

@@ -55,6 +55,7 @@ class GameMain:
         self.die_order = []  # save the player's dying order
         self.die_list = []  # die order in this frame for platform
         self.map_items = [[[] for i in range(16)] for j in range(16)]  # try to divide map into 256 parts
+        self.map = terrain.Map()
 
         self.all_players = []  # save all teams and players
         self.all_bullets = []
@@ -67,7 +68,7 @@ class GameMain:
         self.number_to_player = {}  # use a number to find a player
         self.__start_position, self.__over_position = None, None
         self.__turn = 0
-        self.poison = circle.Circle(GameMain.map_size)
+        self.poison = None
 
         # initialize debug level for logic to use directly and for platform to change it
         self.__debug_level = PRINT_DEBUG
@@ -144,9 +145,9 @@ class GameMain:
         return
 
     def __load_map(self, parent_path, map_file_path):
-        with open(parent_path + map_file_path, "r", encoding="utf-8") as map_file:
-            self.map_size = 1000
-            pass
+        self.map.initialize(terrain.Area.load_data(parent_path, map_file_path))
+        self.map_size = GameMain.map_size
+        self.poison = circle.Circle(self.map_size)
 
     def alive_teams(self):
         teams = []
@@ -478,7 +479,7 @@ class GameMain:
                 _sound.update()
                 if _sound.arrived():
                     pos = character.Character.all_characters[_sound.receiver].position
-                    self.all_info[_sound.receiver].sounds.append(_sound.emitter, _sound.delay, _sound.get_data(pos))
+                    self.all_info[_sound.receiver].sounds.append((_sound.emitter, _sound.delay, _sound.get_data(pos)))
             self.all_sounds = [_sound for _sound in self.all_sounds if not _sound.arrived()]
             return
 
