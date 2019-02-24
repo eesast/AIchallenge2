@@ -468,6 +468,8 @@ class GameMain:
                             self.die_list.append(player.number)
                             player.change_status(character.Character.REAL_DEAD)
                             self.print_debug(7, 'player', player.number, 'dead out of circle')
+                    if player.health_point > player.health_point_limit:
+                        player.health_point = player.health_point_limit
             pass
 
         def items():

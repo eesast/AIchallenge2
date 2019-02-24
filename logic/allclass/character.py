@@ -41,8 +41,8 @@ class Character(Object):                # the base class of all characters
     def __init__(self, vocation):
         super().__init__(Object.CIRCLE)
         # define some variables
-        self.__health_point_limit = Character.all_data[vocation]['hp']    # max HP
-        self.health_point = self.__health_point_limit       # current HP
+        self.health_point_limit = Character.all_data[vocation]['hp']    # max HP
+        self.health_point = self.health_point_limit       # current HP
         self.bag = {}
         self.status = self.RELAX
         self.move_cd = 0                # move finished after move_cd frames

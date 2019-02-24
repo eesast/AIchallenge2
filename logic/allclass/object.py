@@ -9,7 +9,7 @@ class Object(object):
     CIRCLE = 0
     RECTANGLE = 1
 
-    def __init__(self, shape=CIRCLE):
+    def __init__(self, shape=CIRCLE, bumped=False):
         # some basic attributes, mainly for interface
         self.position = (None, None)
         self.shape = shape
@@ -25,6 +25,9 @@ class Object(object):
 
         # for rectangle, means any diagonal's angle based on x-axis
         self.angle = 0
+
+        # to distinguish if an object can be bumped
+        self.bumped = bumped
 
 
 if __name__ == '__main__':

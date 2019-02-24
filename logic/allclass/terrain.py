@@ -9,9 +9,9 @@ from json import load
 class Block(Object):
     tree_radius = 1
 
-    def __init__(self, type_name, shape):
+    def __init__(self, type_name):
         # for inherited variables
-        super().__init__(shape)
+        super().__init__()
         self.name = type_name
 
     def set_rectangle(self, param):
@@ -29,9 +29,10 @@ class Block(Object):
 
     @staticmethod
     def generate_block(name, param):
-        block = Block(name, None)
+        block = Block(name)
         if name == 'deep_water':
             block.set_rectangle(param)
+            block.bumped = True
         elif name == 'shallow_water':
             block.set_rectangle(param)
         elif name == 'rectangle_building':
@@ -52,10 +53,11 @@ class Block(Object):
         else:
             print('resolve failed for block', name)
             assert 0
+        return block
 
 
 class Area:
-    all_areas = {}
+    areas_template = {}
 
     def __init__(self, name):
         self.blocks = []
@@ -74,7 +76,7 @@ class Area:
                 for block_type, block_params in values.items():
                     for param in block_params:
                         area.blocks.append(Block.generate_block(block_type, param))
-                Area.all_areas[key] = area
+                Area.areas_template[key] = area
 
         return map_data
 
@@ -96,7 +98,8 @@ class Map:
 
     def get_block(self, area_index, block_index):
         relative_block = self.all_areas[area_index].blocks[block_index]
-        block = Block(relative_block.name, relative_block.shape)
+        block = Block(relative_block.name)
+        block.shape = relative_block.shape
         block.radius = relative_block.radius
         block.angle = relative_block.angle
         block.position = relative_block.position + Position(area_index % 10 * 100, area_index // 10 * 100)
@@ -104,5 +107,5 @@ class Map:
 
     def initialize(self, data):
         for area_type in data:
-            self.all_areas.append(Area.all_areas[area_type])
+            self.all_areas.append(Area.areas_template[area_type])
 
