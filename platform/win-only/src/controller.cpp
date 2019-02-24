@@ -30,7 +30,7 @@ void Controller::init(const std::string &path, DWORD used_core_count)
 					}
 					else
 					{
-						auto bind_api = (void(*)(Player_Send_Func))GetProcAddress(_info[player_count].lib, "bind_api");
+						auto bind_api = (void(*)(Player_Send_Func, Player_Update))GetProcAddress(_info[player_count].lib, "bind_api");
 						_info[player_count].player_func = (AI_Func)GetProcAddress(_info[player_count].lib, "play_game");
 						_info[player_count].recv_func = (Recv_Func)GetProcAddress(_info[player_count].lib, "player_receive");
 						if (bind_api == NULL || _info[player_count].player_func == NULL || _info[player_count].recv_func == NULL)
@@ -41,7 +41,7 @@ void Controller::init(const std::string &path, DWORD used_core_count)
 						else
 						{
 							_team[team].push_back(player_count);
-							(*bind_api)(&controller_receive);
+							(*bind_api)(&controller_receive, &controller_update);
 							++player_count;
 							std::cout << "Load AI " << fullpath << " as team" << team << std::endl;
 						}
@@ -399,4 +399,13 @@ std::string Controller::_serialize_route(int playerID)
 std::string Controller::_serialize_info(int playerID)
 {
 	return player_infos[playerID];
+}
+
+void controller_update(int player_frame)
+{
+	if (player_frame != manager._frame)
+	{
+		int playerID = manager._get_playerID_by_threadID();
+		manager._send(playerID, manager._frame, manager.player_infos[playerID]);
+	}
 }

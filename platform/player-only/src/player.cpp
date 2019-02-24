@@ -1,4 +1,5 @@
-#include "player.h"
+#include "api.h"
+#include "base.h"
 #include <thread>
 #include <chrono>
 #include <cstdlib>
@@ -11,6 +12,7 @@ extern PlayerInfo info;
 
 void play_game()
 {
+	update_info();
 	srand(time(nullptr));
 	int delay = rand() % 10000;
 	std::cout << "playeraaaa:frame" << frame << "\nhp:" << info.self.hp << std::endl;
@@ -22,7 +24,11 @@ void play_game()
 		move(12, 23, 0);
 	//std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 	int i = 0;
-	while (++i < 100000000000)
+	while (++i < 100000000)
 		;
+	if (try_update_info())
+	{
+		std::cout << "update" << frame << "\nhp:" << info.self.hp << std::endl;
+	}
 	return;
 }

@@ -43,7 +43,7 @@ class Controller
 public:
     //win-only, for CreateThread
     friend DWORD WINAPI thread_func(LPVOID lpParameter);
-
+	friend void controller_update(int);
     //singleton
     ~Controller();
     Controller(const Controller &) = delete;
@@ -117,5 +117,6 @@ DWORD WINAPI thread_func(LPVOID lpParameter);
 
 //not atomic, maybe cause bugs.
 bool controller_receive(const std::string data);
-
+//send data to player immediately
+void controller_update(int player_frame);
 #endif // !CONTROLLER_H

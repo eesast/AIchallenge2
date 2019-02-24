@@ -43,6 +43,7 @@ using Recv_Func = void(*)(int, const std::string);
 using AI_Func = void(*)();
 //type of "player_send" in AI.dll/so
 using Player_Send_Func = bool(*)(const std::string);
-
+//type of "player_update" in AI.dll/so
+using Player_Update = void(*)(int);
 
 #endif
