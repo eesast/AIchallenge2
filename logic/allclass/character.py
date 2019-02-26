@@ -180,6 +180,10 @@ class Character(Object):                # the base class of all characters
     def can_make_footsteps(self):
         return not(self.is_jumping() or self.is_flying())
 
+    def get_damage(self, damage, parameter = None):
+        self.health_point -= damage
+        return True
+
 
 if __name__ == '__main__':
     # if necessary, test here

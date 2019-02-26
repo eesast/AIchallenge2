@@ -414,7 +414,6 @@ class GameMain:
                         else:
                             self.print_debug(14, 'player', player.number, 'failed to move to', player.position)
                             player.position = past_position
-                            input()
 
         def attack():
             bullets = self.all_bullets
@@ -449,7 +448,7 @@ class GameMain:
                     dist = abs(position.cross_product(direction, target - pos))
                     data = item.Item.get_data_by_item_id(item_id)
                     value = math.exp(-dist * 100 / data['range']) * data['damage']
-                    character.Character.all_characters[hit_id].health_point -= value
+                    character.Character.all_characters[hit_id].get_damage(value)
 
                     self.print_debug(13, 'player', player_id, data['name'], value, 'damage to player', hit_id)
                 else:
@@ -479,9 +478,9 @@ class GameMain:
                             self.print_debug(7, 'player', player.number, 'dead out of circle')
                     if player.health_point > player.health_point_limit:
                         player.health_point = player.health_point_limit
-            pass
 
         def items():
+            # remember, items' update rule is still to be finished
             pass
 
         def noise():
@@ -523,6 +522,9 @@ class GameMain:
                             # jump to the land, and then relax
                             player.status = character.Character.RELAX
                             player.position = player.land_position
+                            if not self.map.stand_permitted(player.position, player.radius):
+                                # here we should adjust player's position
+                                pass
                             player.move_direction = None
                             player.move_speed = 0
                             self.print_debug(8, "in turn", self.__turn, "player", player.number, "reach the ground at",

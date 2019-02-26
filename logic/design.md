@@ -126,6 +126,8 @@ the abstract basic class for all other entities in the game
 
 `angle`:for rectangle, it means included angles in the right
 
+`block_view`: means whether an object will block player's view
+
 #### method
 
 `is_intersecting`: given two end points of a segment and judge if this segment will intersect the object
@@ -300,6 +302,8 @@ inherited from Object(CIRCLE), define player's entity
 `change_status`: change status and refresh some status related data
 
 `can_make_footsteps`: return if player can make footstep noise, depending on the status, maybe also on terrain and some items in the future
+
+`get_damage`: get given value damage, parameter may cause to special effective
 
 ### `Sound`
 

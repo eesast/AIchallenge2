@@ -36,31 +36,40 @@ class Block(Object):
         if name == 'deep_water':
             block.set_rectangle(param)
             block.bumped = True
+            block.block_view = False
         elif name == 'shallow_water':
             block.set_rectangle(param)
             block.bumped = False
+            block.block_view = False
         elif name == 'rectangle_building':
             block.set_rectangle(param)
             block.bumped = True
+            block.block_view = True
         elif name == 'circle_building':
             block.set_circle(param)
             block.bumped = True
+            block.block_view = True
         elif name == 'wall':
             block.set_rectangle(param)
             block.bumped = True
+            block.block_view = False
         elif name == 'tree':
             block.set_circle(param)
             block.bumped = True
+            block.block_view = True
         elif name == 'rectangle_grass':
             block.set_rectangle(param)
             block.bumped = False
+            block.block_view = True
         elif name == 'circle_grass':
             block.set_circle(param)
             block.bumped = False
+            block.block_view = True
         elif name == 'high_point':
             # this one will be deleted, now just waiting for interface's update
             block.set_circle(param)
             block.bumped = False
+            block.block_view = True
         else:
             print('resolve failed for block', name)
             assert 0

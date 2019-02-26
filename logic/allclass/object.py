@@ -16,6 +16,7 @@ class Object(object):
         self.shape = shape
         self.move_speed = None
         self.number = -1
+        self.block_view = None
 
         # remember: for security, direction use unit vector
         self.move_direction = None  # record which direction it's heading of
@@ -52,7 +53,7 @@ class Object(object):
         return True
 
     def is_opaque(self):
-        return True
+        return self.block_view
 
 
 if __name__ == '__main__':
