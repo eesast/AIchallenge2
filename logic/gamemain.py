@@ -12,7 +12,7 @@ import struct
 #   here define a debug level variable to debug print-oriented
 #   remember: here is just a initial level for logic
 #   platform may give another number in game_init
-PRINT_DEBUG = 20
+PRINT_DEBUG = 21
 
 
 #   level 1: only print illegal information
@@ -29,13 +29,15 @@ PRINT_DEBUG = 20
 #   level 10: print turns
 
 #   level 13: print damage information
-
+#   level 14: print player's failed moving
 #   level 15: print player's new position after each move
 #   level 16: print player's new pick-up
 #   level 17: print circle dynamic changing
 
 #   level 20: print player's view for other players
 #   level 21: print player's view for items
+
+#   level 25: print player's view for landforms
 
 #   level 29: print all non-redundant commands for each frame
 #   level 30: print all commands for each frame
@@ -392,20 +394,27 @@ class GameMain:
             for team in self.all_players:
                 for player in team:
                     self.all_info[player.number].clear()
-                    if not isinstance(player, character.Character):
-                        raise Exception("wrong player!")
+                    past_position = player.position
                     if player.move():
-                        self.print_debug(15, 'player', player.number, 'move to', player.position)
-                        if player.move_cd == 1 and not (player.is_flying() or player.is_jumping()):
-                            # for foot step sound
-                            for _team in self.all_players:
-                                for receiver in _team:
-                                    if receiver is player:
-                                        continue
-                                    if abs(receiver.position - player.position) < sound.Sound.farthest['footstep']:
-                                        self.all_sounds.append(sound.Sound(sound.Sound.FOOTSTEP_SOUND, receiver.number,
-                                                                           player.position,
-                                                                           abs(player.position - receiver.position)))
+                        if player.is_flying() or player.is_jumping() or self.map.stand_permitted(player.position,
+                                                                                                 player.radius):
+                            self.print_debug(15, 'player', player.number, 'move to', player.position)
+                            if player.move_cd == 1 and player.can_make_footsteps():
+                                # for foot step sound
+                                for _team in self.all_players:
+                                    for receiver in _team:
+                                        if receiver is player:
+                                            # player won't get footsteps by himself
+                                            continue
+                                        if abs(receiver.position - player.position) < sound.Sound.farthest['footstep']:
+                                            self.all_sounds.append(
+                                                sound.Sound(sound.Sound.FOOTSTEP_SOUND, receiver.number,
+                                                            player.position, abs(player.position - receiver.position)))
+
+                        else:
+                            self.print_debug(14, 'player', player.number, 'failed to move to', player.position)
+                            player.position = past_position
+                            input()
 
         def attack():
             bullets = self.all_bullets
@@ -486,6 +495,7 @@ class GameMain:
             return
 
         def update():
+
             for team in self.all_players:
                 for player in team:
                     if player.move_cd:
@@ -518,38 +528,73 @@ class GameMain:
                             self.print_debug(8, "in turn", self.__turn, "player", player.number, "reach the ground at",
                                              player.position)
 
+            class RelativeObject:
+                def __init__(self, _player, target):
+                    self.target = target
+                    self.player = _player
+                    self.distance, self.angle = _player.position.get_polar_position(_player.face_direction,
+                                                                                    target.position)
+                    self.angle = 360 - self.angle if self.angle > 180 else self.angle
+
             for player_id, player_info in self.all_info.items():
                 # sounds information have been processed in noise()
                 player = character.Character.all_characters[player_id]
+                if player.is_flying():
+                    continue
+
+                # here deal with terrain and other player's information
+                targets = []
+                other_set = set()
+                landform_set = set()
+                for team in self.all_players:
+                    for other in team:
+                        if other.number == player_id:
+                            continue
+                        targets.append(RelativeObject(player, other))
+
+                for key, block in self.map.all_blocks.items():
+                    targets.append(RelativeObject(player, block))
+                targets = [target for target in targets if
+                           0 < target.distance < player.view_distance * 1.1 and target.angle <= player.view_angle / 2]
+                targets.sort(key=lambda target: target.distance)
+                angle = player.face_direction.get_angle()
+                theta = - player.view_angle / 2
+                delta = player.view_angle / 120
+
+                while theta <= player.view_angle / 2:
+                    start = player.position
+                    over = start + position.angle_to_position(angle + theta) * player.view_distance
+                    for target in targets:
+                        if target.target.is_intersecting(start, over):
+                            if isinstance(target.target, character.Character):
+                                other_set.add(target.target)
+                            else:
+                                landform_set.add(target.target)
+                            # if it's opaque, this view line is end
+                            if target.target.is_opaque():
+                                break
+                    theta += delta
+
+                # check other players manually
+                targets = [target.target for target in targets if isinstance(target.target, character.Character)]
+                targets = list(set(targets).difference(set(other_set)))
+                for other in targets:
+                    if self.map.accessible(player.position, other.position):
+                        other_set.add(other)
+
+                # modify player information
+                player_info.others = [target.number for target in other_set]
+                player_info.landform = [target.id for target in landform_set]
+                self.print_debug(20, 'player', player.number, 'vision list for others:', player_info.others)
+                self.print_debug(25, 'player', player.number, 'vision list for landform:', player_info.landform)
+
+                # deal with player's vision for items
                 for item_id in self.all_wild_items:
                     each_item = item.Item.all_items[item_id]
                     distance, angle = player.position.get_polar_position(player.face_direction, each_item.position)
                     if distance <= player.view_distance and abs(angle) <= player.view_angle / 2:
                         player_info.items.append(item_id)
-                        self.print_debug(21, 'player', player_id, 'see item', item_id)
-
-                # here deal with terrain information
-                '''location = player.position.get_area_id()
-                face_angle = player.face_direction.get_angle()
-                right_direction = position.angle_to_position(face_angle - player.view_angle / 2)
-                left_direction = position.angle_to_position(face_angle + player.view_angle / 2)
-                right_bound = player.position + right_direction * player.view_distance
-                left_bound = player.position + left_direction * player.view_distance
-                right_location = right_bound.get_area_id()
-                left_location = left_bound.get_area_id()
-                # here i meet some algorithm problem, pause process'''
-
-                for team in self.all_players:
-                    for other in team:
-                        if other.number == player_id:
-                            continue
-                        distance, angle = player.position.get_polar_position(player.face_direction, other.position)
-                        angle = 360 - angle if angle > 180 else angle
-                        if distance <= player.view_distance and angle <= player.view_angle / 2:
-                            # here judge if the player can see another player considering blocks
-                            if self.map.accessible(player.position, other.position):
-                                player_info.others.append(other.number)
-                                self.print_debug(20, 'player', player_id, 'see player', other.number)
+                self.print_debug(21, 'player', player_id, 'see item', player_info.items)
 
             if self.poison.update():
                 self.print_debug(17, "the circle's center:", self.poison.center_now, 'radius:', self.poison.radius_now)
@@ -595,7 +640,7 @@ class GameMain:
             data.circle.frames = self.poison.rest_frames
             if self.poison.is_processing():
                 data.circle.now.center.x, data.circle.now.center.y = self.poison.center_now.x, self.poison.center_now.y
-                data.circle.next.center.x, data.circle.next.center.y =\
+                data.circle.next.center.x, data.circle.next.center.y = \
                     self.poison.center_next.x, self.poison.center_next.y
                 data.circle.now.radius = self.poison.radius_now
                 data.circle.next.radius = self.poison.radius_next

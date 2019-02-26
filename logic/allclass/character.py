@@ -121,7 +121,7 @@ class Character(Object):                # the base class of all characters
                 self.position = new_position
             else:
                 return False
-            return True
+        return True
 
     def command_status_legal(self, command_type):
         if command_type == MOVE:
@@ -176,6 +176,9 @@ class Character(Object):                # the base class of all characters
 
         self.status = new_status
         return True
+
+    def can_make_footsteps(self):
+        return not(self.is_jumping() or self.is_flying())
 
 
 if __name__ == '__main__':

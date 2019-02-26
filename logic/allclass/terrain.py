@@ -111,8 +111,8 @@ class Area:
 class Map:
 
     def __init__(self):
-        self.all_areas = []
-        pass
+        self.areas = []
+        self.all_blocks = {}
 
     def __getitem__(self, item):
         if isinstance(item, tuple):
@@ -121,13 +121,18 @@ class Map:
         elif isinstance(item, Position):
             item = ceil(item.x / 100) + ceil(item.y / 100) * 10
         assert isinstance(item, int)
-        return self.all_areas[item]
+        return self.areas[item]
 
     def initialize(self, data):
         for area_type in data:
-            self.all_areas.append(Area.generate_area(area_type, len(self.all_areas)))
+            self.areas.append(Area.generate_area(area_type, len(self.areas)))
         # release memory
         Area.areas_template.clear()
+
+        # save all blocks in the map
+        for area in self.areas:
+            for block in area.blocks:
+                self.all_blocks[block.number] = block
 
     @staticmethod
     def get_id_list(start, over):
@@ -162,7 +167,7 @@ class Map:
         # given two position, return if a straight line can across blocks
         for area_id in self.get_id_list(start, over):
             for block in self[area_id].blocks:
-                if block.bumped and block.is_intersecting(start, over):
+                if block.is_opaque() and block.is_intersecting(start, over):
                     # intersected! just break
                     break
             else:
@@ -172,3 +177,14 @@ class Map:
             # if breaks the loop, means vision blocked
             return False
         return True
+
+    def stand_permitted(self, pos, radius):
+        # judge if a position is accessible to stand
+        area = self.areas[pos.get_area_id()]
+        for block in area.blocks:
+            if block.is_bumped(pos, radius):
+                break
+        else:
+            return False
+        return True
+

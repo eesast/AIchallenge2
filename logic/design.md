@@ -126,6 +126,14 @@ the abstract basic class for all other entities in the game
 
 `angle`:for rectangle, it means included angles in the right
 
+#### method
+
+`is_intersecting`: given two end points of a segment and judge if this segment will intersect the object
+
+`is_bumped`: judge if the object will bump another object
+
+`is_opaque`: judge if the object is not transparent(from game's respective, it means the object is not high)
+
 ### `Position`
 
 generally speaking, this class has two usage, as a position in the map or as a vector to deal with math operation
@@ -168,6 +176,10 @@ generally speaking, this class has two usage, as a position in the map or as a v
 
 `get_area_id`: get area id for this position
 
+`distance_to_segment`: give two nodes positions and calculate the distance from self to the segment
+
+`distacne_to_rectangle`: give a rectangle's center position, radius and angle ,calculate shortest distance from self to the edge of rectangle, and return -1 when self is in the rectangle
+
 #### other function
 
 also, I use some other functions to deal with two postioin
@@ -181,6 +193,8 @@ also, I use some other functions to deal with two postioin
 `cross_product`:get the cross product of two vector
 
 `angle_to_position`: get a unit vector by angle
+
+`segments_intersected`: give two segments' end points and judge if the two segments will intersect
 
 ### `Character`
 
@@ -284,6 +298,8 @@ inherited from Object(CIRCLE), define player's entity
 `command_status_legal`: judge if the given command is legal
 
 `change_status`: change status and refresh some status related data
+
+`can_make_footsteps`: return if player can make footstep noise, depending on the status, maybe also on terrain and some items in the future
 
 ### `Sound`
 
@@ -452,13 +468,19 @@ dynamic
 
 `all_areas`: a list to save all areas in the map
 
+`all_blocks`: use a dictionary to save all blocks
+
 `__getitem__`: get an area in the map by area index or (x, y) index pair or position
 
 #### method
 
 ##### dynamic
 
-`initialize`: add all areas in the map by file data, then clear `Area.areas_template`
+`initialize`: add all areas in the map by file data, then clear `Area.areas_template` and build dictionary
+
+`stand_permitted`: judge if a position in the map is access to stand for character
+
+`acessible`: judge if two position in the map can bound a line without bumped block
 
 ##### static
 
