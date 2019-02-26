@@ -15,7 +15,7 @@ This file is for logic to organize the whole project.
 7. `character.py`:define class `Character` to define players
 8. `position.py`:define class `Position` for game position process
 9. `sound.py`:define class `Sound` for footstep, gun, radio and etc.
-10. `vision.py`:define class `LandForm` for static items in the map and `Vision` for character's vision
+10. `terrain.py`:define class `Block`, `Area`, `Map` for the map
 11. `circle.py`: define class `Circle` for the circle
 
 ## Class
@@ -162,6 +162,12 @@ generally speaking, this class has two usage, as a position in the map or as a v
 
 `get angle`: get angle in [0, 360) for the direction of the vector
 
+`get_polar_position`: input a vector direction and another position to get relative polar position
+
+`pick_accessible`: give another position and judge if two positions are in picking range
+
+`get_area_id`: get area id for this position
+
 #### other function
 
 also, I use some other functions to deal with two postioin
@@ -225,11 +231,11 @@ inherited from Object(CIRCLE), define player's entity
 
 ##### dynamic
 
-`__health_point_limit`: max HP
+`health_point_limit`: max HP
 
 `health_point`: current HP
 
-`bag`: a list for player's bag
+`bag`: a dictionary for player's bag
 
 `status`: player's current status
 
@@ -239,13 +245,21 @@ inherited from Object(CIRCLE), define player's entity
 
 `vocation`: the player's vocation, should be one of vocation enumeration
 
+`team`: save team id
+
+`view_distance`: player's furthest view distance
+
+ `view_angle`: player's largest view angle
+
 `jump_position`: means where should the player jump out of airplane
 
 `land_position`: the position of the player landing
 
-`last_weapon`: save the last used/picked weapon's id
+`last_weapon`: save the last used/picked weapon's index
 
 `best_armor`: save the best armor's id on the body
+
+`block`: means which block is the player standing on(None for default)
 
 #### method
 
@@ -384,9 +398,13 @@ class for each single
 
 `tree_radius`: tree's radius, map file will omit this data
 
+`next_id`: save next id should the block get
+
 ##### dynamic
 
 `name`: type name of a block imported from interface
+
+`id`: the unique id number for each block in the map
 
 #### method
 
@@ -394,9 +412,13 @@ class for each single
 
 `genarate_block`: get a Block instance by name and parameter
 
+##### dynamic
+
 `set_rectangle`: set block position data as a rectangle
 
 `set_circle`: set block position data as a circle
+
+`get_id`: get next id and update next id 
 
 ### `Area`
 
@@ -404,7 +426,7 @@ class for each single
 
 ##### static
 
-`all_areas`: save all name:area pair for different kinds of areas
+`areas_template`: save all name:area pair for different kinds of areas as templates, will be clear after Map initializes 
 
 ##### dynamic
 
@@ -412,11 +434,15 @@ class for each single
 
 `name`: type name of a area imported from interface
 
+`id`: id number for an area, in [0, 100)
+
 #### method
 
 #####  static
 
 `load_data`: load interface's data file to get all map information
+
+`generate_area`: generate an area by name and id number from template
 
 ### `Map`
 
@@ -428,13 +454,15 @@ dynamic
 
 `__getitem__`: get an area in the map by area index or (x, y) index pair or position
 
-`get_block`: get a temporary block by area index and block index whose coordinate is absolute coordinate 
-
 #### method
 
 ##### dynamic
 
-`initialize`: add all areas in the map by file data
+`initialize`: add all areas in the map by file data, then clear `Area.areas_template`
+
+##### static
+
+`get_id_list`: get id list intersected by the line bounded by the two given positions
 
 ### `Information`
 

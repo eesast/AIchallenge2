@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
+from .position import *
 
 
 class Object(object):
@@ -28,6 +29,15 @@ class Object(object):
 
         # to distinguish if an object can be bumped
         self.bumped = bumped
+
+    def is_intersecting(self, start, over):
+        if self.shape == self.CIRCLE:
+            pass
+        elif self.shape == self.RECTANGLE:
+            pass
+        else:
+            assert 0 and "wrong shape"
+        return True
 
 
 if __name__ == '__main__':

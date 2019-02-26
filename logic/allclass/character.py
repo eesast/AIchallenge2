@@ -65,6 +65,9 @@ class Character(Object):                # the base class of all characters
         self.last_weapon = -1
         self.best_armor = -1
 
+        # save if the character is in some special block
+        self.block = None
+
     @staticmethod
     def load_data(parent_path, character_file_path):
         with open(parent_path + character_file_path, "r", encoding="utf-8") as file:

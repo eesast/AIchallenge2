@@ -92,10 +92,13 @@ class Position:     # this is a class for position and reload some operator
             return 0, 0
         return distance, theta
 
-    def accessible(self, other):
+    def pick_accessible(self, other):
         if not isinstance(other, Position):
             raise Exception("wrong type of position")
         return self.distance(other) <= 1
+
+    def get_area_id(self):
+        return int(self.y) // 100 * 10 + int(self.x) // 100
 
 
 def delta_y(position1, position2):

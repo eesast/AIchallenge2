@@ -12,7 +12,7 @@ import struct
 #   here define a debug level variable to debug print-oriented
 #   remember: here is just a initial level for logic
 #   platform may give another number in game_init
-PRINT_DEBUG = 13
+PRINT_DEBUG = 20
 
 
 #   level 1: only print illegal information
@@ -318,7 +318,7 @@ class GameMain:
                     self.print_debug(4, 'player', player_number, 'try to pick item not existing or belonging to others')
                 if picked_item.id not in self.all_info[player_number].items:
                     self.print_debug(4, 'player', player_number, 'try to pick item out of view')
-                elif not player.position.accessible(picked_item.position):
+                elif not player.position.pick_accessible(picked_item.position):
                     self.print_debug(4, 'player', player_number, "tyr to pick item beyond pick range")
                 else:
                     # now this player can get it
@@ -517,9 +517,9 @@ class GameMain:
                             player.move_speed = 0
                             self.print_debug(8, "in turn", self.__turn, "player", player.number, "reach the ground at",
                                              player.position)
+
             for player_id, player_info in self.all_info.items():
-                # ignore landform now
-                # ignore sounds now
+                # sounds information have been processed in noise()
                 player = character.Character.all_characters[player_id]
                 for item_id in self.all_wild_items:
                     each_item = item.Item.all_items[item_id]
@@ -527,6 +527,18 @@ class GameMain:
                     if distance <= player.view_distance and abs(angle) <= player.view_angle / 2:
                         player_info.items.append(item_id)
                         self.print_debug(21, 'player', player_id, 'see item', item_id)
+
+                # here deal with terrain information
+                '''location = player.position.get_area_id()
+                face_angle = player.face_direction.get_angle()
+                right_direction = position.angle_to_position(face_angle - player.view_angle / 2)
+                left_direction = position.angle_to_position(face_angle + player.view_angle / 2)
+                right_bound = player.position + right_direction * player.view_distance
+                left_bound = player.position + left_direction * player.view_distance
+                right_location = right_bound.get_area_id()
+                left_location = left_bound.get_area_id()
+                # here i meet some algorithm problem, pause process'''
+
                 for team in self.all_players:
                     for other in team:
                         if other.number == player_id:
@@ -534,8 +546,11 @@ class GameMain:
                         distance, angle = player.position.get_polar_position(player.face_direction, other.position)
                         angle = 360 - angle if angle > 180 else angle
                         if distance <= player.view_distance and angle <= player.view_angle / 2:
-                            player_info.others.append(other.number)
-                            self.print_debug(20, 'player', player_id, 'see player', other.number)
+                            # here judge if the player can see another player considering blocks
+                            if self.map.accessible(player.position, other.position):
+                                player_info.others.append(other.number)
+                                self.print_debug(20, 'player', player_id, 'see player', other.number)
+
             if self.poison.update():
                 self.print_debug(17, "the circle's center:", self.poison.center_now, 'radius:', self.poison.radius_now)
             return
@@ -580,7 +595,8 @@ class GameMain:
             data.circle.frames = self.poison.rest_frames
             if self.poison.is_processing():
                 data.circle.now.center.x, data.circle.now.center.y = self.poison.center_now.x, self.poison.center_now.y
-                data.circle.next.center.x, data.circle.next.center.y = self.poison.center_next.x, self.poison.center_next.y
+                data.circle.next.center.x, data.circle.next.center.y =\
+                    self.poison.center_next.x, self.poison.center_next.y
                 data.circle.now.radius = self.poison.radius_now
                 data.circle.next.radius = self.poison.radius_next
             return data
