@@ -15,7 +15,7 @@ This file is for logic to organize the whole project.
 7. `character.py`:define class `Character` to define players
 8. `position.py`:define class `Position` for game position process
 9. `sound.py`:define class `Sound` for footstep, gun, radio and etc.
-10. `vision.py`:define class `LandForm` for static items in the map and `Vision` for character's vision
+10. `terrain.py`:define class `Block`, `Area`, `Map` for the map
 11. `circle.py`: define class `Circle` for the circle
 
 ## Class
@@ -41,6 +41,8 @@ remember: all containers here consist of just id, while the entities exist as cl
 `die_list`: die order in this frame, this will be given to platform
 
 `map_items`:save id for all items in the map by multiway tree
+
+`map`: map information for the game, an instance of class Map
 
 `all_players`: save all teams as list, in which are all players' pointers
 
@@ -124,6 +126,16 @@ the abstract basic class for all other entities in the game
 
 `angle`:for rectangle, it means included angles in the right
 
+`block_view`: means whether an object will block player's view
+
+#### method
+
+`is_intersecting`: given two end points of a segment and judge if this segment will intersect the object
+
+`is_bumped`: judge if the object will bump another object
+
+`is_opaque`: judge if the object is not transparent(from game's respective, it means the object is not high)
+
 ### `Position`
 
 generally speaking, this class has two usage, as a position in the map or as a vector to deal with math operation
@@ -160,6 +172,16 @@ generally speaking, this class has two usage, as a position in the map or as a v
 
 `get angle`: get angle in [0, 360) for the direction of the vector
 
+`get_polar_position`: input a vector direction and another position to get relative polar position
+
+`pick_accessible`: give another position and judge if two positions are in picking range
+
+`get_area_id`: get area id for this position
+
+`distance_to_segment`: give two nodes positions and calculate the distance from self to the segment
+
+`distacne_to_rectangle`: give a rectangle's center position, radius and angle ,calculate shortest distance from self to the edge of rectangle, and return -1 when self is in the rectangle
+
 #### other function
 
 also, I use some other functions to deal with two postioin
@@ -173,6 +195,8 @@ also, I use some other functions to deal with two postioin
 `cross_product`:get the cross product of two vector
 
 `angle_to_position`: get a unit vector by angle
+
+`segments_intersected`: give two segments' end points and judge if the two segments will intersect
 
 ### `Character`
 
@@ -223,11 +247,11 @@ inherited from Object(CIRCLE), define player's entity
 
 ##### dynamic
 
-`__health_point_limit`: max HP
+`health_point_limit`: max HP
 
 `health_point`: current HP
 
-`bag`: a list for player's bag
+`bag`: a dictionary for player's bag
 
 `status`: player's current status
 
@@ -237,13 +261,21 @@ inherited from Object(CIRCLE), define player's entity
 
 `vocation`: the player's vocation, should be one of vocation enumeration
 
+`team`: save team id
+
+`view_distance`: player's furthest view distance
+
+ `view_angle`: player's largest view angle
+
 `jump_position`: means where should the player jump out of airplane
 
 `land_position`: the position of the player landing
 
-`last_weapon`: save the last used/picked weapon's id
+`last_weapon`: save the last used/picked weapon's index
 
 `best_armor`: save the best armor's id on the body
+
+`block`: means which block is the player standing on(None for default)
 
 #### method
 
@@ -268,6 +300,10 @@ inherited from Object(CIRCLE), define player's entity
 `command_status_legal`: judge if the given command is legal
 
 `change_status`: change status and refresh some status related data
+
+`can_make_footsteps`: return if player can make footstep noise, depending on the status, maybe also on terrain and some items in the future
+
+`get_damage`: get given value damage, parameter may cause to special effective
 
 ### `Sound`
 
@@ -372,50 +408,87 @@ inherited from Object, the class of all pick-up in the map
 
 `is_goods`: judge if this item is a goods
 
-### `LandForm`
+### `Block`
 
-this method defined all static entity in the map
-
-#### enumeration
-
-##### type
-
-- WALL
-- TREE
+class for each single
 
 #### attribute
 
 ##### static
 
-`CIRCLE_SHAPE`: the list for all circle landform
+`tree_radius`: tree's radius, map file will omit this data
 
-`RECTANGLE_SHAPE`: the list for all rectangle landform
+`next_id`: save next id should the block get
 
 ##### dynamic
 
-`land_type`: it should be type enumeration
+`name`: type name of a block imported from interface
+
+`id`: the unique id number for each block in the map
 
 #### method
 
-<!--to be finished-->
+##### static
 
-### `Vision`
+`genarate_block`: get a Block instance by name and parameter
 
-player's vision should be updated every frame
+##### dynamic
+
+`set_rectangle`: set block position data as a rectangle
+
+`set_circle`: set block position data as a circle
+
+`get_id`: get next id and update next id 
+
+### `Area`
 
 #### attribute
 
+##### static
+
+`areas_template`: save all name:area pair for different kinds of areas as templates, will be clear after Map initializes 
+
 ##### dynamic
 
-`ID`: id of the entity
+`blocks`: a list to save all blocks in an area
 
-`distance`: the distance between the player and entity
+`name`: type name of a area imported from interface
 
-`angle`: the angle between player's `face_direction` and the entity
+`id`: id number for an area, in [0, 100)
 
 #### method
 
-<!--to be finished-->
+#####  static
+
+`load_data`: load interface's data file to get all map information
+
+`generate_area`: generate an area by name and id number from template
+
+### `Map`
+
+#### attribute
+
+dynamic
+
+`all_areas`: a list to save all areas in the map
+
+`all_blocks`: use a dictionary to save all blocks
+
+`__getitem__`: get an area in the map by area index or (x, y) index pair or position
+
+#### method
+
+##### dynamic
+
+`initialize`: add all areas in the map by file data, then clear `Area.areas_template` and build dictionary
+
+`stand_permitted`: judge if a position in the map is access to stand for character
+
+`acessible`: judge if two position in the map can bound a line without bumped block
+
+##### static
+
+`get_id_list`: get id list intersected by the line bounded by the two given positions
 
 ### `Information`
 

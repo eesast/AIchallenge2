@@ -19,11 +19,10 @@ class Character(Object):                # the base class of all characters
 
     # enum for vocation
     MEDIC = 0
-    ENGINEER = 1
-    SIGNALMAN = 2
-    HACK = 3
-    SNIPER = 4
-    VOCATION_COUNT = 5  # an important number to save how many vocations in total
+    SIGNALMAN = 1
+    HACK = 2
+    SNIPER = 3
+    VOCATION_COUNT = 4  # an important number to save how many vocations in total
 
     # enum for status
     RELAX = 0
@@ -42,8 +41,8 @@ class Character(Object):                # the base class of all characters
     def __init__(self, vocation):
         super().__init__(Object.CIRCLE)
         # define some variables
-        self.__health_point_limit = Character.all_data[vocation]['hp']    # max HP
-        self.health_point = self.__health_point_limit       # current HP
+        self.health_point_limit = Character.all_data[vocation]['hp']    # max HP
+        self.health_point = self.health_point_limit       # current HP
         self.bag = {}
         self.status = self.RELAX
         self.move_cd = 0                # move finished after move_cd frames
@@ -65,6 +64,9 @@ class Character(Object):                # the base class of all characters
         # these variables are just for interface
         self.last_weapon = -1
         self.best_armor = -1
+
+        # save if the character is in some special block
+        self.block = None
 
     @staticmethod
     def load_data(parent_path, character_file_path):
@@ -119,7 +121,7 @@ class Character(Object):                # the base class of all characters
                 self.position = new_position
             else:
                 return False
-            return True
+        return True
 
     def command_status_legal(self, command_type):
         if command_type == MOVE:
@@ -173,6 +175,13 @@ class Character(Object):                # the base class of all characters
                 new_status = Character.SHOOTING
 
         self.status = new_status
+        return True
+
+    def can_make_footsteps(self):
+        return not(self.is_jumping() or self.is_flying())
+
+    def get_damage(self, damage, parameter = None):
+        self.health_point -= damage
         return True
 
 

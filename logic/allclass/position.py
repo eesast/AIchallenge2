@@ -3,7 +3,7 @@
 from math import *
 
 
-class Position:     # this is a class for position and reload some operator
+class Position:  # this is a class for position and reload some operator
     def __init__(self, x, y=0.):
         if isinstance(x, Position):
             self.x, self.y = x.x, x.y
@@ -35,25 +35,25 @@ class Position:     # this is a class for position and reload some operator
     def __str__(self):
         return "(%g,%g)" % (self.x, self.y)
 
-    def length(self):   # for position it means length start from (0, 0)
+    def length(self):  # for position it means length start from (0, 0)
         return sqrt(self.x * self.x + self.y * self.y)
 
     def length2(self):  # length's square
         return self.x * self.x + self.y * self.y
 
-    def distance(self, other_position):     # distance form other position
+    def distance(self, other_position):  # distance form other position
         return (self - other_position).length()
 
-    def distance2(self, other_position):    # distance's square
+    def distance2(self, other_position):  # distance's square
         return (self - other_position).length2()
 
     def unitize(self, other_position=0):
-        if other_position == 0:     # without other position, unitize itself and return self
+        if other_position == 0:  # without other position, unitize itself and return self
             length = self.length()
             self.x = self.x / length
             self.y = self.y / length
             return self
-        else:   # else return the unitization(not misspelling) of other position
+        else:  # else return the unitization(not misspelling) of other position
             return other_position / self.length()
 
     def good(self, size_x, size_y=0):
@@ -70,7 +70,7 @@ class Position:     # this is a class for position and reload some operator
         if not isinstance(other, Position):
             raise Exception("wrong type of position!")
         # get the angle for two vector
-        cos_theta = self * other/(abs(self) * abs(other))
+        cos_theta = self * other / (abs(self) * abs(other))
         # avoid cos number > 1 because of calculate precision
         if cos_theta > 1:
             theta = 0
@@ -92,10 +92,35 @@ class Position:     # this is a class for position and reload some operator
             return 0, 0
         return distance, theta
 
-    def accessible(self, other):
+    def pick_accessible(self, other):
         if not isinstance(other, Position):
             raise Exception("wrong type of position")
         return self.distance(other) <= 1
+
+    def get_area_id(self):
+        return int(self.y) // 100 * 10 + int(self.x) // 100
+
+    def distance_to_segment(self, start, over):
+        if cross_product(self - start, over - start) * cross_product(self - over, start - over) >= 0:
+            distance = abs(cross_product(self - start, over - start)) / abs(over - start)
+        else:
+            distance = min(abs(self - start), abs(self - over))
+        return distance
+
+    def distance_to_rectangle(self, center, radius, angle):
+        # get distance to a rectangle's edge
+        # return -1 if self is in the rectangle
+        distance, theta = center.get_polar_position(Position(1, 0), self)
+        if theta >= 180:
+            theta -= 180
+        if theta >= 90:
+            theta = 180 - theta
+        dx = distance * cos(theta) - radius * cos(angle)
+        dy = distance * sin(theta) - radius * sin(angle)
+        if dx < 0:
+            return -1 if dy < 0 else dx
+        else:
+            return dx if dy < 0 else abs(Position(dx, dy))
 
 
 def delta_y(position1, position2):
@@ -119,3 +144,9 @@ def angle_to_position(angle):
         angle -= 360
     angle = angle * pi / 180
     return Position(cos(angle), sin(angle))
+
+
+def segments_intersected(start1, over1, start2, over2):
+    vectors = [start2 - start1, over1 - start2, over2 - over1, start1 - over2]
+    param = sum([1 if cross_product(vectors[i], vectors[(i + 1) % 4]) > 0 else -1 for i in range(4)])
+    return param == 4 or param == -4
