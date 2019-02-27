@@ -56,6 +56,7 @@ class Character(Object):                # the base class of all characters
 
         # initialize some inherited variables
         self.move_speed = Character.all_data[vocation]['move']
+        self.radius = Character.all_data[vocation]['radius']
 
         # platform needn't these variables
         self.jump_position = None  # it means where he jump out airplane
@@ -73,7 +74,6 @@ class Character(Object):                # the base class of all characters
         with open(parent_path + character_file_path, "r", encoding="utf-8") as file:
             config_data = load(file)
         Character.MEDIC = config_data['MEDIC']['number']
-        Character.ENGINEER = config_data['ENGINEER']['number']
         Character.SIGNALMAN = config_data['SIGNALMAN']['number']
         Character.HACK = config_data['HACK']['number']
         Character.SNIPER = config_data['SNIPER']['number']
@@ -105,6 +105,9 @@ class Character(Object):                # the base class of all characters
 
     def can_be_hit(self):
         return self.status != Character.REAL_DEAD and self.status != Character.DEAD
+
+    def can_be_healed(self):
+        return self.status != Character.REAL_DEAD
 
     move_factor = [0, 0.2, 0.5, 0.3]
 
@@ -180,9 +183,15 @@ class Character(Object):                # the base class of all characters
     def can_make_footsteps(self):
         return not(self.is_jumping() or self.is_flying())
 
-    def get_damage(self, damage, parameter = None):
-        self.health_point -= damage
-        return True
+    def get_damage(self, damage, parameter=None):
+        if self.can_be_healed():
+            if damage > 0 and parameter != 'ARMOR_PIERCING':
+                # here we're supposed to consider vest
+                pass
+            self.health_point -= damage
+            return True
+        else:
+            return False
 
 
 if __name__ == '__main__':

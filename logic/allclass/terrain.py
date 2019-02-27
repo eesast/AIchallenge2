@@ -122,6 +122,7 @@ class Map:
     def __init__(self):
         self.areas = []
         self.all_blocks = {}
+        self.last_bumped_block = None
 
     def __getitem__(self, item):
         if isinstance(item, tuple):
@@ -192,6 +193,7 @@ class Map:
         area = self.areas[pos.get_area_id()]
         for block in area.blocks:
             if block.is_bumped(pos, radius):
+                self.last_bumped_block = block
                 break
         else:
             return False

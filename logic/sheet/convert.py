@@ -54,10 +54,11 @@ CHARACTER_MACRO = 2
 CHARACTER_HP = 3
 CHARACTER_DISTANCE = 4
 CHARACTER_ANGLE = 5
-CHARACTER_MOVE = 6
-CHARACTER_SKILL = 7
-CHARACTER_PARAMETER = 8
-CHARACTER_COLUMN = 9
+CHARACTER_RADIUS = 6
+CHARACTER_MOVE = 7
+CHARACTER_SKILL = 8
+CHARACTER_PARAMETER = 9
+CHARACTER_COLUMN = 10
 
 # for circle
 CIRCLE_INDEX = 4
@@ -179,6 +180,7 @@ def get_character_data(sheet_character):
         hp = int(row[CHARACTER_HP])
         distance = row[CHARACTER_DISTANCE]
         angle = row[CHARACTER_ANGLE]
+        radius = row[CHARACTER_RADIUS]
         move = row[CHARACTER_MOVE]
         param = row[CHARACTER_PARAMETER]
         data[macro] = {
@@ -186,6 +188,7 @@ def get_character_data(sheet_character):
             'hp': hp,
             'distance': distance,
             'angle': angle,
+            'radius': radius,
             'move': move,
             'skill': param,
         }
