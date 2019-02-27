@@ -400,6 +400,12 @@ inherited from Object, the class of all pick-up in the map
 
 `remove`: remove a item from `all_items` by id
 
+`get_data_by_item_id`: get item data by given item id
+
+`get_random_item`: get a random item to put in the map based on `occur`
+
+`get_reward_item`: get a random reward item better than normal for a code case
+
 ##### dynamic
 
 `is_weapon`: judge if this item is a weapon
