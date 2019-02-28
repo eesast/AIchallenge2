@@ -65,6 +65,7 @@ class GameMain:
         self.all_sounds = []
         self.all_drugs = []
         self.all_wild_items = {}
+        self.all_parameters = {}
         self.all_info = {}  # save all information for platform
         self.all_commands = {"move": {}, "shoot": {}, "pickup": {}, "radio": {}}
 
@@ -73,6 +74,7 @@ class GameMain:
         self.__start_position, self.__over_position = None, None
         self.__turn = 0
         self.poison = None
+        self.last_poison_flag = None
 
         # initialize debug level for logic to use directly and for platform to change it
         self.__debug_level = PRINT_DEBUG
@@ -85,6 +87,13 @@ class GameMain:
         return
 
     def load_data(self, file_path, file_name):
+        def load_parameter(parent_path, parameter_file_path):
+            with open(parent_path + parameter_file_path, "r", encoding="utf-8") as file:
+                parameter_data = load(file)
+            self.all_parameters = parameter_data['main']
+            character.Character.all_params = parameter_data['character']
+            return parameter_data
+
         if file_path[-1] != '/' and file_path[-1] != '\\':
             file_path = file_path + '/'
         # first load some global information
@@ -107,6 +116,9 @@ class GameMain:
 
         # for circle data
         self.print_debug(100, self.poison.load_data(file_path, global_config["CIRCLE_FILE_PATH"]))
+
+        # for parameters
+        self.print_debug(100, load_parameter(file_path, global_config["PARAMETER_FILE_PATH"]))
 
     def map_init(self):
         # here should give some items randomly according to occurrence
@@ -483,7 +495,7 @@ class GameMain:
                             continue
                         dist, delta = pos.get_polar_position(position.angle_to_position(view_angle), player.position)
                         delta = 0 if delta > 360 else 360 - delta if delta > 180 else delta
-                        if delta < 2.5:
+                        if delta < data['angle'] / 2:
                             if dist > data['range']:
                                 continue
                             if not shortest or shortest < dist:
@@ -495,22 +507,23 @@ class GameMain:
         def damage():
             bullets = self.all_bullets
             for index in range(len(bullets)):
-                pos, view_angle, item_id, player_id, hit_id = bullets[index]
+                pos, view_angle, item_index, player_id, hit_id = bullets[index]
                 if hit_id is not None:
                     shooter = self.number_to_player[player_id]
                     direction = position.angle_to_position(view_angle)
                     target = shooter.position
                     dist = abs(position.cross_product(direction, target - pos))
-                    data = item.Item.get_data_by_item_id(item_id)
-                    value = math.exp(- dist * 100 / data['range']) ** 2 * data['damage']
+                    data = item.Item.get_data_by_item_id(item_index)
+                    value = math.exp(- dist * self.all_parameters['damage_param'] / data['range']) ** 2 * data['damage']
                     if shooter.vocation == character.Character.SNIPER and 'SNIPER' in data['name']:
                         value *= character.Character.all_data[character.Character.SNIPER]['skill']
-                    self.number_to_player[hit_id].get_damage(value)
+                    parameter = 'ARMOR_PIERCING' if data['name'] == 'CROSSBOW' else None
+                    self.number_to_player[hit_id].get_damage(value, parameter)
 
                     self.print_debug(13, 'player', player_id, data['name'], value, 'damage to player', hit_id)
                 else:
-                    if item.Item.all_items[item_id].item_type == 1:
-                        bullets[index] = pos, view_angle, item_id, player_id, True
+                    if item.Item.all_items[item_index].item_type == 1:
+                        bullets[index] = pos, view_angle, item_index, player_id, True
 
             self.all_bullets = [bullet for bullet in bullets if bullet[4] is None]
 
@@ -540,7 +553,7 @@ class GameMain:
                             player.change_status(character.Character.RELAX)
                             self.print_debug(7, 'player', player.number, 'resurrected')
                     else:
-                        if player.get_damage(self.poison.damage_per_frame):
+                        if player.get_damage(self.poison.damage_per_frame, 'ARMOR_PIERCING'):
                             self.print_debug(13, 'the circle', self.poison.damage_per_frame, 'damage to', player.number)
                         if player.can_be_healed() and player.health_point <= 0:
                             player.health_point = 0
@@ -551,8 +564,14 @@ class GameMain:
                         player.health_point = player.health_point_limit
 
         def items():
-            # remember, items' update rule is still to be finished
-            pass
+            if self.last_poison_flag is None:
+                # initialize items in the map
+                pass
+            elif self.poison.flag == 1 and self.last_poison_flag == 2:
+                # generate items when the circle start to shrink in each stage
+                pass
+            self.last_poison_flag = self.poison.flag
+            return
 
         def noise():
             for _sound in self.all_sounds:
