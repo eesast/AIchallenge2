@@ -62,6 +62,7 @@ class Character(Object):  # the base class of all characters
         # initialize some inherited variables
         self.move_speed = Character.all_data[vocation]['move']
         self.radius = Character.all_data[vocation]['radius']
+        self.block_view = True
 
         # platform needn't these variables
         self.jump_position = None  # it means where he jump out airplane
@@ -203,8 +204,9 @@ class Character(Object):  # the base class of all characters
                     reduce += self.all_data[vest]['reduce'] * (1 - exp(- self.bag[vest] / self.all_params['reduce']))
                     new_durability = self.bag[vest] - self.all_data[vest]['reduce'] * damage
                     self.bag[vest] = new_durability if new_durability > 0 else 0
-            self.health_point -= (damage - reduce)
-            return True
+            real_damage = damage - reduce
+            self.health_point -= real_damage
+            return real_damage
         else:
             return False
 

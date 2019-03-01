@@ -55,6 +55,57 @@ class Object(object):
     def is_opaque(self):
         return self.block_view
 
+    def get_tangent_angle(self, other):
+        # return two angles in [-180, 180]
+        if not isinstance(other, Position):
+            return
+        if self.shape == Object.CIRCLE:
+            angle = other.get_angle(self.position)
+            cos_theta = self.radius / other.distance(self.position)
+            if cos_theta > 1:
+                return None
+            delta = acos(cos_theta)
+            if angle + delta > 360:
+                return angle - delta - 360, angle + delta - 360
+            else:
+                return angle - delta, angle + delta
+        else:
+            x = self.radius * cos(self.angle)
+            y = self.radius * sin(self.angle)
+            positions = [Position(x, y) + self.position,
+                         Position(-x, y) + self.position,
+                         Position(-x, -y) + self.position,
+                         Position(x, -y) + self.position]
+            if other.x > x:
+                if other.y > y:
+                    positions = [positions[1], positions[3]]
+                elif other.y < y:
+                    positions = [positions[0], positions[2]]
+                else:
+                    positions = [positions[1], positions[2]]
+            elif other.x < x:
+                if other.y > y:
+                    positions = [positions[2], positions[0]]
+                elif other.y < y:
+                    positions = [positions[3], positions[1]]
+                else:
+                    positions = [positions[3], positions[0]]
+            else:
+                if other.y > y:
+                    positions = [positions[2], positions[3]]
+                elif other.y < y:
+                    positions = [positions[0], positions[1]]
+                else:
+                    return None
+
+            angles = [(pos - other).get_angle() for pos in positions]
+            if angles[1] > 180:
+                angles[1] -= 360
+                angles[0] -= 360
+            elif angles[0] > 180:
+                angles[0] -= 360
+            return angles[0], angles[1]
+
 
 if __name__ == '__main__':
     # if necessary, we can test here

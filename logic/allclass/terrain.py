@@ -15,7 +15,6 @@ class Block(Object):
         # for inherited variables
         super().__init__()
         self.name = type_name
-        self.id = None
 
     def set_rectangle(self, param):
         self.shape = Object.RECTANGLE
@@ -113,7 +112,7 @@ class Area:
         area.id = number
         for block in area.blocks:
             block.position += Position(number % 10 * 100, number // 10 * 100)
-            block.id = Block.get_id()
+            block.number = Block.get_id()
         return area
 
 

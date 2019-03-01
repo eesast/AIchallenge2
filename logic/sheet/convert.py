@@ -294,14 +294,16 @@ class JsonFormatter:
         self.stack.append(self.line_intend(intend_level - 1) + '}')
 
     def parse_list(self, obj=None, intend_level=0):
-        self.stack.append(self.line_intend(intend_level) + '[')
+        # self.stack.append(self.line_intend(intend_level) + '[')
+        self.stack.append('[')
         intend_level += 1
         for item in obj:
             self.parse(item, intend_level)
             self.stack.append(',')
         if self.stack[-1] == ',':
             self.stack.pop(-1)
-        self.stack.append(self.line_intend(intend_level - 1) + ']')
+        self.stack.append(']')
+        # self.stack.append(self.line_intend(intend_level - 1) + ']')
 
     def parse(self, obj, intend_level=0):
         if obj is None:
