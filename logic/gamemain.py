@@ -314,7 +314,7 @@ class GameMain:
                     raise Exception("wrong object for dict number_to_player, get a", type(player))
                 # first we must make sure player won't jump into the sea, so I adjust directly for them
                 while self.map.areas[player.land_position.get_area_id()].name == 'sea':
-                    self.print_debug('player', player.number, "'s jump position", player.land_position, end='')
+                    self.print_debug(1, 'player', player.number, "'s jump position", player.land_position, end='')
                     player.land_position.x += 100 if player.land_position.x < 500 else -100
                     player.land_position.y += 100 if player.land_position.y < 500 else -100
                     self.print_debug(2, 'is adjust to', player.land_position)
@@ -471,6 +471,11 @@ class GameMain:
                         if player.is_flying() or player.is_jumping() or self.map.stand_permitted(player.position,
                                                                                                  player.radius):
                             self.print_debug(15, 'player', player.number, 'move to', player.position)
+                            # check if player is standing on a block such as grass
+                            for block in self.map.areas[player.position.get_area_id()].blocks:
+                                if block.bumped or not block.is_opaque():
+                                    continue
+
                             if player.move_cd == 1 and player.can_make_footsteps():
                                 # for foot step sound
                                 for _team in self.all_players:
@@ -564,6 +569,7 @@ class GameMain:
                         if player.can_be_healed() and player.health_point <= 0:
                             player.health_point = 0
                             self.die_order.append(player.number)
+                            self.die_list.append(player.number)
                             player.change_status(character.Character.REAL_DEAD)
                             self.print_debug(7, 'player', player.number, 'died out of circle')
                     if player.health_point > player.health_point_limit:
@@ -653,9 +659,14 @@ class GameMain:
                     area_id = areas.get_next_area_id()
                     if area_id is None:
                         break
-                    for block in areas.get_sorted_blocks(
-                            self.map.areas[area_id].blocks + self.all_areas_players.get(area_id, []) +
-                            self.map_items[area_id // 10][area_id % 10]):
+                    block_list = self.map.areas[area_id].blocks
+                    player_list = self.all_areas_players.get(area_id, [])
+                    item_list = self.map_items[area_id // 10][area_id % 10]
+                    for block in areas.get_sorted_blocks(block_list + player_list + item_list):
+                        if isinstance(block, item.Item):
+                            if player.position.get_angle(block.position) in vision:
+                                player_info.items.append(block.number)
+                            continue
                         tangle_angles = block.get_tangent_angle(player.position)
                         if tangle_angles is None:
                             continue

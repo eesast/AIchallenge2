@@ -29,6 +29,13 @@ class Block(Object):
         self.position = Position(param[0], param[1])
         self.radius = param[2] if len(param) == 3 else Block.tree_radius
 
+    def __contains__(self, item):
+        if self.shape == Object.CIRCLE:
+            return item.position.distance(self.position) <= self.radius - item.radius
+        else:
+
+            return
+
     @staticmethod
     def generate_block(name, param):
         block = Block(name)

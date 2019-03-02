@@ -18,6 +18,9 @@ class Vision:
     def empty(self):
         return len(self.interval) <= 0.1
 
+    def __contains__(self, item):
+        return item in self.interval
+
 
 class AreaManager:
     def __init__(self, position, angle, width, distance):

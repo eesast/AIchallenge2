@@ -57,8 +57,6 @@ class Object(object):
 
     def get_tangent_angle(self, other):
         # return two angles in [-180, 180]
-        if not isinstance(other, Position):
-            return
         if self.shape == Object.CIRCLE:
             angle = other.get_angle(self.position)
             cos_theta = self.radius / other.distance(self.position)
