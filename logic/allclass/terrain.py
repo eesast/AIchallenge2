@@ -15,7 +15,6 @@ class Block(Object):
         # for inherited variables
         super().__init__()
         self.name = type_name
-        self.id = None
 
     def set_rectangle(self, param):
         self.shape = Object.RECTANGLE
@@ -29,6 +28,13 @@ class Block(Object):
         self.shape = Object.CIRCLE
         self.position = Position(param[0], param[1])
         self.radius = param[2] if len(param) == 3 else Block.tree_radius
+
+    def __contains__(self, item):
+        if self.shape == Object.CIRCLE:
+            return item.position.distance(self.position) <= self.radius - item.radius
+        else:
+
+            return
 
     @staticmethod
     def generate_block(name, param):
@@ -113,7 +119,7 @@ class Area:
         area.id = number
         for block in area.blocks:
             block.position += Position(number % 10 * 100, number // 10 * 100)
-            block.id = Block.get_id()
+            block.number = Block.get_id()
         return area
 
 

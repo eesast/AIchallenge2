@@ -33,6 +33,7 @@ class Item(Object):   # class for each equipment and goods
         self.durability = Item.all_data[item_type].get('durability', 1)   # using durability
         self.item_type = item_type                   # type id
         self.id = number                             # item's id
+        self.block_view = False
         return
 
     @staticmethod
