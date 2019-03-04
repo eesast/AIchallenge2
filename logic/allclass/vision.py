@@ -159,7 +159,7 @@ class Sweep:
             pair = swept.get(target, None)
             if pair:
                 # this one has been swept
-                if heap[0] is pair:
+                if len(heap) and heap[0] is pair:
                     # if this is the nearest, update the pq
                     heappop(heap)
                     while len(heap) and not swept.get(heap[0][1], None):

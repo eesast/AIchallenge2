@@ -549,28 +549,39 @@ class GameMain:
                         # teammate and no hp player will be ignored
                         if player.team == team_id and not player.can_be_hit():
                             continue
-                        dist, delta = pos.get_polar_position(position.angle_to_position(view_angle), player.position)
+                        dist2, delta = pos.get_polar_position(position.angle_to_position2(view_angle), player.position)
                         delta = 0 if delta > 360 else 360 - delta if delta > 180 else delta
                         if delta < data['angle'] / 2:
-                            if dist > data['range']:
+                            if dist2 > data['range'] * data['range']:
                                 continue
-                            if not shortest or shortest < dist:
+                            if not shortest or shortest < dist2:
                                 # modify hit player
-                                shortest = dist
+                                shortest = dist2
                                 bullets[index] = pos, view_angle, item_type, player_id, player.number
 
                 return
 
             def vision_extra_process(player_id):
+                def available(target):
+                    other_player = self.number_to_player[target]
+                    if other_player.block and 'grass' in other_player.block.name:
+                        if player.block and player.block.number == other_player.block.number:
+                            return True
+                        return False
+                    return True
                 # here deal with grass
-                pass
+                player = self.number_to_player[player_id]
+                player_info = self.all_info[player_id]
+                player_info.others = [other for other in player_info.others if available(other)]
 
             # update vision first
             for player_number in self.all_info:
                 update_vision(player_number)
             # then deal with bullets
             update_bullets()
-
+            # deal with vision for special condition
+            for player_number in self.all_info:
+                vision_extra_process(player_number)
             return
 
         def damage():
