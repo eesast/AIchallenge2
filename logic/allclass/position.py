@@ -50,8 +50,9 @@ class Position:  # this is a class for position and reload some operator
     def unitize(self, other_position=0):
         if other_position == 0:  # without other position, unitize itself and return self
             length = self.length()
-            self.x = self.x / length
-            self.y = self.y / length
+            if length:
+                self.x = self.x / length
+                self.y = self.y / length
             return self
         else:  # else return the unitization(not misspelling) of other position
             return other_position / self.length()
@@ -70,7 +71,10 @@ class Position:  # this is a class for position and reload some operator
         if not isinstance(other, Position):
             raise Exception("wrong type of position!")
         # get the angle for two vector
-        cos_theta = self * other / (abs(self) * abs(other))
+        length_product = sqrt(self.length2() * other.length2())
+        if length_product < 1e-5:
+            return 0
+        cos_theta = self * other / length_product
         # avoid cos number > 1 because of calculate precision
         if cos_theta > 1:
             theta = 0
@@ -85,12 +89,15 @@ class Position:  # this is a class for position and reload some operator
     def get_polar_position(self, direction, other):
         if not (isinstance(other, Position) and isinstance(direction, Position)):
             raise Exception("wrong type of position!")
-        try:
-            distance = self.distance(other)
-            theta = direction.get_angle(other - self)
-        except ZeroDivisionError:
-            return 0, 0
+        distance = self.distance(other)
+        theta = direction.get_angle(other - self)
         return distance, theta
+
+    def get_polar_position2(self, direction, other):
+        # return length2 instead of length to optimize the algorithm
+        distance2 = self.distance2(other)
+        theta = direction.get_angle(other - self)
+        return distance2, theta
 
     def pick_accessible(self, other):
         if not isinstance(other, Position):

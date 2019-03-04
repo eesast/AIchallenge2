@@ -32,7 +32,7 @@ class Item(Object):   # class for each equipment and goods
         self.data = Item.all_data[item_type]
         self.durability = Item.all_data[item_type].get('durability', 1)   # using durability
         self.item_type = item_type                   # type id
-        self.id = number                             # item's id
+        self.number = number
         self.block_view = False
         return
 
@@ -55,7 +55,7 @@ class Item(Object):   # class for each equipment and goods
         new_item.position = pos
         Item.all_items[Item.next_id] = new_item
         Item.next_id += 1
-        return new_item.id
+        return new_item.number
 
     @staticmethod
     def remove(item_id):
