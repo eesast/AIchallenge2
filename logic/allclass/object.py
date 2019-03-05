@@ -55,18 +55,21 @@ class Object(object):
     def is_opaque(self):
         return self.block_view
 
-    def get_tangent_angle(self, other):
+    def get_tangent_angle(self, other, angle=None, zero=0):
         # return two angles in [-180, 180]
         if self.shape == Object.CIRCLE:
-            angle = other.get_angle(self.position)
-            cos_theta = self.radius / other.distance(self.position)
+            # in actuality, angle should be in [-90, 90], so some
+            # conditions won't be taken into consideration
+            if angle is None:
+                angle = other.position.get_angle(self.position)
+            distance2 = other.distance2(self.position)
+            if distance2 <= self.radius * self.radius:
+                return angle, angle
+            cos_theta = self.radius / sqrt(distance2)
             if cos_theta > 1:
-                return None
+                return angle, angle
             delta = acos(cos_theta)
-            if angle + delta > 360:
-                return angle - delta - 360, angle + delta - 360
-            else:
-                return angle - delta, angle + delta
+            return angle - delta, angle + delta
         else:
             x = self.radius * cos(self.angle)
             y = self.radius * sin(self.angle)
@@ -94,15 +97,15 @@ class Object(object):
                 elif other.y < y:
                     positions = [positions[0], positions[1]]
                 else:
-                    return None
+                    return angle, angle
 
-            angles = [(pos - other).get_angle() for pos in positions]
-            if angles[1] > 180:
-                angles[1] -= 360
-                angles[0] -= 360
-            elif angles[0] > 180:
-                angles[0] -= 360
+            angles = [(pos - other).get_angle() - zero for pos in positions]
+            for i in range(len(angles)):
+                angles[i] = angles[i] - 360 if angles[i] > 180 else angles[i] + 360 if angles[i] < -180 else angles[i]
             return angles[0], angles[1]
+
+    def __lt__(self, other):
+        return self.number < other.number
 
 
 if __name__ == '__main__':
