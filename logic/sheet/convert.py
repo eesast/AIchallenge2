@@ -54,13 +54,15 @@ CHARACTER_MACRO = 2
 CHARACTER_HP = 3
 CHARACTER_DISTANCE = 4
 CHARACTER_ANGLE = 5
-CHARACTER_MOVE = 6
-CHARACTER_SKILL = 7
-CHARACTER_PARAMETER = 8
-CHARACTER_COLUMN = 9
+CHARACTER_RADIUS = 6
+CHARACTER_MOVE = 7
+CHARACTER_SKILL = 8
+CHARACTER_PARAMETER = 9
+CHARACTER_COLUMN = 10
 
 # for circle
 CIRCLE_INDEX = 4
+
 CIRCLE_STAGE = 0
 CIRCLE_DELAY = 1
 CIRCLE_MOVE = 2
@@ -71,6 +73,19 @@ CIRCLE_RADIUS = 6
 CIRCLE_SPEED = 7
 CIRCLE_FRAMES = 8
 CIRCLE_TOTAL = 9
+
+# for sound
+SOUND_INDEX = 5
+
+SOUND_NUMBER = 0
+SOUND_TYPE = 1
+SOUND_MACRO = 2
+SOUND_SPEED = 3
+SOUND_DISTANCE = 4
+SOUND_DESCRIPTION = 5
+
+# for parameters
+PARAMETER_INDEX = 6
 
 
 def open_file(path):
@@ -149,14 +164,6 @@ def get_item_data(file):
     return all_data
 
 
-def output_item_data(data, path):
-    formatter = JsonFormatter(data=data)
-    data = formatter.render()
-    with open(path, 'w') as fp:
-        # dump(data, fp)
-        fp.write(data)
-
-
 def get_character_data(sheet_character):
     data = {}
     for i in range(START_ROW, sheet_character.nrows):
@@ -168,6 +175,7 @@ def get_character_data(sheet_character):
         hp = int(row[CHARACTER_HP])
         distance = row[CHARACTER_DISTANCE]
         angle = row[CHARACTER_ANGLE]
+        radius = row[CHARACTER_RADIUS]
         move = row[CHARACTER_MOVE]
         param = row[CHARACTER_PARAMETER]
         data[macro] = {
@@ -175,9 +183,24 @@ def get_character_data(sheet_character):
             'hp': hp,
             'distance': distance,
             'angle': angle,
+            'radius': radius,
             'move': move,
             'skill': param,
         }
+    return data
+
+
+def get_parameter_data(sheet_parameter):
+    data = {
+        'character': {},
+        'main': {},
+    }
+    col = sheet_parameter.col_values(1)
+    data['character']['move_step'] = [0, col[2], col[3], col[4]]
+
+    col = sheet_parameter.col_values(4)
+    data['main']['damage_param'] = col[2]
+    data['character']['reduce'] = col[3]
     return data
 
 
@@ -199,6 +222,24 @@ def get_circle_data(sheet_circle):
             'move': move,
             'damage': damage,
             'shrink': shrink,
+        }
+    return data
+
+
+def get_sound_data(sheet_sound):
+    data = {}
+    for i in range(START_ROW, sheet_sound.nrows):
+        row = sheet_sound.row_values(i)
+        if len(row[SOUND_MACRO]) < 1:
+            break
+        number = int(row[SOUND_NUMBER])
+        macro = row[SOUND_MACRO]
+        speed = row[SOUND_SPEED]
+        distance = row[SOUND_DISTANCE]
+        data[macro] = {
+            'number': number,
+            'speed': speed,
+            'distance': distance,
         }
     return data
 
@@ -253,12 +294,16 @@ class JsonFormatter:
         self.stack.append(self.line_intend(intend_level - 1) + '}')
 
     def parse_list(self, obj=None, intend_level=0):
-        self.stack.append(self.line_intend(intend_level) + '[')
+        # self.stack.append(self.line_intend(intend_level) + '[')
+        self.stack.append('[')
         intend_level += 1
         for item in obj:
             self.parse(item, intend_level)
             self.stack.append(',')
-        self.stack.append(self.line_intend(intend_level - 1) + ']')
+        if self.stack[-1] == ',':
+            self.stack.pop(-1)
+        self.stack.append(']')
+        # self.stack.append(self.line_intend(intend_level - 1) + ']')
 
     def parse(self, obj, intend_level=0):
         if obj is None:
@@ -287,11 +332,15 @@ class JsonFormatter:
 def main():
     file = open_file('./data.xlsx')
     data = get_item_data(file)
-    output_item_data(data, '../data/item.json')
+    output_data(data, '../data/item.json')
     data = get_character_data(file.sheet_by_index(CHARACTER_INDEX))
     output_data(data, '../data/character.json')
     data = get_circle_data(file.sheet_by_index(CIRCLE_INDEX))
-    output_item_data(data, '../data/circle.json')
+    output_data(data, '../data/circle.json')
+    data = get_sound_data(file.sheet_by_index(SOUND_INDEX))
+    output_data(data, '../data/sound.json')
+    data = get_parameter_data(file.sheet_by_index(PARAMETER_INDEX))
+    output_data(data, '../data/parameter.json')
     return
 
 

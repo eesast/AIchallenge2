@@ -30,9 +30,10 @@ class Item(Object):   # class for each equipment and goods
         super().__init__()
         # some important characteristics
         self.data = Item.all_data[item_type]
-        self.durability = Item.all_data[item_type]['durability']    # using durability
+        self.durability = Item.all_data[item_type].get('durability', 1)   # using durability
         self.item_type = item_type                   # type id
-        self.id = number                             # item's id
+        self.number = number
+        self.block_view = False
         return
 
     @staticmethod
@@ -54,7 +55,7 @@ class Item(Object):   # class for each equipment and goods
         new_item.position = pos
         Item.all_items[Item.next_id] = new_item
         Item.next_id += 1
-        return new_item.id
+        return new_item.number
 
     @staticmethod
     def remove(item_id):
@@ -72,6 +73,16 @@ class Item(Object):   # class for each equipment and goods
     @staticmethod
     def get_data_by_item_id(item_id):
         return Item.all_data[Item.all_items[item_id].item_type]
+
+    @staticmethod
+    def get_random_item():
+        pass
+        return 1
+
+    @staticmethod
+    def get_reward_item():
+        pass
+        return 1
 
 
 if __name__ == '__main__':

@@ -1,7 +1,9 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 from .object import *
+from .item import Item
 from json import load
+from math import exp
 
 MOVE = 0
 SHOOT = 1
@@ -9,21 +11,23 @@ PICKUP = 2
 RADIO = 3
 
 
-class Character(Object):                # the base class of all characters
+class Character(Object):  # the base class of all characters
     # static variables
-    all_data = {}                       # save all data from setting file
-    AIRPLANE_SPEED = 50                 # flying speed, will load from file
-    JUMPING_SPEED = 20                  # jumping speed, also load from file
+    all_data = {}  # save all data from setting file
+    AIRPLANE_SPEED = 50  # flying speed, will load from file
+    JUMPING_SPEED = 20  # jumping speed, also load from file
 
-    all_characters = {}                 # key: id, value: all characters' entities
+    # save some parameters for calculation
+    all_params = {}
+
+    all_characters = {}  # key: id, value: all characters' entities
 
     # enum for vocation
     MEDIC = 0
-    ENGINEER = 1
-    SIGNALMAN = 2
-    HACK = 3
-    SNIPER = 4
-    VOCATION_COUNT = 5  # an important number to save how many vocations in total
+    SIGNALMAN = 1
+    HACK = 2
+    SNIPER = 3
+    VOCATION_COUNT = 4  # an important number to save how many vocations in total
 
     # enum for status
     RELAX = 0
@@ -42,21 +46,23 @@ class Character(Object):                # the base class of all characters
     def __init__(self, vocation):
         super().__init__(Object.CIRCLE)
         # define some variables
-        self.__health_point_limit = Character.all_data[vocation]['hp']    # max HP
-        self.health_point = self.__health_point_limit       # current HP
+        self.health_point_limit = Character.all_data[vocation]['hp']  # max HP
+        self.health_point = self.health_point_limit  # current HP
         self.bag = {}
         self.status = self.RELAX
-        self.move_cd = 0                # move finished after move_cd frames
-        self.shoot_cd = 0               # shoot finished after move_cd frames
-        self.vocation = vocation        # save the Vocation
-        self.team = -1                  # team id
+        self.move_cd = 0  # move finished after move_cd frames
+        self.shoot_cd = 0  # shoot finished after move_cd frames
+        self.vocation = vocation  # save the Vocation
+        self.team = -1  # team id
 
         # some special variables for view
-        self.view_distance = 200
-        self.view_angle = 120           # view sector's angle
+        self.view_distance = Character.all_data[vocation]['distance']
+        self.view_angle = Character.all_data[vocation]['angle']  # view sector's angle
 
         # initialize some inherited variables
         self.move_speed = Character.all_data[vocation]['move']
+        self.radius = Character.all_data[vocation]['radius']
+        self.block_view = True
 
         # platform needn't these variables
         self.jump_position = None  # it means where he jump out airplane
@@ -66,12 +72,14 @@ class Character(Object):                # the base class of all characters
         self.last_weapon = -1
         self.best_armor = -1
 
+        # save if the character is in some special block
+        self.block = None
+
     @staticmethod
     def load_data(parent_path, character_file_path):
         with open(parent_path + character_file_path, "r", encoding="utf-8") as file:
             config_data = load(file)
         Character.MEDIC = config_data['MEDIC']['number']
-        Character.ENGINEER = config_data['ENGINEER']['number']
         Character.SIGNALMAN = config_data['SIGNALMAN']['number']
         Character.HACK = config_data['HACK']['number']
         Character.SNIPER = config_data['SNIPER']['number']
@@ -104,6 +112,9 @@ class Character(Object):                # the base class of all characters
     def can_be_hit(self):
         return self.status != Character.REAL_DEAD and self.status != Character.DEAD
 
+    def can_be_healed(self):
+        return self.status != Character.REAL_DEAD
+
     move_factor = [0, 0.2, 0.5, 0.3]
 
     def move(self):
@@ -114,12 +125,13 @@ class Character(Object):                # the base class of all characters
         if self.is_jumping() or self.is_flying():
             self.position += self.move_direction * self.move_speed
         else:
-            new_position = self.position + self.move_direction * (self.move_speed * Character.move_factor[self.move_cd])
+            move_distance = self.move_speed * Character.all_params['move_step'][self.move_cd]
+            new_position = self.position + self.move_direction * move_distance
             if new_position.good(1000):
                 self.position = new_position
             else:
                 return False
-            return True
+        return True
 
     def command_status_legal(self, command_type):
         if command_type == MOVE:
@@ -174,6 +186,29 @@ class Character(Object):                # the base class of all characters
 
         self.status = new_status
         return True
+
+    def can_make_footsteps(self):
+        return not (self.is_jumping() or self.is_flying())
+
+    def get_damage(self, damage, parameter=None):
+        vests = [
+            Item.all_data['VEST_1']['number'],
+            Item.all_data['VEST_2']['number'],
+            Item.all_data["VEST_3"]['number']
+        ]
+        if self.can_be_healed():
+            reduce = 0
+            if damage > 0 and parameter != 'ARMOR_PIERCING':
+                # here we're supposed to consider vest
+                for vest in vests:
+                    reduce += self.all_data[vest]['reduce'] * (1 - exp(- self.bag[vest] / self.all_params['reduce']))
+                    new_durability = self.bag[vest] - self.all_data[vest]['reduce'] * damage
+                    self.bag[vest] = new_durability if new_durability > 0 else 0
+            real_damage = damage - reduce
+            self.health_point -= real_damage
+            return real_damage
+        else:
+            return False
 
 
 if __name__ == '__main__':

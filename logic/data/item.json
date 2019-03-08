@@ -1,30 +1,165 @@
 {
-    "RIFLE":
+    "FIST":
+    {
+        "type":"WEAPON",
+        "number":0,
+        "durability":9999,
+        "range":1,
+        "cd":30,
+        "damage":4,
+        "occur":30
+    },
+    "HAND_GUN":
     {
         "type":"WEAPON",
         "number":1,
-        "durability":10,
-        "range":300,
-        "cd":5,
-        "damage":50,
+        "durability":8,
+        "range":80,
+        "cd":2,
+        "damage":4,
+        "occur":25
+    },
+    "SUBMACHINE_GUN":
+    {
+        "type":"WEAPON",
+        "number":2,
+        "durability":20,
+        "range":100,
+        "cd":2,
+        "damage":1,
+        "occur":25
+    },
+    "SEMI_AUTOMATIC_RILE":
+    {
+        "type":"WEAPON",
+        "number":3,
+        "durability":15,
+        "range":150,
+        "cd":1,
+        "damage":3,
+        "occur":30
+    },
+    "ASSAULT_RIFLE":
+    {
+        "type":"WEAPON",
+        "number":4,
+        "durability":20,
+        "range":150,
+        "cd":2,
+        "damage":2,
+        "occur":40
+    },
+    "MACHINE_GUN":
+    {
+        "type":"WEAPON",
+        "number":5,
+        "durability":50,
+        "range":100,
+        "cd":3,
+        "damage":1,
+        "occur":40
+    },
+    "SNIPER_RILFE":
+    {
+        "type":"WEAPON",
+        "number":6,
+        "durability":8,
+        "range":600,
+        "cd":0,
+        "damage":8,
         "occur":100
+    },
+    "SNIPER_BARRETT":
+    {
+        "type":"WEAPON",
+        "number":7,
+        "durability":5,
+        "range":1000,
+        "cd":0,
+        "damage":10,
+        "occur":150
+    },
+    "TIGER_BILLOW_HAMMER":
+    {
+        "type":"WEAPON",
+        "number":8,
+        "durability":20,
+        "range":2,
+        "cd":60,
+        "damage":5,
+        "occur":50
+    },
+    "CROSSBOW":
+    {
+        "type":"WEAPON",
+        "number":9,
+        "durability":10,
+        "range":100,
+        "cd":1,
+        "damage":6,
+        "occur":30
     },
     "VEST_1":
     {
         "type":"ARMOR",
-        "number":41,
+        "number":13,
         "durability":100,
-        "reduce":30,
+        "reduce":0,
         "param":0.0,
         "occur":50
+    },
+    "VEST_2":
+    {
+        "type":"ARMOR",
+        "number":14,
+        "durability":150,
+        "reduce":0,
+        "param":0.0,
+        "occur":25
+    },
+    "VEST_3":
+    {
+        "type":"ARMOR",
+        "number":15,
+        "durability":200,
+        "reduce":0,
+        "param":0.0,
+        "occur":10
     },
     "MUFFLER":
     {
         "type":"GOODS",
-        "number":51,
+        "number":21,
         "macro":"MUFFLER",
         "mode":"PORTABLE",
         "param":0.3,
-        "occur":10
+        "occur":0
+    },
+    "BONDAGE":
+    {
+        "type":"GOODS",
+        "number":22,
+        "macro":"BONDAGE",
+        "mode":"SPENDABLE",
+        "param":-20.0,
+        "occur":5
+    },
+    "FIRST_AID_CASE":
+    {
+        "type":"GOODS",
+        "number":23,
+        "macro":"FIRST_AID_CASE",
+        "mode":"SPENDABLE",
+        "param":-100.0,
+        "occur":8
+    },
+    "CODE_CASE":
+    {
+        "type":"GOODS",
+        "number":24,
+        "macro":"CODE_CASE",
+        "mode":"TRIGGERED",
+        "param":0.0,
+        "occur":0
     }
 }

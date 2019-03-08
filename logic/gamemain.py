@@ -3,6 +3,7 @@
 from allclass import *
 import proto.interface_pb2 as interface
 import proto.platform_pb2 as platform
+from multiprocessing import Pool
 from random import randrange
 from json import load
 import math
@@ -12,7 +13,7 @@ import struct
 #   here define a debug level variable to debug print-oriented
 #   remember: here is just a initial level for logic
 #   platform may give another number in game_init
-PRINT_DEBUG = 13
+PRINT_DEBUG = 25
 
 
 #   level 1: only print illegal information
@@ -29,13 +30,18 @@ PRINT_DEBUG = 13
 #   level 10: print turns
 
 #   level 13: print damage information
-
+#   level 14: print player's failed moving
 #   level 15: print player's new position after each move
 #   level 16: print player's new pick-up
 #   level 17: print circle dynamic changing
 
-#   level 20: print player's view for other players
-#   level 21: print player's view for items
+#   level 19: print player's illegal param for instructions
+
+#   level 23: print player's view for other players
+#   level 24: print player's view for items
+#   level 25: print player's view for landforms
+
+#   level 27: print player's sounds list
 
 #   level 29: print all non-redundant commands for each frame
 #   level 30: print all commands for each frame
@@ -53,21 +59,28 @@ class GameMain:
 
         # it's more like a define instead of an initialization
         self.die_order = []  # save the player's dying order
-        self.die_list = []   # die order in this frame for platform
-        self.map_items = [[[] for i in range(16)] for j in range(16)]  # try to divide map into 256 parts
+        self.die_list = []  # die order in this frame for platform
+        self.map_items = [[[] for row in range(10)] for column in range(10)]  # try to divide map into 256 parts
+        self.map = terrain.Map()
 
         self.all_players = []  # save all teams and players
         self.all_bullets = []
         self.all_sounds = []
+        self.all_drugs = []
         self.all_wild_items = {}
+        self.all_parameters = {}
+        self.all_areas_players = {}
         self.all_info = {}  # save all information for platform
         self.all_commands = {"move": {}, "shoot": {}, "pickup": {}, "radio": {}}
+        self.all_visions = {}
 
         self.number_to_team = {}  # use a number to find a team
         self.number_to_player = {}  # use a number to find a player
         self.__start_position, self.__over_position = None, None
         self.__turn = 0
-        self.poison = circle.Circle(GameMain.map_size)
+        self.poison = None
+        self.last_poison_flag = None
+        self.pool = None
 
         # initialize debug level for logic to use directly and for platform to change it
         self.__debug_level = PRINT_DEBUG
@@ -80,6 +93,13 @@ class GameMain:
         return
 
     def load_data(self, file_path, file_name):
+        def load_parameter(parent_path, parameter_file_path):
+            with open(parent_path + parameter_file_path, "r", encoding="utf-8") as file:
+                parameter_data = load(file)
+            self.all_parameters = parameter_data['main']
+            character.Character.all_params = parameter_data['character']
+            return parameter_data
+
         if file_path[-1] != '/' and file_path[-1] != '\\':
             file_path = file_path + '/'
         # first load some global information
@@ -90,6 +110,7 @@ class GameMain:
         # then load some module data here
         self.print_debug(100, character.Character.load_data(file_path, global_config["CHARACTER_FILE_PATH"]))
         self.print_debug(100, item.Item.load_data(file_path, global_config["ITEM_FILE_PATH"]))
+        self.print_debug(100, sound.Sound.load_data(file_path, global_config["SOUND_FILE_PATH"]))
 
         # here load map data
         self.__load_map(file_path, global_config["MAP_FILE_PATH"])
@@ -102,6 +123,9 @@ class GameMain:
         # for circle data
         self.print_debug(100, self.poison.load_data(file_path, global_config["CIRCLE_FILE_PATH"]))
 
+        # for parameters
+        self.print_debug(100, load_parameter(file_path, global_config["PARAMETER_FILE_PATH"]))
+
     def map_init(self):
         # here should give some items randomly according to occurrence
         # but for debug just give some same guns
@@ -109,7 +133,11 @@ class GameMain:
         for i in range(num):
             for j in range(num):
                 pos = position.Position(1000 // num // 2 + i * 1000 // num, 1000 // num // 2 + j * 1000 // num)
-                self.all_wild_items[item.Item.add('RIFLE', pos)] = item.Item.all_data['RIFLE']['number'], pos
+                new_id = item.Item.add('HAND_GUN', pos)
+                new_item = item.Item.all_items[new_id]
+                self.all_wild_items[new_id] = item.Item.all_data['HAND_GUN']['number'], pos
+                area_id = pos.get_area_id()
+                self.map_items[area_id // 10][area_id % 10].append(new_item)
         # now i add 10000 well-distributed  rifle guns
         return
 
@@ -134,7 +162,9 @@ class GameMain:
                 elif command_type == character.PICKUP:
                     self.all_commands["pickup"][playerID] = command["target"], command["other"]
                 elif command_type == character.RADIO:
-                    self.all_commands["radio"][playerID] = command["target"], command["other"]
+                    if not self.all_commands["radio"].get(playerID, None):
+                        self.all_commands["radio"][playerID] = []
+                    self.all_commands["radio"][playerID].append((command["target"], command["other"]))
                 else:
                     # if command_type isn't correct, it will be ignored
                     continue
@@ -143,9 +173,10 @@ class GameMain:
         return
 
     def __load_map(self, parent_path, map_file_path):
-        with open(parent_path + map_file_path, "r", encoding="utf-8") as map_file:
-            self.map_size = 1000
-            pass
+        self.map.initialize(terrain.Area.load_data(parent_path, map_file_path))
+        vision.Sweep.areas = self.map.areas
+        self.map_size = GameMain.map_size
+        self.poison = circle.Circle(self.map_size)
 
     def alive_teams(self):
         teams = []
@@ -226,7 +257,7 @@ class GameMain:
                     new_team = self.number_to_team[team_number]
 
                 # first judge if this vocation is legal
-                if not 0 <= new_vocation <= character.Character.VOCATION_COUNT:
+                if not 0 <= new_vocation < character.Character.VOCATION_COUNT:
                     self.print_debug(1, "number", player_number, "choose illegal vocation", new_vocation)
                     # if illegal, change it as zero
                     new_vocation = 0
@@ -249,7 +280,6 @@ class GameMain:
             return
 
         def get_pedal(aim_position, number=-1):
-            # these formulas are transformed from internet, I hope they're right
             aim_x, aim_y = aim_position.x, aim_position.y
             a = position.delta_y(self.__over_position, self.__start_position)
             b = - position.delta_x(self.__over_position, self.__start_position)
@@ -288,19 +318,29 @@ class GameMain:
             for player in team:
                 if not isinstance(player, character.Character):
                     raise Exception("wrong object for dict number_to_player, get a", type(player))
-                # I hope it's a pointer, otherwise it's a huge bug
+                # first we must make sure player won't jump into the sea, so I adjust directly for them
+                while self.map.areas[player.land_position.get_area_id()].name == 'sea':
+                    self.print_debug(1, 'player', player.number, "'s jump position", player.land_position, end='')
+                    player.land_position.x += 100 if player.land_position.x < 500 else -100
+                    player.land_position.y += 100 if player.land_position.y < 500 else -100
+                    self.print_debug(2, 'is adjust to', player.land_position)
+
                 player.jump_position = get_pedal(player.land_position, player.number)
-                player.status = character.Character.ON_PLANE
                 player.move_direction = (self.__over_position - self.__start_position).unitize()
                 player.position = self.__start_position
                 player.move_speed = character.Character.AIRPLANE_SPEED
-                player.move_cd = int(player.jump_position.length() / player.move_speed + 1)
+                player.move_cd = int((player.jump_position - self.__start_position).length() / player.move_speed + 1)
                 player.face_direction = player.move_direction
+                player.status = character.Character.ON_PLANE
                 # meanwhile deal with information dictionary
                 self.all_info[player.number] = info.Information(player)
+                self.all_visions[player.number] = None
 
         # output data for interface
         self.write_playback(get_proto_data())
+
+        # ready process pool for each player
+        # self.pool = Pool(len(self.all_info))
 
         # now everything down, main operation starts
         # return first turn's information
@@ -312,27 +352,45 @@ class GameMain:
             # pick up
             for player_number, command in self.all_commands['pickup'].items():
                 picked_item = item.Item.all_items[command[0]]
-                player = character.Character.all_characters[player_number]
-                if self.all_wild_items.get(picked_item.id, None) is None:
+                player = self.number_to_player[player_number]
+                if self.all_wild_items.get(picked_item.number, None) is None:
                     self.print_debug(4, 'player', player_number, 'try to pick item not existing or belonging to others')
-                if picked_item.id not in self.all_info[player_number].items:
+                if picked_item.number not in self.all_info[player_number].items:
                     self.print_debug(4, 'player', player_number, 'try to pick item out of view')
-                elif not player.position.accessible(picked_item.position):
+                elif not player.position.pick_accessible(picked_item.position):
                     self.print_debug(4, 'player', player_number, "tyr to pick item beyond pick range")
                 else:
-                    # now this player can get it
-                    player.bag[picked_item.item_type] = player.bag.setdefault(picked_item.item_type, 0) + \
-                                                        picked_item.durability
-                    self.all_wild_items.pop(picked_item.id)
-                    item.Item.remove(picked_item.id)
-                    character.Character.all_characters[player_number].change_status(character.Character.PICKING)
-                    self.print_debug(16, 'player', player_number, 'pick up', picked_item.data['name'], picked_item.id)
-                    # maybe we should deal with command['other'], now ignore it
+                    if picked_item.data.get('mode', None) == 'TRIGGERED':
+                        if picked_item.data['macro'] == 'CODE_CASE':
+                            if player.vocation == character.Character.HACK:
+                                item.Item.remove(picked_item.number)
+                                self.all_wild_items.pop(picked_item.number)
+                                self.print_debug(16, 'player', player_number, 'opens code case', picked_item.number, end='')
+                                # now open the case
+                                picked_item = item.Item.get_reward_item()
+                                player.bag[picked_item.item_type] = player.bag.get(picked_item.item_type,
+                                                                                   0) + picked_item.durability
+                                self.number_to_player[player_number].change_status(character.Character.PICKING)
+                                self.print_debug(16, 'and he gets a', picked_item.data['name'])
+                            else:
+                                self.print_debug(4, 'player', player_number, "try to pick code case but isn't a hack")
+                        else:
+                            # currently i just design only one triggered item: code case
+                            pass
+                    else:
+                        # now this player can get it
+                        player.bag[picked_item.item_type] = player.bag.setdefault(picked_item.item_type, 0) + \
+                                                            picked_item.durability
+                        self.all_wild_items.pop(picked_item.number)
+                        item.Item.remove(picked_item.number)
+                        self.number_to_player[player_number].change_status(character.Character.PICKING)
+                        self.print_debug(16, 'player', player_number, 'picks', picked_item.data['name'], picked_item.number)
+                        # maybe we should deal with command['other'], now ignore it
                     pass
             # move
             for player_id, command in self.all_commands['move'].items():
                 move_angle, view_angle = command
-                player = character.Character.all_characters[player_id]
+                player = self.number_to_player[player_id]
                 if not player.command_status_legal(character.MOVE):
                     self.print_debug(5, 'player', player_id, 'try to move but not in right status')
                 elif not 0 <= move_angle <= 360:
@@ -347,14 +405,35 @@ class GameMain:
             # shoot
             for player_id, command in self.all_commands['shoot'].items():
                 view_angle, item_type, other = command
-                player = character.Character.all_characters[player_id]
+                player = self.number_to_player[player_id]
                 rest = player.bag.get(item_type, 0)
+                item_data = item.Item.all_data[item_type]
                 if player.shoot_cd:
                     self.print_debug(4, 'player', player_id, 'try to shoot with', player.shoot_cd, ' shoot cd')
                 elif not rest:
                     self.print_debug(4, 'player', player_id, 'try to use weapon without durability')
-                elif item.Item.all_data[item_type]['type'] != 'weapon':
+                elif item_data['type'] != 'weapon' and item_data['mode'] != 'SPENDABLE':
                     self.print_debug(4, 'player', player_id, 'try to use not weapon-like item to shoot')
+                elif item_data['damage'] < 0:
+                    if player.vocation == character.Character.MEDIC and other >= 0:
+                        if other in self.number_to_team[player.team]:
+                            if self.number_to_player[other].position.pick_accessible(player.position):
+                                if self.number_to_player[other].can_be_healed():
+                                    self.all_drugs.append((item_type, other, player_id))
+                                    player.bag[item_type] -= 1
+                                    player.shoot_cd = item_data['cd']
+                                    player.change_status(character.Character.SHOOTING)
+                                else:
+                                    self.print_debug(19, 'player', player_id, 'try to use drug to dead player', other)
+                            else:
+                                self.print_debug(19, 'player', player_id, 'try to use drug beyond range')
+                        else:
+                            self.print_debug(19, 'player', player_id, 'try to use drug to player not in the same team')
+                    else:
+                        player.bag[item_type] -= 1
+                        self.all_drugs.append((item_type, player_id, None))
+                        player.shoot_cd = item_data['cd']
+                        player.change_status(character.Character.SHOOTING)
                 elif not 0 <= view_angle <= 360:
                     self.print_debug(3, 'player', player_id, 'give wrong attack angle as', view_angle)
                 else:  # now shoot
@@ -362,140 +441,272 @@ class GameMain:
                     view_angle += player.face_direction.get_angle()  # correct relative angle to absolute angle
                     if view_angle >= 360:
                         view_angle -= 360
-                    player.shoot_cd = item.Item.all_data[item_type]['cd']
+                    player.shoot_cd = item_data['cd']
                     player.face_direction = position.angle_to_position(view_angle)
                     player.change_status(character.Character.SHOOTING)
                     self.all_bullets.append((player.position, view_angle, item_type, player_id, None))
                     # here should deal with other parameter, just put off
-            # radio will be done after the new year
+
+                    # here deal with gun sound
+                    for team in self.all_players:
+                        muffler = item.Item.all_data['MUFFLER']
+                        factor = muffler['param'] if player.bag[muffler['number']] else 1
+                        for receiver in team:
+                            if receiver is player:
+                                continue
+                            if abs(receiver.position - player.position) < factor * sound.Sound.farthest['gun']:
+                                self.all_sounds.append(sound.Sound(sound.Sound.GUN_SOUND, receiver.number,
+                                                                   player.position,
+                                                                   abs(player.position - receiver.position)))
+            # radio
+            for emitter_id, commands in self.all_commands['radio'].items():
+                # here receiver_id include some other data for signalman, awaiting to process
+                emitter = self.number_to_player[emitter_id]
+                if emitter.vocation != character.Character.SIGNALMAN:
+                    # if he isn't signal man, only last instruction will be processed
+                    commands = commands[-1]
+                for receiver_id, data in commands:
+                    receiver = self.number_to_player[receiver_id]
+                    self.all_sounds.append(sound.Sound(sound.Sound.RADIO_VOICE, receiver_id, emitter.position,
+                                                       abs(emitter.position - receiver.posistion), emitter_id, data))
+            return
 
         def move():
+            self.all_areas_players.clear()
             for team in self.all_players:
                 for player in team:
-                    if not isinstance(player, character.Character):
-                        raise Exception("wrong player!")
+                    self.all_info[player.number].clear()
+                    past_position = player.position
                     if player.move():
-                        self.print_debug(15, 'player', player.number, 'move to', player.position)
+                        if player.is_flying() or player.is_jumping() or self.map.stand_permitted(player.position,
+                                                                                                 player.radius):
+                            self.print_debug(15, 'player', player.number, 'move to', player.position)
+                            # check if player is standing on a block such as grass
+                            for block in self.map.areas[player.position.get_area_id()].blocks:
+                                if block.bumped or not block.is_opaque():
+                                    continue
+
+                            if player.move_cd == 1 and player.can_make_footsteps():
+                                # for foot step sound
+                                for _team in self.all_players:
+                                    for receiver in _team:
+                                        if receiver is player:
+                                            # player won't get footsteps by himself
+                                            continue
+                                        if abs(receiver.position - player.position) < sound.Sound.farthest['footstep']:
+                                            self.all_sounds.append(
+                                                sound.Sound(sound.Sound.FOOTSTEP_SOUND, receiver.number,
+                                                            player.position, abs(player.position - receiver.position)))
+
+                        else:
+                            self.print_debug(14, 'player', player.number, 'failed to move to', player.position)
+                            player.position = past_position
+                    self.all_areas_players.setdefault(player.position.get_area_id(), []).append(player)
+
+        def items():
+            if self.last_poison_flag is None:
+                # initialize items in the map
+                pass
+            elif self.poison.flag == 1 and self.last_poison_flag == 2:
+                # generate items when the circle start to shrink in each stage
+                pass
+            self.last_poison_flag = self.poison.flag
+            return
 
         def attack():
-            bullets = self.all_bullets
-            for index in range(len(bullets)):
-                pos, view_angle, item_type, player_id, hit_id = bullets[index]
-                shortest = None
-                data = item.Item.all_data[item_type]
-                for team in self.all_players:
-                    if character.Character.all_characters[player_id] in team:
-                        continue
-                    for player in team:
-                        if not player.can_be_hit():
+            def update_vision(player_id):
+                # deal with vision
+                player = self.number_to_player[player_id]
+                player_info = self.all_info[player_id]
+                if player.is_flying():
+                    return
+
+                new_vision = vision.Sweep(player, self.all_areas_players, self.map_items)
+                self.all_visions[player_id] = new_vision
+                for block in new_vision.get_visible_targets():
+                    if isinstance(block, character.Character):
+                        player_info.others.append(block.number)
+                    elif isinstance(block, item.Item):
+                        player_info.items.append(block.number)
+                    else:
+                        player_info.landform.append(block.number)
+
+                # print player information
+                self.print_debug(23, 'player', player.number, 'vision list for others:', player_info.others)
+                self.print_debug(24, 'player', player.number, 'vision list for items:', player_info.items)
+                self.print_debug(25, 'player', player.number, 'vision list for landform:', player_info.landform)
+                return
+
+            def update_bullets():
+                bullets = self.all_bullets
+                for index in range(len(bullets)):
+                    pos, view_angle, item_type, player_id, hit_id = bullets[index]
+                    shortest = None
+                    data = item.Item.all_data[item_type]
+                    team_id = self.number_to_player[player_id].team
+                    for target_id in self.all_info[player_id].others:
+                        player = self.number_to_player[target_id]
+                        # teammate and no hp player will be ignored
+                        if player.team == team_id and not player.can_be_hit():
                             continue
-                        dist, delta = pos.get_polar_position(position.angle_to_position(view_angle), player.position)
+                        dist2, delta = pos.get_polar_position(position.angle_to_position2(view_angle), player.position)
                         delta = 0 if delta > 360 else 360 - delta if delta > 180 else delta
-                        if delta < 2.5:
-                            if dist > data['range']:
+                        if delta < data['angle'] / 2:
+                            if dist2 > data['range'] * data['range']:
                                 continue
-                            if not shortest or shortest < dist:
+                            if not shortest or shortest < dist2:
                                 # modify hit player
-                                shortest = dist
+                                shortest = dist2
                                 bullets[index] = pos, view_angle, item_type, player_id, player.number
+
+                return
+
+            def vision_extra_process(player_id):
+                def available(target):
+                    other_player = self.number_to_player[target]
+                    if other_player.block and 'grass' in other_player.block.name:
+                        if player.block and player.block.number == other_player.block.number:
+                            return True
+                        return False
+                    return True
+                # here deal with grass
+                player = self.number_to_player[player_id]
+                player_info = self.all_info[player_id]
+                player_info.others = [other for other in player_info.others if available(other)]
+
+            # update vision first
+            for player_number in self.all_info:
+                update_vision(player_number)
+            # then deal with bullets
+            update_bullets()
+            # deal with vision for special condition
+            for player_number in self.all_info:
+                vision_extra_process(player_number)
             return
 
         def damage():
             bullets = self.all_bullets
             for index in range(len(bullets)):
-                pos, view_angle, item_id, player_id, hit_id = bullets[index]
+                pos, view_angle, item_index, player_id, hit_id = bullets[index]
                 if hit_id is not None:
+                    shooter = self.number_to_player[player_id]
                     direction = position.angle_to_position(view_angle)
-                    target = character.Character.all_characters[player_id].position
+                    target = shooter.position
                     dist = abs(position.cross_product(direction, target - pos))
-                    data = item.Item.get_data_by_item_id(item_id)
-                    value = math.exp(-dist * 100 / data['range']) * data['damage']
-                    character.Character.all_characters[hit_id].health_point -= value
-
-                    self.print_debug(13, 'player', player_id, data['name'], value, 'damage to player', hit_id)
+                    data = item.Item.get_data_by_item_id(item_index)
+                    value = math.exp(- dist * self.all_parameters['damage_param'] / data['range']) ** 2 * data['damage']
+                    if shooter.vocation == character.Character.SNIPER and 'SNIPER' in data['name']:
+                        value *= character.Character.all_data[character.Character.SNIPER]['skill']
+                    parameter = 'ARMOR_PIERCING' if data['name'] == 'CROSSBOW' else None
+                    real_damage = self.number_to_player[hit_id].get_damage(value, parameter)
+                    self.print_debug(13, 'player', player_id, data['name'], real_damage, 'damage to player', hit_id)
                 else:
-                    if item.Item.all_items[item_id].item_type == 1:
-                        bullets[index] = pos, view_angle, item_id, player_id, True
+                    if item.Item.all_items[item_index].item_type == 1:
+                        bullets[index] = pos, view_angle, item_index, player_id, True
 
             self.all_bullets = [bullet for bullet in bullets if bullet[4] is None]
+
+            for drug_index, receiver, emitter in self.all_drugs:
+                drug = item.Item.all_data[drug_index]
+                value = drug['damage']
+                if emitter is None:
+                    self.number_to_player[receiver].get_damage(value)
+                    self.print_debug(13, 'player', receiver, drug['name'], value, 'heal points to himself')
+                else:
+                    self.number_to_player[receiver].get_damage(
+                        value * character.Character.all_data[character.Character.MEDIC]['skill'])
+                    self.print_debug(13, 'player', emitter, drug['name'], value, 'head points to player', receiver)
             return
 
         def die():
-            self.die_list = []
+            self.die_list.clear()
             for team in self.all_players:
                 for player in team:
                     if self.poison.safe(player):
-                        if player.can_be_hit() and player.health_point <= 0:
-                            player.health_point = 0
-                            player.change_status(character.Character.DEAD)
-                            self.print_debug(7, 'player', player.number, 'dead')
+                        if player.can_be_hit():
+                            if player.health_point <= 0:
+                                player.health_point = 0
+                                player.change_status(character.Character.DEAD)
+                                self.print_debug(7, 'player', player.number, 'died')
+                        elif player.health_point > 0:
+                            player.change_status(character.Character.RELAX)
+                            self.print_debug(7, 'player', player.number, 'resurrected')
                     else:
-                        player.health_point -= self.poison.damage_per_frame
-                        self.print_debug(13, 'circle caused', self.poison.damage_per_frame, 'damage to', player.number)
-                        if player.can_be_hit() and player.health_point <= 0:
+                        if player.get_damage(self.poison.damage_per_frame, 'ARMOR_PIERCING'):
+                            self.print_debug(13, 'the circle', self.poison.damage_per_frame, 'damage to', player.number)
+                        if player.can_be_healed() and player.health_point <= 0:
                             player.health_point = 0
                             self.die_order.append(player.number)
                             self.die_list.append(player.number)
                             player.change_status(character.Character.REAL_DEAD)
-                            self.print_debug(7, 'player', player.number, 'dead out of circle')
-            pass
-
-        def items():
-            pass
+                            self.print_debug(7, 'player', player.number, 'died out of circle')
+                    if player.health_point > player.health_point_limit:
+                        player.health_point = player.health_point_limit
 
         def noise():
-            pass
+            for _sound in self.all_sounds:
+                assert isinstance(_sound, sound.Sound)
+                _sound.update()
+                if _sound.arrived():
+                    pos = self.number_to_player[_sound.receiver].position
+                    self.all_info[_sound.receiver].sounds.append((_sound.emitter, _sound.delay, _sound.get_data(pos)))
+            self.all_sounds = [_sound for _sound in self.all_sounds if not _sound.arrived()]
+            for player_id, player_info in self.all_info.items():
+                self.print_debug(27, "player", player_id, "'s sounds list:", player_info.sounds)
+            return
 
         def update():
-            for team in self.all_players:
-                for player in team:
-                    if not isinstance(player, character.Character):
-                        raise Exception("wrong player!")
-                    if player.move_cd:
-                        player.move_cd -= 1
-                    if player.shoot_cd:
-                        player.shoot_cd -= 1
-                    if player.is_picking():
-                        player.change_status(character.Character.RELAX)
-                    if player.move_cd == 0:
+            def update_for_each(player_number):
+                player = self.number_to_player[player_number]
+                # deal with status
+                if player.move_cd:
+                    player.move_cd -= 1
+                if player.shoot_cd:
+                    player.shoot_cd -= 1
+                if player.is_picking():
+                    player.change_status(character.Character.RELAX)
+                if player.move_cd == 0:
 
-                        if player.is_flying():
-                            # this is change from flying to jumping
-                            player.status = character.Character.JUMPING
-                            player.position = player.jump_position
-                            player.move_direction = (player.land_position - player.jump_position).unitize()
-                            player.move_speed = character.Character.JUMPING_SPEED
-                            player.move_cd = int((player.land_position - player.jump_position).length() /
-                                                 player.move_speed + 1)
-                            player.face_direction = player.move_direction
-                        elif player.is_jumping():
-                            # jump to the land, and then relax
-                            player.status = character.Character.RELAX
-                            player.position = player.land_position
-                            player.move_direction = None
-                            player.move_speed = 0
-                            self.print_debug(8, "in turn", self.__turn, "player", player.number, "reach the ground at",
-                                             player.position)
-            for player_id, player_info in self.all_info.items():
-                player_info.clear()
-                # ignore landform now
-                # ignore sounds now
-                player = character.Character.all_characters[player_id]
-                for item_id in self.all_wild_items:
-                    each_item = item.Item.all_items[item_id]
-                    distance, angle = player.position.get_polar_position(player.face_direction, each_item.position)
-                    if distance <= player.view_distance and abs(angle) <= player.view_angle / 2:
-                        player_info.items.append(item_id)
-                        self.print_debug(21, 'player', player_id, 'see item', item_id)
-                for team in self.all_players:
-                    for other in team:
-                        if other.number == player_id:
-                            continue
-                        distance, angle = player.position.get_polar_position(player.face_direction, other.position)
-                        angle = 360 - angle if angle > 180 else angle
-                        if distance <= player.view_distance and angle <= player.view_angle / 2:
-                            player_info.others.append(other.number)
-                            self.print_debug(20, 'player', player_id, 'see player', other.number)
+                    if player.is_flying():
+                        # this is change from flying to jumping
+                        player.status = character.Character.JUMPING
+                        player.position = player.jump_position
+                        player.move_direction = (player.land_position - player.jump_position).unitize()
+                        player.move_speed = character.Character.JUMPING_SPEED
+                        player.move_cd = int((player.land_position - player.jump_position).length() /
+                                             player.move_speed + 1)
+                        player.face_direction = player.move_direction
+                    elif player.is_jumping():
+                        # jump to the land, and then relax
+                        player.status = character.Character.RELAX
+                        player.position = player.land_position
+                        while not self.map.stand_permitted(player.position, player.radius):
+                            # here we should adjust player's position
+                            block = self.map.last_bumped_block
+                            vector = player.position - block.position
+                            direction = vector.unitize
+                            if block.shape == object.Object.CIRCLE:
+                                adjust_distance = player.radius + block.radius - abs(vector)
+                                new_position = block.position + direction * adjust_distance
+                            else:
+                                distance = abs(vector) + block.radius / 10
+                                new_position = player.position
+                                while block.is_bumped(new_position, player.radius):
+                                    distance += block.radius / 10
+                                    new_position = block.position + direction * distance
+                            print('player', player.number, 'from', player.position, "adjusted to", new_position)
+                            player.position = new_position
+                        player.move_direction = None
+                        player.move_speed = 0
+                        self.print_debug(8, "in turn", self.__turn, "player", player.number, "reach the ground at",
+                                         player.position)
+
+            '''pool = self.pool
+            for player_id in self.all_info:
+                pool.apply_async(update_for_each, (player_id,))
+            pool.join()'''
+            for player_id in self.all_info:
+                update_for_each(player_id)
             if self.poison.update():
                 self.print_debug(17, "the circle's center:", self.poison.center_now, 'radius:', self.poison.radius_now)
             return
@@ -540,7 +751,8 @@ class GameMain:
             data.circle.frames = self.poison.rest_frames
             if self.poison.is_processing():
                 data.circle.now.center.x, data.circle.now.center.y = self.poison.center_now.x, self.poison.center_now.y
-                data.circle.next.center.x, data.circle.next.center.y = self.poison.center_next.x, self.poison.center_next.y
+                data.circle.next.center.x, data.circle.next.center.y = \
+                    self.poison.center_next.x, self.poison.center_next.y
                 data.circle.now.radius = self.poison.radius_now
                 data.circle.next.radius = self.poison.radius_next
             return data
@@ -583,7 +795,7 @@ class GameMain:
     def pack_for_platform(self):
         all_data = {}
         for number, player_info in self.all_info.items():
-            player = character.Character.all_characters[number]
+            player = self.number_to_player[number]
             if not isinstance(player, character.Character):
                 raise Exception("wrong type of player!")
             data = platform.PlayerInfo()
@@ -622,7 +834,7 @@ class GameMain:
             # player's vision for other players
             for player_id in player_info.others:
                 new_other = data.others.add()
-                other = character.Character.all_characters[player_id]
+                other = self.number_to_player[player_id]
                 if not isinstance(other, character.Character):
                     raise Exception("wrong type of player!")
                 new_other.player_ID = player_id
