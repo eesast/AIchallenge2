@@ -4,8 +4,10 @@ Pycalling Pycalling::_instance;
 
 ROUTE_T Pycalling::init()
 {
+#ifdef WIN32
 	Py_SetPath(L".\\python");
 	Py_SetProgramName(L"logic");
+#endif
 	Py_Initialize();
 	//add cwd into path
 	PyRun_SimpleString("import sys");

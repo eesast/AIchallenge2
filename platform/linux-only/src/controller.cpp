@@ -111,12 +111,9 @@ void Controller::_kill_one(int playerID)
     {
         std::cerr << playerID << std::endl;
         kill(_info[playerID].pid, SIGKILL);
-        std::cerr << "kill" << std::endl;
         shmdt(_info[playerID].shm);
         shmctl(_info[playerID].shmid, IPC_RMID, nullptr);
-        std::cerr << "shm" << std::endl;
         dlclose(_info[playerID].lib);
-        std::cerr << "lib" << std::endl;
         _info[playerID].state = AI_STATE::DEAD;
     }
 }
@@ -224,12 +221,10 @@ void Controller::run()
             case AI_STATE::UNUSED: //only first time
                 _info[i].shm->set_inited();
                 _info[i].state = AI_STATE::ACTIVE;
-                std::cerr << "set ACTIVE:" << i << std::endl;
                 break;
             case AI_STATE::SUSPENDED:
                 kill(_info[i].pid, SIGCONT);
                 _info[i].state = AI_STATE::ACTIVE;
-                std::cerr << "set ACTIVE:" << i << std::endl;
                 break;
             default:
                 std::cerr << "process state error" << std::endl;
@@ -251,7 +246,6 @@ void Controller::run()
             gettimeofday(&now, nullptr);
             if (now.tv_sec > start.tv_sec || now.tv_usec - start.tv_usec > 1000 * TIMEOUT)
             {
-                std::cerr << "TIMEOUT LOOP!!!!!" << std::endl;
                 all_finish = false;
                 break;
             }
@@ -265,7 +259,6 @@ void Controller::run()
                 }
             }
         } while (!all_finish);
-        std::cerr << "TIMEOUT!!!!!\n";
         if (!all_finish)
         {
             for (int i : _batch)
@@ -283,7 +276,6 @@ void Controller::run()
                 {
                     kill(_info[i].pid, SIGSTOP);
                     _info[i].state = AI_STATE::SUSPENDED;
-                    std::cerr << "set SUSPENDED:" << i << std::endl;
                     _info[i].shm->unlock_infos();
                     _info[i].shm->unlock_commands();
                 }
@@ -333,7 +325,6 @@ void Controller::notify_one_finish(pid_t pid)
         if (_info[i].pid == pid)
         {
             _info[i].state = AI_STATE::SUSPENDED;
-            std::cerr << "SIGUSR1:" << i << std::endl;
             return;
         }
     }
@@ -342,7 +333,6 @@ void Controller::notify_one_finish(pid_t pid)
         if (_info[i].pid == pid)
         {
             _info[i].state = AI_STATE::SUSPENDED;
-            std::cerr << "SIGUSR1:" << i << std::endl;
             return;
         }
     }
@@ -438,7 +428,7 @@ bool Controller::_parse(const std::string &data, int playerID)
             COMMAND_PARACHUTE c;
             c.landing_point.x = recv.landing_point().x();
             c.landing_point.y = recv.landing_point().y();
-            c.role = static_cast<VOCATION>(recv.role());
+            c.role = recv.role();
             c.team = _info[playerID].team;
             _command_parachute[playerID].push_back(c);
             return true;

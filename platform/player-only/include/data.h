@@ -3,6 +3,7 @@
 
 #include "constant.h"
 #include <vector>
+#include <cstdint>
 
 struct Item
 {
