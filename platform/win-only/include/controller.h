@@ -6,12 +6,16 @@
 #pragma warning(disable : 4996)
 #endif
 
-#include"platform.h"
-#include<Windows.h>
-#include<mutex>
-#include"comm.pb.h"
-#include<filesystem>
-#include<regex>
+#include "platform.h"
+#include <Windows.h>
+#include <mutex>
+#include "comm.pb.h"
+#include <filesystem>
+#include <regex>
+#include <vector>
+#include <string>
+#include <map>
+#include <iostream>
 
 #define manager (Controller::get_instance())
 

@@ -291,7 +291,7 @@ bool Controller::_parse(const std::string & data)
 			COMMAND_PARACHUTE c;
 			c.landing_point.x = recv.landing_point().x();
 			c.landing_point.y = recv.landing_point().y();
-			c.role = static_cast<VOCATION>(recv.role());
+			c.role = recv.role();
 			c.team = _info[playerID].team;
 			_command_parachute[playerID].push_back(c);
 			return true;

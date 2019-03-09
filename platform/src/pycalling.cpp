@@ -58,7 +58,7 @@ ROUTE_T Pycalling::init()
 
 std::pair<std::map<int, std::string>, std::vector<int>> Pycalling::parachute(const std::map<int, COMMAND_PARACHUTE> &m)
 {
-	if (!_check_init())
+	if (!_check_init(true))
 		return {};
 	//package:{0:{"role":0,"landing_points":(x,y),'team':team_id},1:...}
 	auto all = PyDict_New();
@@ -79,7 +79,7 @@ std::pair<std::map<int, std::string>, std::vector<int>> Pycalling::parachute(con
 
 std::pair<std::map<int, std::string>, std::vector<int>> Pycalling::do_loop(const std::map<int, std::vector<COMMAND_ACTION>> &m)
 {
-	if (!_check_init())
+	if (!_check_init(true))
 		return {};
 	auto all = PyDict_New();
 	for (const auto &per : m)
@@ -133,9 +133,9 @@ std::pair<std::map<int, std::string>, std::vector<int>> Pycalling::_parse_dict(P
 	return {player_infos, dead};
 }
 
-bool Pycalling::_check_init()
+bool Pycalling::_check_init(bool print)
 {
-	if (!_is_init)
+	if (!_is_init && print)
 	{
 		std::cerr << "Logic is not initialised,please check codes." << std::endl;
 	}
@@ -144,7 +144,7 @@ bool Pycalling::_check_init()
 
 Pycalling::~Pycalling()
 {
-	if (!_check_init())
+	if (!_check_init(false))
 		return;
 	Py_XDECREF(_game_main);
 	Py_XDECREF(_game_init);

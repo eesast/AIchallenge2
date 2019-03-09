@@ -16,7 +16,7 @@ void play_game()
 	srand(time(nullptr));
 	int delay = rand() % 10000;
 	std::cout << "playeraaaa:frame" << frame << "\nhp:" << info.self.hp << std::endl;
-	VOCATION role = VOCATION::ENGINEER;
+	VOCATION role = VOCATION::HACK;
 	XYPosition landing_point = {5, 5};
 	if (frame == 0)
 		parachute(role, landing_point);

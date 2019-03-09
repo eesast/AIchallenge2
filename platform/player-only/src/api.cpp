@@ -54,7 +54,7 @@ static void _parse(int new_frame, const std::string & data)
 			self_c.view_angle = self.view_angle();
 			self_c.move_angle = self.move_speed();
 			self_c.vocation = static_cast<VOCATION>(self.vocation());
-			self_c.status = self.status();
+			self_c.status = static_cast<STATUS>(self.status());
 			self_c.move_cd = self.move_cd();
 			self_c.attack_cd = self.attack_cd();
 			self_c.xy_pos.x = self.pos().x();
@@ -66,7 +66,7 @@ static void _parse(int new_frame, const std::string & data)
 				Item item_c;
 				item_c.item_ID = item.item_id();
 				item_c.durability = item.durability();
-				item_c.type = item.type();
+				item_c.type = static_cast<ITEM>(item.type());
 				item_c.pos.angle = item.pos().angle();
 				item_c.pos.distance = item.pos().distance();
 				self_c.bag.push_back(item_c);
@@ -82,7 +82,7 @@ static void _parse(int new_frame, const std::string & data)
 				Item item_c;
 				item_c.item_ID = item.item_id();
 				item_c.durability = item.durability();
-				item_c.type = item.type();
+				item_c.type = static_cast<ITEM>(item.type());
 				item_c.pos.angle = item.pos().angle();
 				item_c.pos.distance = item.pos().distance();
 				info.items.push_back(item_c);
@@ -92,7 +92,7 @@ static void _parse(int new_frame, const std::string & data)
 			{
 				OtherInfo other_c;
 				other_c.player_ID = other.player_id();
-				other_c.status = other.status();
+				other_c.status = static_cast<STATUS>(other.status());
 				other_c.move_angle = other.move_angle();
 				other_c.view_angle = other.view_angle();
 				other_c.move_speed = other.move_speed();
@@ -108,6 +108,8 @@ static void _parse(int new_frame, const std::string & data)
 				sound_c.sender = sound.sender();
 				sound_c.delay = sound.delay();
 				sound_c.parameter = sound.parameter();
+				sound_c.type = static_cast<SOUND>((sound_c.parameter >> 29) & 0x00000007);
+				sound_c.parameter &= 0x1FFFFFFF;
 				info.sounds.push_back(sound_c);
 			}
 			//player_ID
@@ -141,11 +143,11 @@ void parachute(VOCATION role, XYPosition landing_points)
 	std::cout << "AI:" << sender.DebugString() << std::endl;
 	player_send(sender.SerializeAsString());
 }
-void shoot(int weapon_ID, double shoot_angle, int parameter = -1)
+void shoot(ITEM item_type, double shoot_angle, int parameter = -1)
 {
 	comm::Command sender;
 	sender.set_command_type(comm::CommandType::SHOOT);
-	sender.set_target_id(weapon_ID);
+	sender.set_target_id(item_type);
 	sender.set_view_angle(shoot_angle);
 	sender.set_parameter(parameter);
 	player_send(sender.SerializeAsString());

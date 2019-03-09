@@ -1,7 +1,6 @@
 #include "controller.h"
 #include "pycalling.h"
 
-
 int main(int argc, char *argv[])
 {
 	std::pair<std::map<int, std::string>, std::vector<int>> state_c;

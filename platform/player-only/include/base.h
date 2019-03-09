@@ -20,7 +20,7 @@
 #endif // !AI_EXPORTS
 #endif // WIN32
 
-#include "./../../include/constant.h"
+#include "constant.h"
 #include "data.h"
 #include "comm.pb.h"
 #include <iostream>

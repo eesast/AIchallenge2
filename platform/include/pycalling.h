@@ -17,6 +17,10 @@
 
 
 #include"platform.h"
+#include <map>
+#include <string>
+#include <vector>
+#include <iostream>
 
 #ifdef WIN32
 //path for finding main.py and data.ini
@@ -52,7 +56,7 @@ public:
 
 private:
 	std::pair<std::map<int, std::string>, std::vector<int>> _parse_dict(PyObject *state);
-    bool _check_init();
+    bool _check_init(bool print);
     void _traceback(const std::string &err);
     Pycalling();
     bool _is_init = false;
