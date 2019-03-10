@@ -3,7 +3,7 @@
 from allclass import *
 import proto.interface_pb2 as interface
 import proto.platform_pb2 as platform
-from multiprocessing import Pool
+# from multiprocessing import Pool
 from random import randrange
 from json import load
 import math
@@ -13,9 +13,9 @@ import struct
 #   here define a debug level variable to debug print-oriented
 #   remember: here is just a initial level for logic
 #   platform may give another number in game_init
-PRINT_DEBUG = 25
+PRINT_DEBUG = 10
 
-
+#   level 0: print game start and over information
 #   level 1: only print illegal information
 #   level 2: also print some adjustment
 #   level 3: print illegal instruction for wrong format
@@ -23,10 +23,8 @@ PRINT_DEBUG = 25
 #   level 5: print illegal instruction for current status
 #   level 6: print real dead information
 #   level 7: print dead information
-
 #   level 8: give all players' jumping information
 #   level 9: print initialize information for parachuting
-
 #   level 10: print turns
 
 #   level 13: print damage information
@@ -46,14 +44,16 @@ PRINT_DEBUG = 25
 #   level 29: print all non-redundant commands for each frame
 #   level 30: print all commands for each frame
 
+#   level 40: print player's moving over information
+
 #   level 50: print data length for proto
 
 #   level 100: will give all information you can imagine, including config file
 
+
 class GameMain:
     # if not specified, platform needn't this class's members
     map_size = 1000
-    playback_file_path = None
 
     def __init__(self):
 
@@ -62,6 +62,7 @@ class GameMain:
         self.die_list = []  # die order in this frame for platform
         self.map_items = [[[] for row in range(10)] for column in range(10)]  # try to divide map into 256 parts
         self.map = terrain.Map()
+        self.last_alive_teams = []
 
         self.all_players = []  # save all teams and players
         self.all_bullets = []
@@ -84,6 +85,11 @@ class GameMain:
 
         # initialize debug level for logic to use directly and for platform to change it
         self.__debug_level = PRINT_DEBUG
+
+        # for playback file
+        self.playback_file = None
+
+        self.print_debug(0, 'GameMain initialize finished')
 
         return
 
@@ -117,8 +123,7 @@ class GameMain:
 
         # for play back file
         playback_child_path = global_config["PLAYBACK_FILE_PATH"] + time.strftime("%Y%m%d_%H'%M'%S") + ".pb"
-        GameMain.playback_file_path = file_path + playback_child_path
-        open(GameMain.playback_file_path, 'wb').close()  # create the new playback file
+        self.playback_file = open(file_path + playback_child_path, 'wb')
 
         # for circle data
         self.print_debug(100, self.poison.load_data(file_path, global_config["CIRCLE_FILE_PATH"]))
@@ -126,19 +131,24 @@ class GameMain:
         # for parameters
         self.print_debug(100, load_parameter(file_path, global_config["PARAMETER_FILE_PATH"]))
 
+        self.print_debug(0, 'all data load finished')
+        return
+
     def map_init(self):
         # here should give some items randomly according to occurrence
-        # but for debug just give some same guns
-        num = 20
-        for i in range(num):
-            for j in range(num):
-                pos = position.Position(1000 // num // 2 + i * 1000 // num, 1000 // num // 2 + j * 1000 // num)
-                new_id = item.Item.add('HAND_GUN', pos)
-                new_item = item.Item.all_items[new_id]
-                self.all_wild_items[new_id] = item.Item.all_data['HAND_GUN']['number'], pos
-                area_id = pos.get_area_id()
-                self.map_items[area_id // 10][area_id % 10].append(new_item)
-        # now i add 10000 well-distributed  rifle guns
+        for i in range(self.poison.all_data[0]['items']):
+            # get drop position
+            area_id = self.map.get_random_area_id()
+            area = self.map.areas[area_id]
+            block = area.airdrop_blocks[randrange(0, len(area.airdrop_blocks))]
+            pos = block.get_random_position()
+            # add item
+            item_type = item.Item.get_random_item()
+            new_id = item.Item.add(item_type, pos)
+            new_item = item.Item.all_items[new_id]
+            self.all_wild_items[new_id] = item.Item.all_data[item_type]['number'], pos
+            self.map_items[area_id // 10][area_id % 10].append(new_item)
+        self.print_debug(0, 'map items initialize finished')
         return
 
     def unwrap_commands(self, commands):
@@ -177,21 +187,36 @@ class GameMain:
         vision.Sweep.areas = self.map.areas
         self.map_size = GameMain.map_size
         self.poison = circle.Circle(self.map_size)
+        return
 
     def alive_teams(self):
         teams = []
-        for team in self.all_players:
+        for team in self.last_alive_teams:
+            alive_flag = False
             alive = []
             for player in team:
-                # check if there is at least one alive player in this team
+                # judge if there is an alive player still standing
                 if player.health_point > 0:
-                    alive.append(player.number)
-                    break
-                else:
-                    continue
+                    alive_flag = True
+                # add player not real dead
+                if player.is_alive():
+                    alive.append(player)
+            # if there is player not real dead
             if len(alive):
-                teams.append(alive)
+                # judge if there is any player standing in this team
+                if alive_flag:
+                    teams.append(alive)
+                else:
+                    # or the whole team should be out
+                    for player in alive:
+                        player.change_status(character.Character.REAL_DEAD)
+                        self.die_order.append(player.number)
+                        self.die_list.append(player.number)
+        self.last_alive_teams = teams
         return teams
+
+    def game_over(self):
+        return len(self.alive_teams()) <= 1
 
     def generate_route(self):
         # a function to get random position for airplane's route
@@ -277,6 +302,7 @@ class GameMain:
                     new_player.land_position = self.__over_position
                 new_team.append(new_player)
                 self.number_to_player[player_number] = new_player
+            self.last_alive_teams = self.all_players
             return
 
         def get_pedal(aim_position, number=-1):
@@ -506,7 +532,7 @@ class GameMain:
         def items():
             if self.last_poison_flag is None:
                 # initialize items in the map
-                pass
+                self.map_init()
             elif self.poison.flag == 1 and self.last_poison_flag == 2:
                 # generate items when the circle start to shrink in each stage
                 pass
@@ -551,7 +577,7 @@ class GameMain:
                             continue
                         dist2, delta = pos.get_polar_position(position.angle_to_position2(view_angle), player.position)
                         delta = 0 if delta > 360 else 360 - delta if delta > 180 else delta
-                        if delta < data['angle'] / 2:
+                        if delta < data['param'] / 2:
                             if dist2 > data['range'] * data['range']:
                                 continue
                             if not shortest or shortest < dist2:
@@ -700,11 +726,12 @@ class GameMain:
                         player.move_speed = 0
                         self.print_debug(8, "in turn", self.__turn, "player", player.number, "reach the ground at",
                                          player.position)
+                    else:
+                        player.change_status(character.Character.RELAX)
+                        player.move_direction = None
+                        player.move_speed = 0
+                        self.print_debug(40, 'player', player.number, 'move over')
 
-            '''pool = self.pool
-            for player_id in self.all_info:
-                pool.apply_async(update_for_each, (player_id,))
-            pool.join()'''
             for player_id in self.all_info:
                 update_for_each(player_id)
             if self.poison.update():
@@ -783,11 +810,16 @@ class GameMain:
         # 8. update player's view, cd and etc
         update()
 
-        self.__turn = self.__turn + 1
-
+        self.__turn += 1
         # output data for playback file
         self.write_playback(pack_for_interface())
 
+        # deal with last frame
+        if self.game_over():
+            team = [player.number for player in (self.last_alive_teams[0] if len(self.last_alive_teams) else [])]
+            self.print_debug(0, 'in turn', self.__turn, 'game over with alive teams:', team)
+            for player in team:
+                self.die_list.append(player.number)
         # return pack data after refreshing
         return self.pack_for_platform()
 
@@ -870,9 +902,9 @@ class GameMain:
 
     def write_playback(self, interface_data):
         data = interface_data.SerializeToString()
-        with open(self.playback_file_path, 'ab') as playback:
-            playback.write(struct.pack('i', len(data)))
-            playback.write(data)
+        self.playback_file.write(struct.pack('i', len(data)))
+        self.playback_file.write(data)
+        self.playback_file.flush()
         self.print_debug(50, "write", len(data), "bytes into the playback file")
         return
 

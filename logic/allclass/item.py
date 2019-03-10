@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 from .object import *
 from json import load
+from random import randint
+from bisect import bisect
 
 
 class Item(Object):   # class for each equipment and goods
@@ -19,6 +21,10 @@ class Item(Object):   # class for each equipment and goods
     # next entity's id
     next_id = 0
 
+    # to get random item
+    probability_weights = [0]
+    index_to_type = {}
+
     # get enum data from string
     string_to_type = {
         'WEAPON': WEAPON,
@@ -30,8 +36,8 @@ class Item(Object):   # class for each equipment and goods
         super().__init__()
         # some important characteristics
         self.data = Item.all_data[item_type]
-        self.durability = Item.all_data[item_type].get('durability', 1)   # using durability
-        self.item_type = item_type                   # type id
+        self.durability = self.data['durability']    # using durability
+        self.item_type = item_type                   # type index
         self.number = number
         self.block_view = False
         return
@@ -44,6 +50,11 @@ class Item(Object):   # class for each equipment and goods
             Item.all_data[key] = value
             Item.all_data[key]['name'] = key
             Item.all_data[value['number']] = Item.all_data[key]
+            occur = value['occur']
+            if occur:
+                Item.index_to_type[len(Item.index_to_type)] = value['number']
+                Item.probability_weights.append(Item.probability_weights[-1] + occur)
+
         return all_data
 
     @staticmethod
@@ -76,8 +87,7 @@ class Item(Object):   # class for each equipment and goods
 
     @staticmethod
     def get_random_item():
-        pass
-        return 1
+        return Item.index_to_type[bisect(Item.probability_weights, randint(0, Item.probability_weights[-1] - 1)) - 1]
 
     @staticmethod
     def get_reward_item():

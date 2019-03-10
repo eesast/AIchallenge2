@@ -4,106 +4,151 @@
         "type":"WEAPON",
         "number":0,
         "durability":9999,
+        "macro":"FIST",
+        "mode":"",
         "range":1,
-        "cd":30,
-        "damage":4,
-        "occur":30
+        "cd":4,
+        "damage":30,
+        "reduce":0,
+        "param":30.0,
+        "occur":0
     },
     "HAND_GUN":
     {
         "type":"WEAPON",
         "number":1,
         "durability":8,
+        "macro":"HAND_GUN",
+        "mode":"",
         "range":80,
-        "cd":2,
-        "damage":4,
-        "occur":25
+        "cd":4,
+        "damage":25,
+        "reduce":0,
+        "param":2.5,
+        "occur":100
     },
     "SUBMACHINE_GUN":
     {
         "type":"WEAPON",
         "number":2,
         "durability":20,
+        "macro":"SUBMACHINE_GUN",
+        "mode":"",
         "range":100,
-        "cd":2,
-        "damage":1,
-        "occur":25
+        "cd":1,
+        "damage":25,
+        "reduce":0,
+        "param":2.5,
+        "occur":50
     },
     "SEMI_AUTOMATIC_RILE":
     {
         "type":"WEAPON",
         "number":3,
         "durability":15,
+        "macro":"SEMI_AUTOMATIC_RILE",
+        "mode":"",
         "range":150,
-        "cd":1,
-        "damage":3,
-        "occur":30
+        "cd":3,
+        "damage":30,
+        "reduce":0,
+        "param":1.5,
+        "occur":50
     },
     "ASSAULT_RIFLE":
     {
         "type":"WEAPON",
         "number":4,
         "durability":20,
+        "macro":"ASSAULT_RIFLE",
+        "mode":"",
         "range":150,
         "cd":2,
-        "damage":2,
-        "occur":40
+        "damage":40,
+        "reduce":0,
+        "param":2.0,
+        "occur":35
     },
     "MACHINE_GUN":
     {
         "type":"WEAPON",
         "number":5,
         "durability":50,
+        "macro":"MACHINE_GUN",
+        "mode":"",
         "range":100,
-        "cd":3,
-        "damage":1,
-        "occur":40
+        "cd":1,
+        "damage":40,
+        "reduce":0,
+        "param":3.0,
+        "occur":20
     },
     "SNIPER_RILFE":
     {
         "type":"WEAPON",
         "number":6,
         "durability":8,
+        "macro":"SNIPER_RILFE",
+        "mode":"",
         "range":600,
-        "cd":0,
-        "damage":8,
-        "occur":100
+        "cd":8,
+        "damage":100,
+        "reduce":0,
+        "param":0.5,
+        "occur":20
     },
     "SNIPER_BARRETT":
     {
         "type":"WEAPON",
         "number":7,
         "durability":5,
+        "macro":"SNIPER_BARRETT",
+        "mode":"",
         "range":1000,
-        "cd":0,
-        "damage":10,
-        "occur":150
+        "cd":10,
+        "damage":150,
+        "reduce":0,
+        "param":0.3,
+        "occur":10
     },
     "TIGER_BILLOW_HAMMER":
     {
         "type":"WEAPON",
         "number":8,
         "durability":20,
+        "macro":"TIGER_BILLOW_HAMMER",
+        "mode":"",
         "range":2,
-        "cd":60,
-        "damage":5,
-        "occur":50
+        "cd":5,
+        "damage":50,
+        "reduce":0,
+        "param":60.0,
+        "occur":30
     },
     "CROSSBOW":
     {
         "type":"WEAPON",
         "number":9,
         "durability":10,
+        "macro":"CROSSBOW",
+        "mode":"",
         "range":100,
-        "cd":1,
-        "damage":6,
-        "occur":30
+        "cd":6,
+        "damage":30,
+        "reduce":0,
+        "param":1.0,
+        "occur":25
     },
     "VEST_1":
     {
         "type":"ARMOR",
-        "number":13,
+        "number":10,
         "durability":100,
+        "macro":"VEST_1",
+        "mode":"",
+        "range":0,
+        "cd":0,
+        "damage":0,
         "reduce":0,
         "param":0.0,
         "occur":50
@@ -111,8 +156,13 @@
     "VEST_2":
     {
         "type":"ARMOR",
-        "number":14,
+        "number":11,
         "durability":150,
+        "macro":"VEST_2",
+        "mode":"",
+        "range":0,
+        "cd":0,
+        "damage":0,
         "reduce":0,
         "param":0.0,
         "occur":25
@@ -120,46 +170,85 @@
     "VEST_3":
     {
         "type":"ARMOR",
-        "number":15,
+        "number":12,
         "durability":200,
+        "macro":"VEST_3",
+        "mode":"",
+        "range":0,
+        "cd":0,
+        "damage":0,
         "reduce":0,
         "param":0.0,
         "occur":10
     },
+    "INSULATED_CLOTHING":
+    {
+        "type":"ARMOR",
+        "number":13,
+        "durability":100,
+        "macro":"INSULATED_CLOTHING",
+        "mode":"",
+        "range":0,
+        "cd":0,
+        "damage":0,
+        "reduce":0,
+        "param":0.0,
+        "occur":30
+    },
     "MUFFLER":
     {
         "type":"GOODS",
-        "number":21,
+        "number":14,
+        "durability":1,
         "macro":"MUFFLER",
         "mode":"PORTABLE",
+        "range":0,
+        "cd":0,
+        "damage":0,
+        "reduce":0,
         "param":0.3,
-        "occur":0
+        "occur":10
     },
     "BONDAGE":
     {
         "type":"GOODS",
-        "number":22,
+        "number":15,
+        "durability":1,
         "macro":"BONDAGE",
         "mode":"SPENDABLE",
+        "range":0,
+        "cd":5,
+        "damage":0,
+        "reduce":0,
         "param":-20.0,
-        "occur":5
+        "occur":60
     },
     "FIRST_AID_CASE":
     {
         "type":"GOODS",
-        "number":23,
+        "number":16,
+        "durability":1,
         "macro":"FIRST_AID_CASE",
         "mode":"SPENDABLE",
+        "range":0,
+        "cd":8,
+        "damage":0,
+        "reduce":0,
         "param":-100.0,
-        "occur":8
+        "occur":20
     },
     "CODE_CASE":
     {
         "type":"GOODS",
-        "number":24,
+        "number":17,
+        "durability":1,
         "macro":"CODE_CASE",
         "mode":"TRIGGERED",
+        "range":0,
+        "cd":0,
+        "damage":0,
+        "reduce":0,
         "param":0.0,
-        "occur":0
+        "occur":30
     }
 }

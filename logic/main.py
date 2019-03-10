@@ -65,7 +65,6 @@ def main():
         # commands[11] = me.get_command(current_info[11])
 
     # report the final result
-    print('alive players:', game.alive_teams())
     print("game over")
 
     # test for circle
