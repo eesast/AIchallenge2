@@ -13,9 +13,9 @@ import struct
 #   here define a debug level variable to debug print-oriented
 #   remember: here is just a initial level for logic
 #   platform may give another number in game_init
-PRINT_DEBUG = 10
+PRINT_DEBUG = 0
 
-#   level 0: print game start and over information
+#   level 0: print key stage information for the game
 #   level 1: only print illegal information
 #   level 2: also print some adjustment
 #   level 3: print illegal instruction for wrong format
@@ -362,6 +362,7 @@ class GameMain:
                 self.all_info[player.number] = info.Information(player)
                 self.all_visions[player.number] = None
 
+
         # output data for interface
         self.write_playback(get_proto_data())
 
@@ -460,13 +461,18 @@ class GameMain:
                         self.all_drugs.append((item_type, player_id, None))
                         player.shoot_cd = item_data['cd']
                         player.change_status(character.Character.SHOOTING)
+                elif 'SCOPE' in item_data['macro']:
+                    player.equip_scope(int(item_data['macro'][0]))
+                    player.bag[item_type] -= 1
+                    player.shoot_cd = item_data['cd']
+                    self.print_debug(3, 'player', player_id, 'equip', item_data['macro'])
+                    if 0 <= view_angle <= 360:
+                        player.face_direction = position.angle_to_position(view_angle)
                 elif not 0 <= view_angle <= 360:
                     self.print_debug(3, 'player', player_id, 'give wrong attack angle as', view_angle)
                 else:  # now shoot
                     player.bag[item_type] -= 1
                     view_angle += player.face_direction.get_angle()  # correct relative angle to absolute angle
-                    if view_angle >= 360:
-                        view_angle -= 360
                     player.shoot_cd = item_data['cd']
                     player.face_direction = position.angle_to_position(view_angle)
                     player.change_status(character.Character.SHOOTING)
@@ -474,10 +480,10 @@ class GameMain:
                     # here should deal with other parameter, just put off
 
                     # here deal with gun sound
-                    for team in self.all_players:
+                    for _team in self.all_players:
                         muffler = item.Item.all_data['MUFFLER']
                         factor = muffler['param'] if player.bag[muffler['number']] else 1
-                        for receiver in team:
+                        for receiver in _team:
                             if receiver is player:
                                 continue
                             if abs(receiver.position - player.position) < factor * sound.Sound.farthest['gun']:
@@ -535,7 +541,21 @@ class GameMain:
                 self.map_init()
             elif self.poison.flag == 1 and self.last_poison_flag == 2:
                 # generate items when the circle start to shrink in each stage
-                pass
+                for i in range(0, self.poison.all_data[self.poison.stage]['items'], 25):
+                    # get drop position
+                    area_id = self.map.get_random_area_id()
+                    area = self.map.areas[area_id]
+                    for j in range(5):
+                        block = area.airdrop_blocks[randrange(0, len(area.airdrop_blocks))]
+                        for k in range(5):
+                            pos = block.get_random_position()
+                            # add item
+                            item_type = item.Item.get_random_item()
+                            new_id = item.Item.add(item_type, pos)
+                            new_item = item.Item.all_items[new_id]
+                            self.all_wild_items[new_id] = item.Item.all_data[item_type]['number'], pos
+                            self.map_items[area_id // 10][area_id % 10].append(new_item)
+                self.print_debug(0, 'items added finished in turn', self.__turn)
             self.last_poison_flag = self.poison.flag
             return
 
@@ -816,10 +836,10 @@ class GameMain:
 
         # deal with last frame
         if self.game_over():
-            team = [player.number for player in (self.last_alive_teams[0] if len(self.last_alive_teams) else [])]
-            self.print_debug(0, 'in turn', self.__turn, 'game over with alive teams:', team)
-            for player in team:
-                self.die_list.append(player.number)
+            win_team = [player.number for player in (self.last_alive_teams[0] if len(self.last_alive_teams) else [])]
+            self.print_debug(0, 'in turn', self.__turn, 'game over with alive teams:', win_team)
+            for player in win_team:
+                self.die_list.append(player)
         # return pack data after refreshing
         return self.pack_for_platform()
 
@@ -907,11 +927,6 @@ class GameMain:
         self.playback_file.flush()
         self.print_debug(50, "write", len(data), "bytes into the playback file")
         return
-
-    def anti_infinite_loop(self):
-        # the game can hold no more than half an hour
-        # later, we will design poison circle, but now I can just use enforcement measure
-        return self.__turn < 2 * 60 * 25
 
     def print_debug(self, level, *args, sep=' ', end='\n', file=None):
         # print debug log if current debug level is higher than message debug level

@@ -3,7 +3,7 @@
     {
         "number":0,
         "hp":120,
-        "distance":200.0,
+        "distance":160.0,
         "angle":124.0,
         "radius":0.5,
         "move":1.8,
@@ -13,7 +13,7 @@
     {
         "number":1,
         "hp":100,
-        "distance":200.0,
+        "distance":160.0,
         "angle":124.0,
         "radius":0.45,
         "move":1.6,
@@ -23,7 +23,7 @@
     {
         "number":2,
         "hp":90,
-        "distance":200.0,
+        "distance":160.0,
         "angle":124.0,
         "radius":0.43,
         "move":1.2,
@@ -33,7 +33,7 @@
     {
         "number":3,
         "hp":80,
-        "distance":250.0,
+        "distance":200.0,
         "angle":115.0,
         "radius":0.4,
         "move":1.0,
