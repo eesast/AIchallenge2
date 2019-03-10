@@ -9,7 +9,7 @@ struct Item
 {
     int item_ID;
     ITEM type;
-    PolarPosition pos;
+    PolarPosition polar_pos;
     int durability;
 };
 

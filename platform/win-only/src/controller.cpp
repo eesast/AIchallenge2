@@ -202,8 +202,13 @@ void Controller::run()
 			}
 		}
 		DWORD threadNumber = static_cast<DWORD>(_batch.size());
-		//let sunthreads run TIMEOUT ms.
-		if (WaitForMultipleObjects(threadNumber, _waiting_thread, true, TIMEOUT) == WAIT_TIMEOUT)
+		//let sunthreads run timeout ms.
+		int timeout = TIMEOUT;
+		if (_frame == 0)
+		{
+			timeout = START_TIMEOUT;
+		}
+		if (WaitForMultipleObjects(threadNumber, _waiting_thread, true, timeout) == WAIT_TIMEOUT)
 		{    //if one thread does not exit 
 			DWORD exitCode;
 			for (int i : _batch)

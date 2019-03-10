@@ -17,6 +17,7 @@ struct PolarPosition
 	double angle;
 };
 
+const int START_TIMEOUT = 1000;
 const int TIMEOUT = 50;
 const int MEMBER_COUNT = 4;
 const int MAX_TEAM = 16;

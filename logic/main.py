@@ -8,7 +8,7 @@ import random   # for logic to debug
 game = GameMain()
 
 
-def game_init(file_path="./", config_file_name="config.ini", debug_level=1):
+def game_init(file_path="./", config_file_name="config.ini", debug_level=100):
     # first adjust debug level if necessary
     game.set_debug_level(debug_level)
     # here give the parent path and load the data and return the airplane
