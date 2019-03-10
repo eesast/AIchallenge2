@@ -5,6 +5,9 @@ from .position import *
 from copy import deepcopy
 from math import ceil
 from json import load
+from random import randint
+from random import random
+from bisect import bisect
 
 
 class Block(Object):
@@ -76,6 +79,10 @@ class Block(Object):
             block.set_circle(param)
             block.bumped = False
             block.block_view = True
+        elif name == 'rectangle_walking':
+            block.set_rectangle(param)
+            block.bumped = False
+            block.block_view = False
         else:
             print('resolve failed for block', name)
             assert 0
@@ -87,14 +94,26 @@ class Block(Object):
         Block.next_id += 1
         return new_id
 
+    def get_random_position(self):
+        if self.shape == Object.CIRCLE:
+            r = sqrt(random()) * self.radius
+            theta = random() * 2 * pi
+            return self.position + Position(r * cos(theta), r * sin(theta))
+        else:
+            dx = self.radius * cos(self.angle)
+            dy = self.radius * sin(self.angle)
+            return self.position + Position((random() * 2 - 1) * dx, (random() * 2 - 1) * dy)
+
 
 class Area:
     areas_template = {}
 
     def __init__(self, name):
         self.blocks = []
+        self.airdrop_blocks = []
         self.name = name
         self.id = None
+        self.occur = 0
 
     @staticmethod
     def load_data(parent_path, circle_file_path):
@@ -107,8 +126,14 @@ class Area:
             else:
                 area = Area(key)
                 for block_type, block_params in values.items():
-                    for param in block_params:
-                        area.blocks.append(Block.generate_block(block_type, param))
+                    if block_type == 'probability':
+                        area.occur = block_params
+                    elif block_type == 'rectangle_walking':
+                        for param in block_params:
+                            area.airdrop_blocks.append(Block.generate_block(block_type, param))
+                    else:
+                        for param in block_params:
+                            area.blocks.append(Block.generate_block(block_type, param))
                 Area.areas_template[key] = area
 
         return map_data
@@ -119,7 +144,7 @@ class Area:
         area.id = number
         for block in area.blocks:
             block.position += Position(number % 10 * 100, number // 10 * 100)
-            block.number = Block.get_id()
+            block.number = number << 4 | block.number
         return area
 
 
@@ -129,6 +154,8 @@ class Map:
         self.areas = []
         self.all_blocks = {}
         self.last_bumped_block = None
+        self.probability_weights = [0]
+        self.index_to_area_id = {}
 
     def __getitem__(self, item):
         if isinstance(item, tuple):
@@ -142,6 +169,9 @@ class Map:
     def initialize(self, data):
         for area_type in data:
             self.areas.append(Area.generate_area(area_type, len(self.areas)))
+            if self.areas[-1].occur:
+                self.index_to_area_id[len(self.index_to_area_id)] = self.areas[-1].id
+                self.probability_weights.append(self.probability_weights[-1] + self.areas[-1].occur)
         # release memory
         Area.areas_template.clear()
 
@@ -185,13 +215,7 @@ class Map:
             for block in self[area_id].blocks:
                 if block.is_opaque() and block.is_intersecting(start, over):
                     # intersected! just break
-                    break
-            else:
-                # if "for block in self.map[area_id].blocks" breaks, continue breaking
-                break
-        else:
-            # if breaks the loop, means vision blocked
-            return False
+                    return False
         return True
 
     def stand_permitted(self, pos, radius):
@@ -204,4 +228,8 @@ class Map:
         else:
             return False
         return True
+
+    def get_random_area_id(self):
+        # get area to put item
+        return self.index_to_area_id[bisect(self.probability_weights, randint(0, self.probability_weights[-1] - 1)) - 1]
 

@@ -210,6 +210,11 @@ class Character(Object):  # the base class of all characters
         else:
             return False
 
+    def equip_scope(self, times):
+        self.view_angle = Character.all_data[self.vocation]['angle'] / times
+        self.view_distance = Character.all_data[self.vocation]['distance'] / times
+        return True
+
 
 if __name__ == '__main__':
     # if necessary, test here
