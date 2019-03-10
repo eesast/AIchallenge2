@@ -45,6 +45,8 @@ class Object(object):
         return False
 
     def is_bumped(self, pos, radius):
+        if not self.bumped:
+            return False
         if self.shape == Object.CIRCLE:
             return (pos - self.position).length2() >= (radius + self.radius) * (radius + self.radius)
         elif self.shape == Object.RECTANGLE:

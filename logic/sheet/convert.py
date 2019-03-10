@@ -14,11 +14,12 @@ WEAPON_NAME = 1
 WEAPON_MACRO = 2
 WEAPON_DURABILITY = 3
 WEAPON_RANGE = 4
-WEAPON_CD = 5
-WEAPON_DAMAGE = 6
-WEAPON_OCCUR = 7
-WEAPON_EFFECT = 8
-WEAPON_COLUMN = 9
+WEAPON_ANGLE = 5
+WEAPON_CD = 6
+WEAPON_DAMAGE = 7
+WEAPON_OCCUR = 8
+WEAPON_EFFECT = 9
+WEAPON_COLUMN = 10
 
 # for armor
 ARMOR_INDEX = 1
@@ -41,9 +42,10 @@ GOODS_NAME = 1
 GOODS_MACRO = 2
 GOODS_MODE = 3
 GOODS_PARAMETER = 4
-GOODS_OCCUR = 5
-GOODS_INSTRUCTION = 6
-GOODS_COLUMN = 7
+GOODS_CD = 5
+GOODS_OCCUR = 6
+GOODS_INSTRUCTION = 7
+GOODS_COLUMN = 8
 
 # for character
 CHARACTER_INDEX = 3
@@ -64,15 +66,16 @@ CHARACTER_COLUMN = 10
 CIRCLE_INDEX = 4
 
 CIRCLE_STAGE = 0
-CIRCLE_DELAY = 1
-CIRCLE_MOVE = 2
+CIRCLE_ITEMS = 1
+CIRCLE_DELAY = 2
 CIRCLE_WAIT = 3
-CIRCLE_DAMAGE = 4
-CIRCLE_SHRINK = 5
-CIRCLE_RADIUS = 6
-CIRCLE_SPEED = 7
-CIRCLE_FRAMES = 8
-CIRCLE_TOTAL = 9
+CIRCLE_MOVE = 4
+CIRCLE_DAMAGE = 5
+CIRCLE_SHRINK = 6
+CIRCLE_RADIUS = 7
+CIRCLE_SPEED = 8
+CIRCLE_FRAMES = 9
+CIRCLE_TOTAL = 10
 
 # for sound
 SOUND_INDEX = 5
@@ -104,14 +107,19 @@ def get_item_data(file):
             attack_range = int(row[WEAPON_RANGE])
             cd = int(row[WEAPON_CD])
             damage = int(row[WEAPON_DAMAGE])
+            param = row[WEAPON_ANGLE]
             occur = int(row[WEAPON_OCCUR])
             data[macro] = {
                 'type': 'WEAPON',
                 'number': number,
                 'durability': durability,
+                'macro': macro,
+                'mode': '',
                 'range': attack_range,
                 'cd': cd,
                 'damage': damage,
+                'reduce': 0,
+                'param': param,
                 'occur': occur,
             }
         return
@@ -131,6 +139,11 @@ def get_item_data(file):
                 'type': 'ARMOR',
                 'number': number,
                 'durability': durability,
+                'macro': macro,
+                'mode': '',
+                'range': 0,
+                'cd': 0,
+                'damage': 0,
                 'reduce': reduce,
                 'param': param,
                 'occur': occur,
@@ -146,12 +159,18 @@ def get_item_data(file):
             macro = row[GOODS_MACRO]
             mode = row[GOODS_MODE]
             param = row[GOODS_PARAMETER]
+            cd = int(row[GOODS_CD])
             occur = int(row[GOODS_OCCUR])
             data[macro] = {
                 'type': 'GOODS',
                 'number': number,
+                'durability': 1,
                 'macro': macro,
                 'mode': mode,
+                'range': 0,
+                'cd': cd,
+                'damage': 0,
+                'reduce': 0,
                 'param': param,
                 'occur': occur,
             }
@@ -211,12 +230,14 @@ def get_circle_data(sheet_circle):
         if int(row[CIRCLE_MOVE]) < 1:
             break
         stage = int(row[CIRCLE_STAGE])
+        items = int(row[CIRCLE_ITEMS])
         delay = int(row[CIRCLE_DELAY])
         wait = int(row[CIRCLE_WAIT])
         move = int(row[CIRCLE_MOVE])
         damage = row[CIRCLE_DAMAGE]
         shrink = row[CIRCLE_SHRINK]
         data[stage] = {
+            'items': items,
             'delay': delay,
             'wait': wait,
             'move': move,

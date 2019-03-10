@@ -52,7 +52,7 @@ def main():
         ]
     # start the loop
     # fight until there is only one team alive or be overtime
-    while len(game.alive_teams()) > 1 and game.anti_infinite_loop():
+    while not game.game_over():
         # here create random move instructions
         for i in range(12):
             commands[i][0]['move_angle'] = random.randrange(0, 360)
@@ -65,7 +65,6 @@ def main():
         # commands[11] = me.get_command(current_info[11])
 
     # report the final result
-    print('alive players:', game.alive_teams())
     print("game over")
 
     # test for circle
