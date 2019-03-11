@@ -10,7 +10,7 @@ def load_json(config_path):
     with open(config_path, 'r', encoding='utf-8') as config_file:
         data_paths = json.load(config_file)
     data_dct = {}
-    data_keys = ['CHARACTER', 'ITEM', 'SOUND']
+    data_keys = ['CHARACTER', 'ITEM', 'SOUND', 'MAP']
     for data_key in data_keys:
         path = os.path.join(os.path.dirname(config_path),
                             data_paths[data_key+'_FILE_PATH'])
@@ -19,11 +19,13 @@ def load_json(config_path):
     return data_dct
 
 
-def enum2str(enum_name, enum_list, upper=True):
+def enum2str(enum_name, enum_list, ignore_list=[], upper=True):
+    ignore_list = [w.upper() if upper else w.lower() for w in ignore_list]
     enum_name = enum_name.upper() if upper else enum_name.lower()
     enum_list2 = list(set(enum_list))
     enum_list2.sort(key=enum_list.index)
     enum_list2 = [w.upper() if upper else w.lower() for w in enum_list2]
+    enum_list2 = list(filter(lambda x: not x in ignore_list, enum_list2))
     enum_str = 'enum %s\n{\n' % (enum_name,)
     for i, name in enumerate(enum_list2):
         enum_str += '    %s = %d,\n' % (name, i)
@@ -36,7 +38,6 @@ def enum2str(enum_name, enum_list, upper=True):
 def character2str(character_dct):
     dct_by_nb = character_dct.items()
     dct_by_nb = sorted(dct_by_nb, key=lambda k: k[1]['number'])
-    vocation_nb = len(dct_by_nb)
     data_keys = list(dct_by_nb[0][1].keys())
 
     # property struct
@@ -50,8 +51,8 @@ def character2str(character_dct):
     vocation_str = enum2str('VOCATION', [macro for macro, _ in dct_by_nb])
 
     # data table
-    table = 'const vocation_property VOCATION_DATA[%d] = \n{ // ' % (
-        vocation_nb,)
+    table = 'const vocation_property VOCATION_DATA[%s] = \n{ // ' % (
+        'VOCATION_NB',)
     for key in data_keys:
         table += '%10s' % (key,)
     table += '\n'
@@ -71,7 +72,6 @@ def character2str(character_dct):
 def item2str(item_dct):
     dct_by_nb = item_dct.items()
     dct_by_nb = sorted(dct_by_nb, key=lambda k: k[1]['number'])
-    item_nb = len(dct_by_nb)
     key_infos = {}
     for sub_dct in item_dct.values():
         for key, value in sub_dct.items():
@@ -87,13 +87,12 @@ def item2str(item_dct):
             else:
                 raise TypeError
     key_infos.pop('macro')
-    print(key_infos)
 
     # enum
     enum_str = ''
     for key_str, info in key_infos.items():
         if info[0] == 'enum':
-            enum_str += enum2str('ITEM_' + key_str, info[1])
+            enum_str += enum2str('ITEM_' + key_str, info[1], ignore_list=[''])
     enum_str += enum2str('ITEM', [macro for macro, _ in dct_by_nb])
 
     # property struct
@@ -107,18 +106,19 @@ def item2str(item_dct):
     property_str += '};\n\n'
 
     # data table
-    table = 'const item_property ITEM_DATA[%d] = \n{ // ' % (
-        item_nb,)
+    table = 'const item_property ITEM_DATA[%s] = \n{ // ' % (
+        'ITEM_NB',)
     for key in key_infos.keys():
         table += '%11s' % (key,)
     table += '\n'
     for name, data in dct_by_nb:
         table += '    {'
         for key_str, info in key_infos.items():
-            value = data.get(key_str, 0 if info[0] != 'enum' else (
-                'ITEM_'+key_str+'_NB').upper())
+            value = data[key_str]
+            if isinstance(value, str) and value == '':
+                value = ('ITEM_' + key_str + '_NB').upper()
             if info[0] == 'enum':
-                table += '%10s,' % (value,)
+                table += '%*s,' % (12 if key_str == 'mode' else 10, value)
             elif info[0] == 'int':
                 table += '%10d,' % (value,)
             elif info[0] == 'double':
@@ -134,7 +134,6 @@ def item2str(item_dct):
 def sound2str(sound_dct):
     dct_by_nb = sound_dct.items()
     dct_by_nb = sorted(dct_by_nb, key=lambda k: k[1]['number'])
-    sound_nb = len(dct_by_nb)
     data_keys = list(dct_by_nb[0][1].keys())
 
     # property struct
@@ -148,7 +147,7 @@ def sound2str(sound_dct):
     sound_str = enum2str('SOUND', [macro for macro, _ in dct_by_nb])
 
     # data table
-    table = 'const sound_property SOUND_DATA[%d] = \n{ // ' % (sound_nb,)
+    table = 'const sound_property SOUND_DATA[%s] = \n{ // ' % ('SOUND_NB',)
     for key in data_keys:
         table += '%10s' % (key,)
     table += '\n'
@@ -164,8 +163,78 @@ def sound2str(sound_dct):
 
     return sound_str + property_str + table
 
+
 def map2str(map_dct):
-    return ''
+    ignore_list = ['rectangle_walking', 'probability']
+    s = ''
+    block_shape = ['DOT', 'CIRCLE', 'RECTANGLE']
+    s += enum2str('BLOCK_SHAPE', block_shape)
+    block_type = []
+    for key, value in map_dct.items():
+        if key == 'map':
+            continue
+        else:
+            block_type += list(value.keys())
+    s += enum2str('BLOCK_TYPE', block_type,
+                  ignore_list=ignore_list)
+    s += '''
+struct block {
+    BLOCK_SHAPE shape;
+    BLOCK_TYPE type;
+    int x0, y0, r, x1, y2;
+    //when shape == RECTANGLE, (x0, y0) and (x1, y1) are used (left-top and right-bottom)
+    //when shape == CIRCLE, (x0, y0) and r are used (center and radius)
+    //when shape == DOT, only (x0, y0) is used as its position
+};
+
+'''
+
+    # AREA_DATA
+    s += enum2str('AREA', list(map_dct.keys()), ignore_list=['map'])
+    # area data table
+    area_table = 'const std::vector<block> AREA_DATA[%s] = \n{ //     ' % (
+        'AREA_NB',)
+    data_widths = [11, 21, 6, 6, 6, 6, 6]
+    data_keys = ['shape', 'type', 'x0', 'y0', 'r', 'x1', 'y2']
+
+    for width, key in zip(data_widths, data_keys):
+        area_table += '%*s' % (width, key)
+    area_table += '\n'
+    for area_name, data in map_dct.items():
+        if area_name == 'map':
+            continue
+        area_table += '    {\n'
+        for key, values_list in data.items():
+            if not key in ignore_list:
+                for values in values_list:
+                    # shape
+                    area_table += '        {%10s,' % (
+                        block_shape[len(values) - 2],)
+                    # type
+                    area_table += '%20s,' % (key.upper(),)
+                    area_table += '%5d,%5d,' % (values[0], values[1])
+                    if (len(values) == 3):
+                        area_table += '%5d,%5d,%5d},\n' % (values[2], 0, 0)
+                    elif (len(values) == 4):
+                        area_table += '%5d,%5d,%5d},\n' % (
+                            0, values[2], values[3])
+                    else:
+                        area_table += '%5d,%5d,%5d},\n' % (0, 0, 0)
+        area_table += '    },    // %s\n' % (area_name,)
+    area_table += '};\n\n'
+    
+    # MAP
+    map_str = 'const AREA MAP[%d] = \n{\n    ' % (len(map_dct['map']))
+    cnt = 0
+    for name in map_dct['map']:
+        if cnt == 10:
+            map_str += '\n    '
+            cnt = 0
+        map_str += '%10s,' % (name.upper(),)
+        cnt += 1
+    map_str += '\n};\n\n'
+    return s + area_table + map_str
+
 
 DEBUG = True
 
@@ -188,9 +257,12 @@ def main():
         constant_path = 'constant.h'
 
     constant_dct = load_json(config_path)
-    s = '''// Generated by const.py.  DO NOT EDIT!
+    s = '''// Generated by const.py.  DO NOT EDIT! DO NOT FORMAT!
+//recommend using 1920*1080 zoom 100% to display
 #ifndef CONSTANT_H
 #define CONSTANT_H
+
+#include <vector>
 
 struct XYPosition
 {
@@ -221,7 +293,7 @@ enum STATUS
 
 '''
     s = s+character2str(constant_dct['CHARACTER'])+item2str(
-        constant_dct['ITEM']) + sound2str(constant_dct['SOUND'])
+        constant_dct['ITEM']) + sound2str(constant_dct['SOUND']) + map2str(constant_dct['MAP'])
     s += '#endif'
     with open(constant_path, 'w') as const:
         const.write(s)

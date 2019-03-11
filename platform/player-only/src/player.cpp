@@ -13,6 +13,7 @@ extern PlayerInfo info;
 
 void play_game()
 {
+	
 	update_info();
 	std::cout << "player:frame" << frame << "\nhp:" << info.self.hp << std::endl;
 	std::cout << "positon" << info.self.xy_pos.x << ' ' << info.self.xy_pos.y << std::endl;
@@ -20,10 +21,14 @@ void play_game()
 		std::cout << "pick succeed" << std::endl;
 	if (frame == 0)
 	{
-		srand(time(nullptr));
-		XYPosition landing_point = { rand() % 100 + 500, rand() % 100 + 500 };
+		srand(time(nullptr) +teammates[0]);
+		XYPosition landing_point = { rand() % 100 + 450, rand() % 100 + 450 };
 		parachute(HACK, landing_point);
 		return;
+	}
+	else
+	{
+		srand(time(nullptr) + info.player_ID*frame);
 	}
 	if (info.self.status == ON_PLANE || info.self.status == JUMPING)
 	{

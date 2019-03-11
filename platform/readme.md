@@ -73,3 +73,8 @@
 1. 直接构建
 2. 移动libAI.so到特定位置
 3. 重命名libAI.so并运行
+
+## const.py使用
+* 用于将逻辑中的配置文件转化为玩家AI使用的constant.h
+使用方法：python const.py <逻辑中config.ini的文件路径> <生成的文件路径>
+e.g. python const.py ../../logic/config.ini ../player-only/include/constant.h
