@@ -1,8 +1,10 @@
 #include "controller.h"
 
+extern std::ofstream mylog;
+
 Controller Controller::_instance;
 
-void Controller::init(const std::string &path, DWORD used_core_count)
+void Controller::init(const std::filesystem::path &path, DWORD used_core_count)
 {
 	using namespace std::filesystem;
 	auto PAT = std::regex(R"((AI_(\d*)_(\d*)).dll)", std::regex_constants::ECMAScript | std::regex_constants::icase);
@@ -20,12 +22,12 @@ void Controller::init(const std::string &path, DWORD used_core_count)
 				int number = atoi(m[3].str().c_str());
 				if (0 <= team && team < MAX_TEAM && 0 <= number && number <= MEMBER_COUNT)
 				{
+					auto fullpath = entry.path().string();
 					_info[player_count].team = team;
-					std::string fullpath = entry.path().root_directory().string() + m[1].str();
 					_info[player_count].lib = LoadLibrary(fullpath.c_str());
 					if (_info[player_count].lib == NULL)
 					{
-						std::cerr << "LoadLibrary " + fullpath + " error:" << GetLastError() << std::endl;
+						mylog << "LoadLibrary " + fullpath + " error:" << GetLastError() << std::endl;
 						continue;
 					}
 					else
@@ -35,7 +37,7 @@ void Controller::init(const std::string &path, DWORD used_core_count)
 						_info[player_count].recv_func = (Recv_Func)GetProcAddress(_info[player_count].lib, "player_receive");
 						if (bind_api == NULL || _info[player_count].player_func == NULL || _info[player_count].recv_func == NULL)
 						{
-							std::cerr << "Cannot Get AI API from " << _info[player_count].lib << " Error Code:" << GetLastError() << std::endl;
+							mylog << " Cannot Get AI API from " << _info[player_count].lib << " Error Code:" << GetLastError() << std::endl;
 							continue;
 						}
 						else
@@ -44,12 +46,13 @@ void Controller::init(const std::string &path, DWORD used_core_count)
 							(*bind_api)(&controller_receive, &controller_update);
 							++player_count;
 							std::cout << "Load AI " << fullpath << " as team" << team << std::endl;
+							mylog << "Load AI " << fullpath << " as team" << team << std::endl;
 						}
 					}
 				}
 				else
 				{
-					std::cerr << "Wrong filename:" << m[0] << std::endl;
+					mylog << "Wrong filename:" << m[0] << std::endl;
 				}
 			}
 		}
@@ -68,6 +71,7 @@ void Controller::init(const std::string &path, DWORD used_core_count)
 	{
 		_used_core_count = used_core_count;
 	}
+	mylog << "total core = " << _total_core_count << " used core = " << _used_core_count << std::endl;
 	_waiting_thread = new HANDLE[_used_core_count];
 	_is_init = true;
 }
@@ -76,7 +80,7 @@ bool Controller::_check_init()
 {
 	if (!_is_init)
 	{
-		std::cerr << "Manager is not initialised,please check codes." << std::endl;
+		mylog << "Manager is not initialised, please check codes." << std::endl;
 	}
 	return _is_init;
 }
@@ -104,6 +108,7 @@ void Controller::_kill_one(int playerID)
 		}
 		FreeLibrary(_info[playerID].lib);
 		_info[playerID].state = AI_STATE::DEAD;
+		mylog << "kill player: " << playerID << std::endl;
 	}
 }
 
@@ -123,6 +128,7 @@ void Controller::run()
 {
 	if (!_check_init())
 		return;
+	mylog << "\nrun frame: " << _frame << std::endl;
 	for (int playerID : dead)
 	{
 		_kill_one(playerID);
@@ -156,6 +162,12 @@ void Controller::run()
 				++now;
 			}
 		}
+		mylog << "batch: ";
+		for (const auto i : _batch)
+		{
+			mylog << i << ' ';
+		}
+		mylog << std::endl;
 		//execute some players each loop. The number is equal to the number of core(_used_core_count) 
 		int core_num = _total_core_count - _used_core_count;
 		for (int i : _batch)
@@ -167,7 +179,8 @@ void Controller::run()
 				_info[i].handle = CreateThread(nullptr, 0, thread_func, nullptr, CREATE_SUSPENDED, &_info[i].threadID);
 				if (_info[i].handle == NULL)
 				{
-					std::cerr << "Cannot create thread. Error Code: " << GetLastError() << std::endl;
+					mylog << "player: " << i << " Cannot create thread. Error Code: " << GetLastError() << std::endl;
+					std::cout << "platform error" << std::endl;
 					system("pause");
 					exit(1);
 				}
@@ -179,7 +192,7 @@ void Controller::run()
 				}
 				else
 				{
-					std::cerr << "CPU core setting fails. Error Code: " << GetLastError() << std::endl;
+					mylog << "player: " << i << " CPU core setting fails. Error Code: " << GetLastError() << std::endl;
 				}
 			}
 			_waiting_thread[i] = _info[i].handle;    //if the player's thread is suspended, just resume it
@@ -198,7 +211,7 @@ void Controller::run()
 			}
 			if (ResumeThread(_info[i].handle) == 0xFFFFFFFF)
 			{
-				std::cerr << "Cannot resume Thread" << _info[i].threadID << " Error Code: " << GetLastError() << std::endl;
+				mylog << "player: " << i << " Cannot resume Thread" << _info[i].threadID << " Error Code: " << GetLastError() << std::endl;
 			}
 		}
 		DWORD threadNumber = static_cast<DWORD>(_batch.size());
@@ -219,7 +232,7 @@ void Controller::run()
 					_info[i].state = AI_STATE::SUSPENDED;
 					if (SuspendThread(_info[i].handle) == 0xFFFFFFFF)
 					{
-						std::cerr << "Cannot suspend Thread" << _info[i].threadID << " Error Code: " << GetLastError() << std::endl;
+						mylog << "player: " << i << " Cannot suspend Thread" << _info[i].threadID << " Error Code: " << GetLastError() << std::endl;
 					}
 				}
 				else
@@ -245,7 +258,6 @@ bool Controller::receive(const std::string & data)
 {
 	if (!_check_init())
 		return false;
-	std::cout << "receive" << std::endl;
 	return _parse(data);
 
 }
@@ -306,14 +318,6 @@ bool Controller::_parse(const std::string & data)
 	{
 		return false;
 	}
-}
-
-void Controller::register_AI(int playerID, AI_Func pfunc, Recv_Func precv)
-{
-	if (!_check_init())
-		return;
-	_info[playerID].player_func = pfunc;
-	_info[playerID].recv_func = precv;
 }
 
 int Controller::_get_playerID_by_threadID()

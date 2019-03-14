@@ -21,15 +21,29 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <fstream>
 
+#ifdef _DEBUG
 #ifdef WIN32
-//path for finding main.py and data.ini
+//path for finding main.py and config.ini
 const char * const LOGIC_PATH = R"(C:\\Users\\zhang\\Desktop\\AIchallenge2\\logic\\)";
 const char * const DATA_PATH = R"(C:\Users\zhang\Desktop\AIchallenge2\logic\)";
 #else
 const char *const LOGIC_PATH = R"(/home/sweetnow/AIchallenge2/logic/)";
 const char *const DATA_PATH = R"(/home/sweetnow/AIchallenge2/logic/)";
 #endif
+#else
+#ifdef WIN32
+//path for finding main.py and config.ini
+const char * const LOGIC_PATH = R"(.\\logic\\)";
+const char * const DATA_PATH = R"(.\logic\)";
+#else
+const char *const LOGIC_PATH = R"(/home/sweetnow/AIchallenge2/logic/)";
+const char *const DATA_PATH = R"(/home/sweetnow/AIchallenge2/logic/)";
+#endif
+#endif // _DEBUG
+
+
 const char * const MODULE_NAME = "main";
 const char * const MAIN_FUNC_NAME = "game_main";
 const char * const INIT_FUNC_NAME = "game_init";

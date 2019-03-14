@@ -78,3 +78,14 @@
 * 用于将逻辑中的配置文件转化为玩家AI使用的constant.h
 使用方法：python const.py <逻辑中config.ini的文件路径> <生成的文件路径>
 e.g. python const.py ../../logic/config.ini ../player-only/include/constant.h
+
+## 发布方法
+1. 生成comm.dll并移动到发布目录下(注意链接的必须是protobuf3.6.1版本的头文件与库)
+2. 生成platform.exe并移动到发布目录下(注意链接的必须是python3.6版本的头文件与库)
+2. 移动libprotobuf.dll到发布目录下
+3. 复制python文件夹（win-only/python.zip解压缩即可）到发布目录下
+4. 复制python中的python36.dll到发布目录下
+5. 将./pyscript/py2pyc.py移动到已删除不必要信息的logic文件夹副本下(**禁止直接在ALCHALLENGE2/logic下操作**)
+PS：以上必须使用python3.6 32位版本执行，建议采用python embedding中的python.exe执行
+6. 运行platform.exe，正常运行后删除./log与./playback中的记录文件
+7. 打包发布

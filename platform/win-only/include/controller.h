@@ -16,6 +16,7 @@
 #include <string>
 #include <map>
 #include <iostream>
+#include <fstream>
 
 #define manager (Controller::get_instance())
 
@@ -62,8 +63,7 @@ public:
     //manager init
 public:
     //find dll in path
-    void init(const std::string &path, DWORD used_core_count = 0);
-    [[deprecated]] void register_AI(int playerID, AI_Func pfunc, Recv_Func precv);
+    void init(const std::filesystem::path &path, DWORD used_core_count = 0);
 private:
     //if init,return true.
     bool _check_init();

@@ -1,5 +1,7 @@
 #include "pycalling.h"
 
+extern std::ofstream mylog;
+
 Pycalling Pycalling::_instance;
 
 ROUTE_T Pycalling::init()
@@ -37,7 +39,7 @@ ROUTE_T Pycalling::init()
 	}
 	Py_XDECREF(mod);
 	//fix a possible bug that rls does not want to fix.
-	PyRun_SimpleString(("os.makedirs(r\"" + std::string(DATA_PATH) + "playback/\",exist_ok=True)").c_str());
+	PyRun_SimpleString(("os.makedirs(r\"" + std::string(DATA_PATH) + "../playback/\",exist_ok=True)").c_str());
 	//parachute
 	auto data_dir = Py_BuildValue("(s)", DATA_PATH);
 	auto route = PyObject_CallObject(_game_init, data_dir);
@@ -139,7 +141,7 @@ bool Pycalling::_check_init(bool print)
 {
 	if (!_is_init && print)
 	{
-		std::cerr << "Logic is not initialised,please check codes." << std::endl;
+		mylog << "Logic is not initialised,please check codes." << std::endl;
 	}
 	return _is_init;
 }
@@ -160,7 +162,7 @@ Pycalling::Pycalling()
 
 void Pycalling::_traceback(const std::string &err)
 {
-	std::cerr << err << std::endl;
+	mylog << err << std::endl;
 	PyRun_SimpleString("import traceback");
 	PyRun_SimpleString("traceback.print_exc(file = sys.stdout)");
 	exit(1);
