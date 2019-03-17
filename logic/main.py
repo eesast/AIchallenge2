@@ -54,9 +54,9 @@ def main():
     # fight until there is only one team alive or be overtime
     while not game.game_over():
         # here create random move instructions
-        for i in range(12):
+        '''for i in range(12):
             commands[i][0]['move_angle'] = random.randrange(0, 360)
-            commands[i][0]['view_angle'] = random.randrange(0, 360)
+            commands[i][0]['view_angle'] = random.randrange(0, 360)'''
 
         # then refresh game and get current info
         current_info = game_main(commands)

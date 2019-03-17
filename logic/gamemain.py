@@ -13,7 +13,8 @@ import struct
 #   here define a debug level variable to debug print-oriented
 #   remember: here is just a initial level for logic
 #   platform may give another number in game_init
-PRINT_DEBUG = 0
+PRINT_DEBUG = 25
+
 
 #   level 0: print key stage information for the game
 #   level 1: only print illegal information
@@ -71,6 +72,7 @@ class GameMain:
         self.all_wild_items = {}
         self.all_parameters = {}
         self.all_areas_players = {}
+        self.all_kills = {}
         self.all_info = {}  # save all information for platform
         self.all_commands = {"move": {}, "shoot": {}, "pickup": {}, "radio": {}}
         self.all_visions = {}
@@ -362,7 +364,6 @@ class GameMain:
                 self.all_info[player.number] = info.Information(player)
                 self.all_visions[player.number] = None
 
-
         # output data for interface
         self.write_playback(get_proto_data())
 
@@ -392,7 +393,8 @@ class GameMain:
                             if player.vocation == character.Character.HACK:
                                 item.Item.remove(picked_item.number)
                                 self.all_wild_items.pop(picked_item.number)
-                                self.print_debug(16, 'player', player_number, 'opens code case', picked_item.number, end='')
+                                self.print_debug(16, 'player', player_number, 'opens code case', picked_item.number,
+                                                 end='')
                                 # now open the case
                                 picked_item = item.Item.get_reward_item()
                                 player.bag[picked_item.item_type] = player.bag.get(picked_item.item_type,
@@ -411,7 +413,8 @@ class GameMain:
                         self.all_wild_items.pop(picked_item.number)
                         item.Item.remove(picked_item.number)
                         self.number_to_player[player_number].change_status(character.Character.PICKING)
-                        self.print_debug(16, 'player', player_number, 'picks', picked_item.data['name'], picked_item.number)
+                        self.print_debug(16, 'player', player_number, 'picks', picked_item.data['name'],
+                                         picked_item.number)
                         # maybe we should deal with command['other'], now ignore it
                     pass
             # move
@@ -449,6 +452,7 @@ class GameMain:
                                     self.all_drugs.append((item_type, other, player_id))
                                     player.bag[item_type] -= 1
                                     player.shoot_cd = item_data['cd']
+                                    player.last_weapon = item_type
                                     player.change_status(character.Character.SHOOTING)
                                 else:
                                     self.print_debug(19, 'player', player_id, 'try to use drug to dead player', other)
@@ -460,9 +464,10 @@ class GameMain:
                         player.bag[item_type] -= 1
                         self.all_drugs.append((item_type, player_id, None))
                         player.shoot_cd = item_data['cd']
+                        player.last_weapon = item_type
                         player.change_status(character.Character.SHOOTING)
                 elif 'SCOPE' in item_data['macro']:
-                    player.equip_scope(int(item_data['macro'][0]))
+                    player.equip_scope(int(item_data['macro'][-1]))
                     player.bag[item_type] -= 1
                     player.shoot_cd = item_data['cd']
                     self.print_debug(3, 'player', player_id, 'equip', item_data['macro'])
@@ -477,6 +482,7 @@ class GameMain:
                     player.face_direction = position.angle_to_position(view_angle)
                     player.change_status(character.Character.SHOOTING)
                     self.all_bullets.append((player.position, view_angle, item_type, player_id, None))
+                    player.last_weapon = item_type
                     # here should deal with other parameter, just put off
 
                     # here deal with gun sound
@@ -509,7 +515,7 @@ class GameMain:
                 for player in team:
                     self.all_info[player.number].clear()
                     past_position = player.position
-                    if player.move():
+                    if player.update():
                         if player.is_flying() or player.is_jumping() or self.map.stand_permitted(player.position,
                                                                                                  player.radius):
                             self.print_debug(15, 'player', player.number, 'move to', player.position)
@@ -615,6 +621,7 @@ class GameMain:
                             return True
                         return False
                     return True
+
                 # here deal with grass
                 player = self.number_to_player[player_id]
                 player_info = self.all_info[player_id]
@@ -644,7 +651,7 @@ class GameMain:
                     if shooter.vocation == character.Character.SNIPER and 'SNIPER' in data['name']:
                         value *= character.Character.all_data[character.Character.SNIPER]['skill']
                     parameter = 'ARMOR_PIERCING' if data['name'] == 'CROSSBOW' else None
-                    real_damage = self.number_to_player[hit_id].get_damage(value, parameter)
+                    real_damage, new_record = self.number_to_player[hit_id].get_damage(value, player_id, parameter)
                     self.print_debug(13, 'player', player_id, data['name'], real_damage, 'damage to player', hit_id)
                 else:
                     if item.Item.all_items[item_index].item_type == 1:
@@ -676,13 +683,23 @@ class GameMain:
                                 self.print_debug(7, 'player', player.number, 'died')
                         elif player.health_point > 0:
                             player.change_status(character.Character.RELAX)
+                            player.killer = -1
                             self.print_debug(7, 'player', player.number, 'resurrected')
                     else:
-                        if player.get_damage(self.poison.damage_per_frame, 'ARMOR_PIERCING'):
+                        # to understand this part of code, i will give explain how the player.killer works:
+                        # if some player hit this player in poison in one frame, the one who gives him most damage
+                        # will surely be the killer
+                        # if some body kill this player in safe area, frames latter the circle shrink to here,
+                        # then though the player.most_damage is 0, but player.killer is still the murder
+                        # if this player is alive but get poison to die with some other damage in the same frame, then
+                        # if somebody give him more damage than circle, killer will be him, or killer is -1
+                        # if this poor gay
+                        if player.get_damage(self.poison.damage_per_frame, -1, 'ARMOR_PIERCING'):
                             self.print_debug(13, 'the circle', self.poison.damage_per_frame, 'damage to', player.number)
                         if player.can_be_healed() and player.health_point <= 0:
                             player.health_point = 0
-                            self.die_order.append(player.number)
+                            self.all_kills.setdefault(player.number, []).append(player.killer)
+                            self.die_order.append((player.number, self.__turn))
                             self.die_list.append(player.number)
                             player.change_status(character.Character.REAL_DEAD)
                             self.print_debug(7, 'player', player.number, 'died out of circle')
