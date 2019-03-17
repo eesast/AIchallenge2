@@ -251,12 +251,12 @@
         "param":0.0,
         "occur":30
     },
-    "2_TIMES_SCOPE":
+    "SCOPE_2":
     {
         "type":"GOODS",
         "number":18,
         "durability":1,
-        "macro":"2_TIMES_SCOPE",
+        "macro":"SCOPE_2",
         "mode":"SPENDABLE",
         "range":0,
         "cd":0,
@@ -265,12 +265,12 @@
         "param":0.0,
         "occur":50
     },
-    "4_TIMES_SCOPE":
+    "SCOPE_4":
     {
         "type":"GOODS",
         "number":19,
         "durability":1,
-        "macro":"4_TIMES_SCOPE",
+        "macro":"SCOPE_4",
         "mode":"SPENDABLE",
         "range":0,
         "cd":0,
@@ -279,12 +279,12 @@
         "param":0.0,
         "occur":25
     },
-    "8_TIMES_SCOPE":
+    "SCOPE_8":
     {
         "type":"GOODS",
         "number":20,
         "durability":1,
-        "macro":"8_TIMES_SCOPE",
+        "macro":"SCOPE_8",
         "mode":"SPENDABLE",
         "range":0,
         "cd":0,
