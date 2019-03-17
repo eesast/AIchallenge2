@@ -67,15 +67,6 @@ message CircleInfo
 	Circle next = 4;
 }
 
-// all bullets and shells
-message Bullet
-{
-	int32 id = 1;
-	int32 type = 2;
-	Pos emit_pos = 3;
-	Pos current_pos = 4;
-	double direction = 5;
-}
 
 // only used in the beginning
 message InitialInfo
@@ -92,8 +83,7 @@ message FrameInfo
 	repeated PlayerParachuteInfo parachutists = 2;
 	repeated PlayerInfo players = 3;
 	repeated Item items = 4;
-	repeated Bullet bullets = 5;
-	CircleInfo circle = 6;
+	CircleInfo circle = 5;
 }
 
    
