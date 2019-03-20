@@ -42,6 +42,7 @@
 ## 问题
 
 1. 对于logic与platform中的所有proto文件，为避免出现问题，需要全部采用相同版本的protoc与libprotobuf进行处理，dev-platform中暂时采用3.6.1版本，**请勿将dev-platform合并入master分支**。
+2. Linux上多进程写log文件
 
 ## 多个玩家的动态链接库命名
 
@@ -87,5 +88,6 @@ e.g. python const.py ../../logic/config.ini ../player-only/include/constant.h
 4. 复制python中的python36.dll到发布目录下
 5. 将./pyscript/py2pyc.py移动到已删除不必要信息的logic文件夹副本下(**禁止直接在ALCHALLENGE2/logic下操作**)
 PS：以上必须使用python3.6 32位版本执行，建议采用python embedding中的python.exe执行
+6. 修改config.ini中的回放文件目录
 6. 运行platform.exe，正常运行后删除./log与./playback中的记录文件
 7. 打包发布

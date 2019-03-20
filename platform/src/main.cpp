@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 {
 	namespace fs = std::filesystem;
 	std::cout << fs::current_path() << std::endl;
-	fs::create_directory(fs::current_path() / fs::path::path(L"AI/"));
+	fs::create_directory(fs::current_path() / fs::path(L"AI/"));
 	std::string path_str = "./AI/";
 	fs::path path(path_str);
 	path = fs::current_path() / path;
@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 	}
 
 	//log system
-	fs::create_directory(fs::current_path() / fs::path::path(L"log/"));
+	fs::create_directory(fs::current_path() / fs::path(L"log/"));
 	mylog.open("./log/log" + get_date_string(true) + ".txt");
 	mylog << get_date_string(false) << std::endl;
 
