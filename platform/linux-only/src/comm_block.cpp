@@ -57,6 +57,7 @@ bool COMM_BLOCK::add_command(const std::string &data)
 {
     if (next_command_index >= MAX_COMMAND_NUM)
     {
+        
         return false;
     }
     else

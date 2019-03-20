@@ -38,8 +38,8 @@ const char *const DATA_PATH = R"(/home/sweetnow/AIchallenge2/logic/)";
 const char * const LOGIC_PATH = R"(.\\logic\\)";
 const char * const DATA_PATH = R"(.\logic\)";
 #else
-const char *const LOGIC_PATH = R"(/home/sweetnow/AIchallenge2/logic/)";
-const char *const DATA_PATH = R"(/home/sweetnow/AIchallenge2/logic/)";
+const char *const LOGIC_PATH = R"(./logic/)";
+const char *const DATA_PATH = R"(./logic/)";
 #endif
 #endif // _DEBUG
 
