@@ -212,14 +212,21 @@ def get_character_data(sheet_character):
 def get_parameter_data(sheet_parameter):
     data = {
         'character': {},
-        'main': {},
+        'main': {
+            'score_by_rank': {},
+        },
     }
     col = sheet_parameter.col_values(1)
     data['character']['move_step'] = [0, col[2], col[3], col[4]]
+    for i in range(1, 9):
+        data['main']['score_by_rank'][i] = int(col[i + 4])
 
     col = sheet_parameter.col_values(4)
     data['main']['damage_param'] = col[2]
     data['character']['reduce'] = col[3]
+    data['main']['score_by_kill_one'] = int(col[4])
+    for i in range(9, 17):
+        data['main']['score_by_rank'][i] = int(col[i - 4])
     return data
 
 
