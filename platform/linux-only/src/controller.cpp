@@ -28,12 +28,16 @@ bool Controller::_check_init()
     return _is_init;
 }
 
-void Controller::init(const std::filesystem::path &path, long used_core_count)
+void Controller::init(const std::filesystem::path &path, std::ofstream &filename2id, long used_core_count)
 {
     using namespace std::filesystem;
     auto PAT = std::regex(R"((libAI_(\d*)_(\d*)).so)", std::regex_constants::ECMAScript | std::regex_constants::icase);
     std::smatch m;
     int player_count = 0;
+
+    filename2id << "{\n";
+    bool isfirst = true;
+
     for (const auto &entry : directory_iterator(path))
     {
         if (is_regular_file(entry))
@@ -68,8 +72,17 @@ void Controller::init(const std::filesystem::path &path, long used_core_count)
                         {
                             (*bind_api)(&controller_receive, &controller_update);
                             _team[team].push_back(player_count);
-                            ++player_count;
                             mylog << "Load AI " << fullpath << " as team" << team << std::endl;
+                            if(isfirst)
+                            {
+                                isfirst = false;
+                            }
+                            else
+                            {
+                                filename2id << ",\n";
+                            }
+                            filename2id << "  \"" << name << "\": " << player_count;
+                            ++player_count;
                         }
                     }
                 }
@@ -80,6 +93,7 @@ void Controller::init(const std::filesystem::path &path, long used_core_count)
             }
         }
     }
+    filename2id << "\n}\n";
     _player_count = player_count;
     _used_core_count = used_core_count;
     //set CPU
@@ -236,10 +250,10 @@ void Controller::run()
             }
         }
         int timeout = TIMEOUT;
-		if (_frame == 0)
-		{
-			timeout = START_TIMEOUT;
-		}
+        if (_frame == 0)
+        {
+            timeout = START_TIMEOUT;
+        }
         //timeout
         bool all_finish = true;
         timeval start, now;
@@ -423,7 +437,6 @@ bool Controller::_parse(const std::string &data, int playerID)
         }
         else
         {
-            mylog << recv.DebugString() << std::endl;
             COMMAND_PARACHUTE c;
             c.landing_point.x = recv.landing_point().x();
             c.landing_point.y = recv.landing_point().y();
