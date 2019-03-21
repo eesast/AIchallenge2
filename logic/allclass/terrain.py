@@ -125,6 +125,7 @@ class Area:
                 map_data = values
             else:
                 area = Area(key)
+                next_id = 0
                 for block_type, block_params in values.items():
                     if block_type == 'probability':
                         area.occur = block_params
@@ -134,6 +135,8 @@ class Area:
                     else:
                         for param in block_params:
                             area.blocks.append(Block.generate_block(block_type, param))
+                            area.blocks[-1].number = next_id
+                            next_id += 1
                 Area.areas_template[key] = area
 
         return map_data
@@ -144,7 +147,7 @@ class Area:
         area.id = number
         for block in area.blocks:
             block.position += Position(number % 10 * 100, number // 10 * 100)
-            block.number = number << 4 | block.number
+            block.number = number << 8 | block.number
         return area
 
 

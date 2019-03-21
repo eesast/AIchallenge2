@@ -6,6 +6,7 @@ import proto.platform_pb2 as platform
 # from multiprocessing import Pool
 from random import randrange
 from json import load
+from json import dump
 import math
 import time
 import struct
@@ -14,6 +15,7 @@ import struct
 #   remember: here is just a initial level for logic
 #   platform may give another number in game_init
 PRINT_DEBUG = 0
+
 
 #   level 0: print key stage information for the game
 #   level 1: only print illegal information
@@ -58,7 +60,7 @@ class GameMain:
     def __init__(self):
 
         # it's more like a define instead of an initialization
-        self.die_order = []  # save the player's dying order
+        self.die_order = []  # save the player's dying order and frames
         self.die_list = []  # die order in this frame for platform
         self.map_items = [[[] for row in range(10)] for column in range(10)]  # try to divide map into 256 parts
         self.map = terrain.Map()
@@ -71,6 +73,7 @@ class GameMain:
         self.all_wild_items = {}
         self.all_parameters = {}
         self.all_areas_players = {}
+        self.all_kills = {}
         self.all_info = {}  # save all information for platform
         self.all_commands = {"move": {}, "shoot": {}, "pickup": {}, "radio": {}}
         self.all_visions = {}
@@ -362,7 +365,6 @@ class GameMain:
                 self.all_info[player.number] = info.Information(player)
                 self.all_visions[player.number] = None
 
-
         # output data for interface
         self.write_playback(get_proto_data())
 
@@ -392,7 +394,8 @@ class GameMain:
                             if player.vocation == character.Character.HACK:
                                 item.Item.remove(picked_item.number)
                                 self.all_wild_items.pop(picked_item.number)
-                                self.print_debug(16, 'player', player_number, 'opens code case', picked_item.number, end='')
+                                self.print_debug(16, 'player', player_number, 'opens code case', picked_item.number,
+                                                 end='')
                                 # now open the case
                                 picked_item = item.Item.get_reward_item()
                                 player.bag[picked_item.item_type] = player.bag.get(picked_item.item_type,
@@ -411,7 +414,8 @@ class GameMain:
                         self.all_wild_items.pop(picked_item.number)
                         item.Item.remove(picked_item.number)
                         self.number_to_player[player_number].change_status(character.Character.PICKING)
-                        self.print_debug(16, 'player', player_number, 'picks', picked_item.data['name'], picked_item.number)
+                        self.print_debug(16, 'player', player_number, 'picks', picked_item.data['name'],
+                                         picked_item.number)
                         # maybe we should deal with command['other'], now ignore it
                     pass
             # move
@@ -449,6 +453,7 @@ class GameMain:
                                     self.all_drugs.append((item_type, other, player_id))
                                     player.bag[item_type] -= 1
                                     player.shoot_cd = item_data['cd']
+                                    player.last_weapon = item_type
                                     player.change_status(character.Character.SHOOTING)
                                 else:
                                     self.print_debug(19, 'player', player_id, 'try to use drug to dead player', other)
@@ -460,9 +465,10 @@ class GameMain:
                         player.bag[item_type] -= 1
                         self.all_drugs.append((item_type, player_id, None))
                         player.shoot_cd = item_data['cd']
+                        player.last_weapon = item_type
                         player.change_status(character.Character.SHOOTING)
                 elif 'SCOPE' in item_data['macro']:
-                    player.equip_scope(int(item_data['macro'][0]))
+                    player.equip_scope(int(item_data['macro'][-1]))
                     player.bag[item_type] -= 1
                     player.shoot_cd = item_data['cd']
                     self.print_debug(3, 'player', player_id, 'equip', item_data['macro'])
@@ -477,6 +483,7 @@ class GameMain:
                     player.face_direction = position.angle_to_position(view_angle)
                     player.change_status(character.Character.SHOOTING)
                     self.all_bullets.append((player.position, view_angle, item_type, player_id, None))
+                    player.last_weapon = item_type
                     # here should deal with other parameter, just put off
 
                     # here deal with gun sound
@@ -509,7 +516,7 @@ class GameMain:
                 for player in team:
                     self.all_info[player.number].clear()
                     past_position = player.position
-                    if player.move():
+                    if player.update():
                         if player.is_flying() or player.is_jumping() or self.map.stand_permitted(player.position,
                                                                                                  player.radius):
                             self.print_debug(15, 'player', player.number, 'move to', player.position)
@@ -615,6 +622,7 @@ class GameMain:
                             return True
                         return False
                     return True
+
                 # here deal with grass
                 player = self.number_to_player[player_id]
                 player_info = self.all_info[player_id]
@@ -644,7 +652,7 @@ class GameMain:
                     if shooter.vocation == character.Character.SNIPER and 'SNIPER' in data['name']:
                         value *= character.Character.all_data[character.Character.SNIPER]['skill']
                     parameter = 'ARMOR_PIERCING' if data['name'] == 'CROSSBOW' else None
-                    real_damage = self.number_to_player[hit_id].get_damage(value, parameter)
+                    real_damage, new_record = self.number_to_player[hit_id].get_damage(value, player_id, parameter)
                     self.print_debug(13, 'player', player_id, data['name'], real_damage, 'damage to player', hit_id)
                 else:
                     if item.Item.all_items[item_index].item_type == 1:
@@ -676,13 +684,23 @@ class GameMain:
                                 self.print_debug(7, 'player', player.number, 'died')
                         elif player.health_point > 0:
                             player.change_status(character.Character.RELAX)
+                            player.killer = -1
                             self.print_debug(7, 'player', player.number, 'resurrected')
                     else:
-                        if player.get_damage(self.poison.damage_per_frame, 'ARMOR_PIERCING'):
+                        # to understand this part of code, i will give explain how the player.killer works:
+                        # if some player hit this player in poison in one frame, the one who gives him most damage
+                        # will surely be the killer
+                        # if some body kill this player in safe area, frames latter the circle shrink to here,
+                        # then though the player.most_damage is 0, but player.killer is still the murder
+                        # if this player is alive but get poison to die with some other damage in the same frame, then
+                        # if somebody give him more damage than circle, killer will be him, or killer is -1
+                        # if this poor gay
+                        if player.get_damage(self.poison.damage_per_frame, -1, 'ARMOR_PIERCING'):
                             self.print_debug(13, 'the circle', self.poison.damage_per_frame, 'damage to', player.number)
                         if player.can_be_healed() and player.health_point <= 0:
                             player.health_point = 0
-                            self.die_order.append(player.number)
+                            self.all_kills.setdefault(player.killer, []).append(player.number)
+                            self.die_order.append((player.number, self.__turn))
                             self.die_list.append(player.number)
                             player.change_status(character.Character.REAL_DEAD)
                             self.print_debug(7, 'player', player.number, 'died out of circle')
@@ -705,6 +723,8 @@ class GameMain:
             def update_for_each(player_number):
                 player = self.number_to_player[player_number]
                 # deal with status
+                if not player.can_be_hit():
+                    return
                 if player.move_cd:
                     player.move_cd -= 1
                 if player.shoot_cd:
@@ -836,10 +856,8 @@ class GameMain:
 
         # deal with last frame
         if self.game_over():
-            win_team = [player.number for player in (self.last_alive_teams[0] if len(self.last_alive_teams) else [])]
-            self.print_debug(0, 'in turn', self.__turn, 'game over with alive teams:', win_team)
-            for player in win_team:
-                self.die_list.append(player)
+            self.over_process()
+
         # return pack data after refreshing
         return self.pack_for_platform()
 
@@ -926,6 +944,56 @@ class GameMain:
         self.playback_file.write(data)
         self.playback_file.flush()
         self.print_debug(50, "write", len(data), "bytes into the playback file")
+        return
+
+    def over_process(self):
+        # deal with the winner
+        win_team = [player.number for player in (self.last_alive_teams[0] if len(self.last_alive_teams) else [])]
+        self.print_debug(0, 'in turn', self.__turn, 'game over with alive teams:', win_team)
+        for player in win_team:
+            self.die_list.append(player)
+
+        # deal with the score
+        score = {}
+        team_save = {}
+        for team in self.all_players:
+            team_save[team[0].team] = []
+            score[team[0].team] = 0
+            for player in team:
+                score[player.team] += len(self.all_kills.get(player.number, [])) * self.all_parameters[
+                    'score_by_kill_one']
+                team_save[player.team].append(player.number)
+
+        # now deal with out order
+        team_out_order = []
+        self.print_debug(0, 'all players death order and frame:', self.die_order)
+        for number, frame in self.die_order:
+            team_number = self.number_to_player[number].team
+            team_save[team_number].remove(number)
+            if not len(team_save[team_number]):
+                team_out_order.append(team_number)
+                team_save.pop(team_number)
+
+        # if there is any team alive, must be one team with chicken dinner
+        assert len(team_save) <= 1
+        if len(team_save):
+            team_out_order.append(team_save.popitem()[0])
+
+        # get score for each one's rank
+        for rank in range(-1, -len(team_out_order) - 1, -1):
+            score[team_out_order[rank]] += self.all_parameters['score_by_rank'].get(str(-rank), 0)
+
+        # output result information
+        self.print_debug(0, 'all players score are:', score)
+        result = {
+            'score': score,
+            'team_out_order': team_out_order,
+            'order_of_death': self.die_order,
+        }
+        with open(self.playback_file.name[:-2] + '.json', 'w') as file:
+            dump(result, file)
+
+        self.playback_file.close()
         return
 
     def print_debug(self, level, *args, sep=' ', end='\n', file=None):

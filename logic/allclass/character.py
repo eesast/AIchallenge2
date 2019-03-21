@@ -72,6 +72,10 @@ class Character(Object):  # the base class of all characters
         self.last_weapon = -1
         self.best_armor = -1
 
+        # for save the killing information
+        self.killer = -1
+        self.most_damage = 0
+
         # save if the character is in some special block
         self.block = None
 
@@ -117,7 +121,11 @@ class Character(Object):  # the base class of all characters
 
     move_factor = [0, 0.2, 0.5, 0.3]
 
-    def move(self):
+    def update(self):
+        # first initialize some variables for this turn
+        self.most_damage = 0
+
+        # then deal with moving
         # without move cd, needn't move
         if self.move_cd == 0:
             return None
@@ -190,7 +198,7 @@ class Character(Object):  # the base class of all characters
     def can_make_footsteps(self):
         return not (self.is_jumping() or self.is_flying())
 
-    def get_damage(self, damage, parameter=None):
+    def get_damage(self, damage, hitter=-1, parameter=None):
         vests = [
             Item.all_data['VEST_1']['number'],
             Item.all_data['VEST_2']['number'],
@@ -206,6 +214,10 @@ class Character(Object):  # the base class of all characters
                     self.bag[vest] = new_durability if new_durability > 0 else 0
             real_damage = damage - reduce
             self.health_point -= real_damage
+            if real_damage > self.most_damage:
+                # update the player who give this player most damage in this frame
+                self.most_damage = real_damage
+                self.killer = hitter
             return real_damage
         else:
             return False
