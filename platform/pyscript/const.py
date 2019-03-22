@@ -10,7 +10,7 @@ def load_json(config_path):
     with open(config_path, 'r', encoding='utf-8') as config_file:
         data_paths = json.load(config_file)
     data_dct = {}
-    data_keys = ['CHARACTER', 'ITEM', 'SOUND', 'MAP']
+    data_keys = ['CHARACTER', 'ITEM', 'SOUND', 'MAP', 'CIRCLE']
     for data_key in data_keys:
         path = os.path.join(os.path.dirname(config_path),
                             data_paths[data_key+'_FILE_PATH'])
@@ -30,7 +30,7 @@ def enum2str(enum_name, enum_list, ignore_list=[], upper=True):
     for i, name in enumerate(enum_list2):
         enum_str += '    %s = %d,\n' % (name, i)
     enum_str += '    %s = %d,\n' % (enum_name +
-                                    ('_NB' if upper else '_nb'), len(enum_list2))
+                                    ('_SZ' if upper else '_sz'), len(enum_list2))
     enum_str += '};\n\n'
     return enum_str
 
@@ -52,7 +52,7 @@ def character2str(character_dct):
 
     # data table
     table = 'const vocation_property VOCATION_DATA[%s] = \n{ // ' % (
-        'VOCATION_NB',)
+        'VOCATION_SZ',)
     for key in data_keys:
         table += '%10s' % (key,)
     table += '\n'
@@ -107,7 +107,7 @@ def item2str(item_dct):
 
     # data table
     table = 'const item_property ITEM_DATA[%s] = \n{ // ' % (
-        'ITEM_NB',)
+        'ITEM_SZ',)
     for key in key_infos.keys():
         table += '%11s' % (key,)
     table += '\n'
@@ -116,7 +116,7 @@ def item2str(item_dct):
         for key_str, info in key_infos.items():
             value = data[key_str]
             if isinstance(value, str) and value == '':
-                value = ('ITEM_' + key_str + '_NB').upper()
+                value = ('ITEM_' + key_str + '_SZ').upper()
             if info[0] == 'enum':
                 table += '%*s,' % (12 if key_str == 'mode' else 10, value)
             elif info[0] == 'int':
@@ -147,7 +147,7 @@ def sound2str(sound_dct):
     sound_str = enum2str('SOUND', [macro for macro, _ in dct_by_nb])
 
     # data table
-    table = 'const sound_property SOUND_DATA[%s] = \n{ // ' % ('SOUND_NB',)
+    table = 'const sound_property SOUND_DATA[%s] = \n{ // ' % ('SOUND_SZ',)
     for key in data_keys:
         table += '%10s' % (key,)
     table += '\n'
@@ -181,7 +181,7 @@ def map2str(map_dct):
 struct block {
     BLOCK_SHAPE shape;
     BLOCK_TYPE type;
-    int x0, y0, r, x1, y2;
+    int x0, y0, r, x1, y1;
     //when shape == RECTANGLE, (x0, y0) and (x1, y1) are used (left-top and right-bottom)
     //when shape == CIRCLE, (x0, y0) and r are used (center and radius)
     //when shape == DOT, only (x0, y0) is used as its position
@@ -193,7 +193,7 @@ struct block {
     s += enum2str('AREA', list(map_dct.keys()), ignore_list=['map'])
     # area data table
     area_table = 'const std::vector<block> AREA_DATA[%s] = \n{ //     ' % (
-        'AREA_NB',)
+        'AREA_SZ',)
     data_widths = [11, 21, 6, 6, 6, 6, 6]
     data_keys = ['shape', 'type', 'x0', 'y0', 'r', 'x1', 'y2']
 
@@ -222,9 +222,10 @@ struct block {
                         area_table += '%5d,%5d,%5d},\n' % (0, 0, 0)
         area_table += '    },    // %s\n' % (area_name,)
     area_table += '};\n\n'
-    
+
     # MAP
-    map_str = 'const AREA MAP[%d] = \n{\n    ' % (len(map_dct['map']))
+    map_str = 'const int MAP_SZ = %d;\n\n' % (len(map_dct['map']),)
+    map_str += 'const AREA MAP[%s] = \n{\n    ' % ('MAP_SZ',)
     cnt = 0
     for name in map_dct['map']:
         if cnt == 10:
@@ -234,6 +235,38 @@ struct block {
         cnt += 1
     map_str += '\n};\n\n'
     return s + area_table + map_str
+
+
+def circle2str(circle_dct):
+    dct_by_nb = circle_dct.items()
+    dct_by_nb = sorted(dct_by_nb, key=lambda k: int(k[0]))
+    data_keys = list(dct_by_nb[0][1].items())
+    circle_sz = len(dct_by_nb)
+
+    # property struct
+    property_str = 'struct circle_property\n{\n'
+    for key, value in data_keys:
+        property_str += '    %s %s;\n' % (
+            'int' if isinstance(value, int) else 'double', key)
+    property_str += '};\n\n'
+
+    # data table
+    table = 'const int CIRCLE_SZ = %d;\n\n' % (circle_sz,)
+    table += 'const circle_property CIRCLE_DATA[%s] = \n{ // ' % ('CIRCLE_SZ',)
+    for key, _ in data_keys:
+        table += '%10s' % (key,)
+    table += '\n'
+    for _, data in dct_by_nb:
+        table += '    {'
+        for value in data.values():
+            if isinstance(value, float):
+                table += '%9.2f,' % (value,)
+            else:
+                table += '%9d,' % (value,)
+        table = table[:-1] + '},\n'
+    table += '};\n\n'
+
+    return property_str + table
 
 
 DEBUG = True
@@ -293,7 +326,8 @@ enum STATUS
 
 '''
     s = s+character2str(constant_dct['CHARACTER'])+item2str(
-        constant_dct['ITEM']) + sound2str(constant_dct['SOUND']) + map2str(constant_dct['MAP'])
+        constant_dct['ITEM']) + sound2str(constant_dct['SOUND']) + \
+        map2str(constant_dct['MAP']) + circle2str(constant_dct['CIRCLE'])
     s += '#endif'
     with open(constant_path, 'w') as const:
         const.write(s)

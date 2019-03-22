@@ -96,9 +96,9 @@ enum ITEM
     BONDAGE = 15,
     FIRST_AID_CASE = 16,
     CODE_CASE = 17,
-    X2_TIMES_SCOPE = 18,
-    X4_TIMES_SCOPE = 19,
-    X8_TIMES_SCOPE = 20,
+    SCOPE_2 = 18,
+    SCOPE_4 = 19,
+    SCOPE_8 = 20,
     ITEM_NB = 21,
 };
 
@@ -136,9 +136,9 @@ const item_property ITEM_DATA[ITEM_NB] =
     {     GOODS,        15,         1,   SPENDABLE,         0,         5,         0,         0,    -20.00,        60},    // BONDAGE
     {     GOODS,        16,         1,   SPENDABLE,         0,         8,         0,         0,   -100.00,        20},    // FIRST_AID_CASE
     {     GOODS,        17,         1,   TRIGGERED,         0,         0,         0,         0,      0.00,        30},    // CODE_CASE
-    {     GOODS,        18,         1,   SPENDABLE,         0,         0,         0,         0,      0.00,        50},    // X2_TIMES_SCOPE
-    {     GOODS,        19,         1,   SPENDABLE,         0,         0,         0,         0,      0.00,        25},    // X4_TIMES_SCOPE
-    {     GOODS,        20,         1,   SPENDABLE,         0,         0,         0,         0,      0.00,        10},    // X8_TIMES_SCOPE
+    {     GOODS,        18,         1,   SPENDABLE,         0,         0,         0,         0,      0.00,        50},    // SCOPE_2
+    {     GOODS,        19,         1,   SPENDABLE,         0,         0,         0,         0,      0.00,        25},    // SCOPE_4
+    {     GOODS,        20,         1,   SPENDABLE,         0,         0,         0,         0,      0.00,        10},    // SCOPE_8
 };
 
 enum SOUND

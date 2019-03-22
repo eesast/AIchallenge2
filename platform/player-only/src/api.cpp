@@ -133,6 +133,7 @@ namespace ts20
 			}
 		}
 	}
+
 	void parachute(VOCATION role, XYPosition landing_points)
 	{
 		comm::Command sender;
@@ -144,6 +145,7 @@ namespace ts20
 		std::cout << "AI:" << sender.DebugString() << std::endl;
 		player_send(sender.SerializeAsString());
 	}
+
 	void shoot(ITEM item_type, double shoot_angle, int parameter)
 	{
 		comm::Command sender;
@@ -153,6 +155,7 @@ namespace ts20
 		sender.set_parameter(parameter);
 		player_send(sender.SerializeAsString());
 	}
+
 	void move(double move_angle, double view_angle, int parameter)
 	{
 		comm::Command sender;
@@ -162,6 +165,7 @@ namespace ts20
 		sender.set_parameter(parameter);
 		player_send(sender.SerializeAsString());
 	}
+
 	void pickup(int target_ID, int parameter)
 	{
 		comm::Command sender;
@@ -170,6 +174,7 @@ namespace ts20
 		sender.set_parameter(parameter);
 		player_send(sender.SerializeAsString());
 	}
+
 	void radio(int target_ID, int msg)
 	{
 		comm::Command sender;
@@ -178,6 +183,7 @@ namespace ts20
 		sender.set_parameter(msg);
 		player_send(sender.SerializeAsString());
 	}
+
 	void update_info()
 	{
 		player_update(_new_frame);
@@ -185,6 +191,7 @@ namespace ts20
 			;
 		_parse(_new_frame, _new_data);
 	}
+
 	bool try_update_info()
 	{
 		player_update(_new_frame);
@@ -196,6 +203,40 @@ namespace ts20
 		{
 			_parse(_new_frame, _new_data);
 			return true;
+		}
+	}
+
+	block get_landform(int landform_ID)
+	{
+		int area_ID = (landform_ID >> 8) & 0x0000'00FF;
+		int block_ID = landform_ID & 0x0000'00FF;
+		if (area_ID < MAP_SZ || block_ID < AREA_DATA[MAP[area_ID]].size())
+		{
+			block b = AREA_DATA[MAP[area_ID]][block_ID];
+			int bias_x = 100 * (area_ID % 10);
+			int bias_y = 100 * (area_ID / 10);
+			switch (b.shape)
+			{
+			case DOT:
+			case CIRCLE:
+				b.x0 += bias_x;
+				b.y0 += bias_y;
+				break;
+			case RECTANGLE:
+				b.x0 += bias_x;
+				b.y0 += bias_y;
+				b.x1 += bias_x;
+				b.y1 += bias_y;
+				break;
+			default:
+				break;
+			}
+			return b;
+		}
+		else
+		{
+			// wrong landform id
+			return { BLOCK_SHAPE_SZ,BLOCK_TYPE_SZ,0,0,0,0,0 };
 		}
 	}
 }

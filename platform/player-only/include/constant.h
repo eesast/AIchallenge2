@@ -38,7 +38,7 @@ enum VOCATION
     SIGNALMAN = 1,
     HACK = 2,
     SNIPER = 3,
-    VOCATION_NB = 4,
+    VOCATION_SZ = 4,
 };
 
 struct vocation_property
@@ -52,7 +52,7 @@ struct vocation_property
     double skill;
 };
 
-const vocation_property VOCATION_DATA[VOCATION_NB] = 
+const vocation_property VOCATION_DATA[VOCATION_SZ] = 
 { //     number        hp  distance     angle    radius      move     skill
     {        0,   120.00,   160.00,   124.00,     0.50,     1.80,     0.50},    // MEDIC
     {        1,   100.00,   160.00,   124.00,     0.45,     1.60,     2.00},    // SIGNALMAN
@@ -65,7 +65,7 @@ enum ITEM_TYPE
     WEAPON = 0,
     ARMOR = 1,
     GOODS = 2,
-    ITEM_TYPE_NB = 3,
+    ITEM_TYPE_SZ = 3,
 };
 
 enum ITEM_MODE
@@ -73,7 +73,7 @@ enum ITEM_MODE
     PORTABLE = 0,
     SPENDABLE = 1,
     TRIGGERED = 2,
-    ITEM_MODE_NB = 3,
+    ITEM_MODE_SZ = 3,
 };
 
 enum ITEM
@@ -96,10 +96,10 @@ enum ITEM
     BONDAGE = 15,
     FIRST_AID_CASE = 16,
     CODE_CASE = 17,
-    X2_TIMES_SCOPE = 18,
-    X4_TIMES_SCOPE = 19,
-    X8_TIMES_SCOPE = 20,
-    ITEM_NB = 21,
+    SCOPE_2 = 18,
+    SCOPE_4 = 19,
+    SCOPE_8 = 20,
+    ITEM_SZ = 21,
 };
 
 struct item_property
@@ -116,29 +116,29 @@ struct item_property
     int occur;
 };
 
-const item_property ITEM_DATA[ITEM_NB] = 
+const item_property ITEM_DATA[ITEM_SZ] = 
 { //        type     number durability       mode      range         cd     damage     reduce      param      occur
-    {    WEAPON,         0,      9999,ITEM_MODE_NB,         1,         4,        30,         0,     30.00,         0},    // FIST
-    {    WEAPON,         1,         8,ITEM_MODE_NB,        80,         4,        25,         0,      2.50,       100},    // HAND_GUN
-    {    WEAPON,         2,        20,ITEM_MODE_NB,       100,         1,        25,         0,      2.50,        50},    // SUBMACHINE_GUN
-    {    WEAPON,         3,        15,ITEM_MODE_NB,       150,         3,        30,         0,      1.50,        50},    // SEMI_AUTOMATIC_RILE
-    {    WEAPON,         4,        20,ITEM_MODE_NB,       150,         2,        40,         0,      2.00,        35},    // ASSAULT_RIFLE
-    {    WEAPON,         5,        50,ITEM_MODE_NB,       100,         1,        40,         0,      3.00,        20},    // MACHINE_GUN
-    {    WEAPON,         6,         8,ITEM_MODE_NB,       600,         8,       100,         0,      0.50,        20},    // SNIPER_RILFE
-    {    WEAPON,         7,         5,ITEM_MODE_NB,      1000,        10,       150,         0,      0.30,        10},    // SNIPER_BARRETT
-    {    WEAPON,         8,        20,ITEM_MODE_NB,         2,         5,        50,         0,     60.00,        30},    // TIGER_BILLOW_HAMMER
-    {    WEAPON,         9,        10,ITEM_MODE_NB,       100,         6,        30,         0,      1.00,        25},    // CROSSBOW
-    {     ARMOR,        10,       100,ITEM_MODE_NB,         0,         0,         0,         0,      0.00,        50},    // VEST_1
-    {     ARMOR,        11,       150,ITEM_MODE_NB,         0,         0,         0,         0,      0.00,        25},    // VEST_2
-    {     ARMOR,        12,       200,ITEM_MODE_NB,         0,         0,         0,         0,      0.00,        10},    // VEST_3
-    {     ARMOR,        13,       100,ITEM_MODE_NB,         0,         0,         0,         0,      0.00,        30},    // INSULATED_CLOTHING
+    {    WEAPON,         0,      9999,ITEM_MODE_SZ,         1,         4,        30,         0,     30.00,         0},    // FIST
+    {    WEAPON,         1,         8,ITEM_MODE_SZ,        80,         4,        25,         0,      2.50,       100},    // HAND_GUN
+    {    WEAPON,         2,        20,ITEM_MODE_SZ,       100,         1,        25,         0,      2.50,        50},    // SUBMACHINE_GUN
+    {    WEAPON,         3,        15,ITEM_MODE_SZ,       150,         3,        30,         0,      1.50,        50},    // SEMI_AUTOMATIC_RILE
+    {    WEAPON,         4,        20,ITEM_MODE_SZ,       150,         2,        40,         0,      2.00,        35},    // ASSAULT_RIFLE
+    {    WEAPON,         5,        50,ITEM_MODE_SZ,       100,         1,        40,         0,      3.00,        20},    // MACHINE_GUN
+    {    WEAPON,         6,         8,ITEM_MODE_SZ,       600,         8,       100,         0,      0.50,        20},    // SNIPER_RILFE
+    {    WEAPON,         7,         5,ITEM_MODE_SZ,      1000,        10,       150,         0,      0.30,        10},    // SNIPER_BARRETT
+    {    WEAPON,         8,        20,ITEM_MODE_SZ,         2,         5,        50,         0,     60.00,        30},    // TIGER_BILLOW_HAMMER
+    {    WEAPON,         9,        10,ITEM_MODE_SZ,       100,         6,        30,         0,      1.00,        25},    // CROSSBOW
+    {     ARMOR,        10,       100,ITEM_MODE_SZ,         0,         0,         0,         0,      0.00,        50},    // VEST_1
+    {     ARMOR,        11,       150,ITEM_MODE_SZ,         0,         0,         0,         0,      0.00,        25},    // VEST_2
+    {     ARMOR,        12,       200,ITEM_MODE_SZ,         0,         0,         0,         0,      0.00,        10},    // VEST_3
+    {     ARMOR,        13,       100,ITEM_MODE_SZ,         0,         0,         0,         0,      0.00,        30},    // INSULATED_CLOTHING
     {     GOODS,        14,         1,    PORTABLE,         0,         0,         0,         0,      0.30,        10},    // MUFFLER
     {     GOODS,        15,         1,   SPENDABLE,         0,         5,         0,         0,    -20.00,        60},    // BONDAGE
     {     GOODS,        16,         1,   SPENDABLE,         0,         8,         0,         0,   -100.00,        20},    // FIRST_AID_CASE
     {     GOODS,        17,         1,   TRIGGERED,         0,         0,         0,         0,      0.00,        30},    // CODE_CASE
-    {     GOODS,        18,         1,   SPENDABLE,         0,         0,         0,         0,      0.00,        50},    // X2_TIMES_SCOPE
-    {     GOODS,        19,         1,   SPENDABLE,         0,         0,         0,         0,      0.00,        25},    // X4_TIMES_SCOPE
-    {     GOODS,        20,         1,   SPENDABLE,         0,         0,         0,         0,      0.00,        10},    // X8_TIMES_SCOPE
+    {     GOODS,        18,         1,   SPENDABLE,         0,         0,         0,         0,      0.00,        50},    // SCOPE_2
+    {     GOODS,        19,         1,   SPENDABLE,         0,         0,         0,         0,      0.00,        25},    // SCOPE_4
+    {     GOODS,        20,         1,   SPENDABLE,         0,         0,         0,         0,      0.00,        10},    // SCOPE_8
 };
 
 enum SOUND
@@ -147,7 +147,7 @@ enum SOUND
     FOOTSTEP_SOUND = 1,
     GUN_SOUND = 2,
     BOOM_SOUND = 3,
-    SOUND_NB = 4,
+    SOUND_SZ = 4,
 };
 
 struct sound_property
@@ -157,7 +157,7 @@ struct sound_property
     double distance;
 };
 
-const sound_property SOUND_DATA[SOUND_NB] = 
+const sound_property SOUND_DATA[SOUND_SZ] = 
 { //     number     speed  distance
     {        0,   500.00,  3000.00},    // RADIO_VOICE
     {        1,    50.00,   100.00},    // FOOTSTEP_SOUND
@@ -170,7 +170,7 @@ enum BLOCK_SHAPE
     DOT = 0,
     CIRCLE = 1,
     RECTANGLE = 2,
-    BLOCK_SHAPE_NB = 3,
+    BLOCK_SHAPE_SZ = 3,
 };
 
 enum BLOCK_TYPE
@@ -183,14 +183,14 @@ enum BLOCK_TYPE
     TREE = 5,
     RECTANGLE_GRASS = 6,
     CIRCLE_GRASS = 7,
-    BLOCK_TYPE_NB = 8,
+    BLOCK_TYPE_SZ = 8,
 };
 
 
 struct block {
     BLOCK_SHAPE shape;
     BLOCK_TYPE type;
-    int x0, y0, r, x1, y2;
+    int x0, y0, r, x1, y1;
     //when shape == RECTANGLE, (x0, y0) and (x1, y1) are used (left-top and right-bottom)
     //when shape == CIRCLE, (x0, y0) and r are used (center and radius)
     //when shape == DOT, only (x0, y0) is used as its position
@@ -208,10 +208,10 @@ enum AREA
     ROADB = 7,
     GRASS = 8,
     FOREST = 9,
-    AREA_NB = 10,
+    AREA_SZ = 10,
 };
 
-const std::vector<block> AREA_DATA[AREA_NB] = 
+const std::vector<block> AREA_DATA[AREA_SZ] = 
 { //           shape                 type    x0    y0     r    x1    y2
     {
         { RECTANGLE,          DEEP_WATER,    0,  100,    0,  100,    0},
@@ -450,7 +450,9 @@ const std::vector<block> AREA_DATA[AREA_NB] =
     },    // forest
 };
 
-const AREA MAP[100] = 
+const int MAP_SZ = 100;
+
+const AREA MAP[MAP_SZ] = 
 {
            SEA,     BEACH,     BEACH,     BEACH,       SEA,       SEA,     BEACH,     BEACH,       SEA,       SEA,
            SEA,      CITY,  FARMLAND,  FARMLAND,     GRASS,    FOREST,    FOREST,  FARMLAND,     BEACH,       SEA,
@@ -462,6 +464,31 @@ const AREA MAP[100] =
          BEACH,  FARMLAND,      CITY,  FARMLAND,      HILL,      HILL,    FOREST,    FOREST,    FOREST,     BEACH,
            SEA,    FOREST,      POOL,    FOREST,     GRASS,       SEA,     GRASS,     GRASS,      CITY,       SEA,
            SEA,       SEA,     BEACH,     BEACH,       SEA,       SEA,       SEA,     BEACH,     BEACH,       SEA,
+};
+
+struct circle_property
+{
+    int items;
+    int delay;
+    int wait;
+    int move;
+    double damage;
+    double shrink;
+};
+
+const int CIRCLE_SZ = 9;
+
+const circle_property CIRCLE_DATA[CIRCLE_SZ] = 
+{ //      items     delay      wait      move    damage    shrink
+    {     1000,      200,      200,      200,     0.50,     0.75},
+    {      500,        0,      200,      180,     0.75,     0.60},
+    {      250,        0,      200,      160,     1.00,     0.50},
+    {      125,        0,      200,      140,     1.25,     0.50},
+    {       50,        0,      200,      120,     1.50,     0.50},
+    {       50,        0,      200,      100,     2.00,     0.50},
+    {       50,        0,      200,       80,     3.00,     0.50},
+    {       50,        0,      200,       60,     5.00,     0.50},
+    {       50,        0,      200,       40,    10.00,     0.00},
 };
 
 #endif

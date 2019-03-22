@@ -11,5 +11,6 @@ namespace ts20
 	void radio(int target_ID, int msg);
 	void update_info();
 	bool try_update_info();
+	block get_landform(int landform_ID);
 }
 #endif
