@@ -6,6 +6,7 @@ import proto.platform_pb2 as platform
 # from multiprocessing import Pool
 from random import randrange
 from json import load
+from json import dump
 import math
 import time
 import struct
@@ -13,7 +14,7 @@ import struct
 #   here define a debug level variable to debug print-oriented
 #   remember: here is just a initial level for logic
 #   platform may give another number in game_init
-PRINT_DEBUG = 25
+PRINT_DEBUG = 0
 
 
 #   level 0: print key stage information for the game
@@ -59,7 +60,7 @@ class GameMain:
     def __init__(self):
 
         # it's more like a define instead of an initialization
-        self.die_order = []  # save the player's dying order
+        self.die_order = []  # save the player's dying order and frames
         self.die_list = []  # die order in this frame for platform
         self.map_items = [[[] for row in range(10)] for column in range(10)]  # try to divide map into 256 parts
         self.map = terrain.Map()
@@ -698,7 +699,7 @@ class GameMain:
                             self.print_debug(13, 'the circle', self.poison.damage_per_frame, 'damage to', player.number)
                         if player.can_be_healed() and player.health_point <= 0:
                             player.health_point = 0
-                            self.all_kills.setdefault(player.number, []).append(player.killer)
+                            self.all_kills.setdefault(player.killer, []).append(player.number)
                             self.die_order.append((player.number, self.__turn))
                             self.die_list.append(player.number)
                             player.change_status(character.Character.REAL_DEAD)
@@ -722,6 +723,8 @@ class GameMain:
             def update_for_each(player_number):
                 player = self.number_to_player[player_number]
                 # deal with status
+                if not player.can_be_hit():
+                    return
                 if player.move_cd:
                     player.move_cd -= 1
                 if player.shoot_cd:
@@ -853,10 +856,8 @@ class GameMain:
 
         # deal with last frame
         if self.game_over():
-            win_team = [player.number for player in (self.last_alive_teams[0] if len(self.last_alive_teams) else [])]
-            self.print_debug(0, 'in turn', self.__turn, 'game over with alive teams:', win_team)
-            for player in win_team:
-                self.die_list.append(player)
+            self.over_process()
+
         # return pack data after refreshing
         return self.pack_for_platform()
 
@@ -943,6 +944,56 @@ class GameMain:
         self.playback_file.write(data)
         self.playback_file.flush()
         self.print_debug(50, "write", len(data), "bytes into the playback file")
+        return
+
+    def over_process(self):
+        # deal with the winner
+        win_team = [player.number for player in (self.last_alive_teams[0] if len(self.last_alive_teams) else [])]
+        self.print_debug(0, 'in turn', self.__turn, 'game over with alive teams:', win_team)
+        for player in win_team:
+            self.die_list.append(player)
+
+        # deal with the score
+        score = {}
+        team_save = {}
+        for team in self.all_players:
+            team_save[team[0].team] = []
+            score[team[0].team] = 0
+            for player in team:
+                score[player.team] += len(self.all_kills.get(player.number, [])) * self.all_parameters[
+                    'score_by_kill_one']
+                team_save[player.team].append(player.number)
+
+        # now deal with out order
+        team_out_order = []
+        self.print_debug(0, 'all players death order and frame:', self.die_order)
+        for number, frame in self.die_order:
+            team_number = self.number_to_player[number].team
+            team_save[team_number].remove(number)
+            if not len(team_save[team_number]):
+                team_out_order.append(team_number)
+                team_save.pop(team_number)
+
+        # if there is any team alive, must be one team with chicken dinner
+        assert len(team_save) <= 1
+        if len(team_save):
+            team_out_order.append(team_save.popitem()[0])
+
+        # get score for each one's rank
+        for rank in range(-1, -len(team_out_order) - 1, -1):
+            score[team_out_order[rank]] += self.all_parameters['score_by_rank'].get(str(-rank), 0)
+
+        # output result information
+        self.print_debug(0, 'all players score are:', score)
+        result = {
+            'score': score,
+            'team_out_order': team_out_order,
+            'order_of_death': self.die_order,
+        }
+        with open(self.playback_file.name[:-2] + '.json', 'w') as file:
+            dump(result, file)
+
+        self.playback_file.close()
         return
 
     def print_debug(self, level, *args, sep=' ', end='\n', file=None):
