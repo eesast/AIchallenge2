@@ -229,11 +229,13 @@ void Controller::run()
 				GetExitCodeThread(_info[i].handle, &exitCode);
 				if (exitCode == STILL_ACTIVE)
 				{
-					_info[i].state = AI_STATE::SUSPENDED;
+					_info[i].mtx.lock();
 					if (SuspendThread(_info[i].handle) == 0xFFFFFFFF)
 					{
 						mylog << "player: " << i << " Cannot suspend Thread" << _info[i].threadID << " Error Code: " << GetLastError() << std::endl;
 					}
+					_info[i].mtx.unlock();
+					_info[i].state = AI_STATE::SUSPENDED;
 				}
 				else
 				{
@@ -256,7 +258,10 @@ void Controller::run()
 	{
 		for (int i = 0; i < _player_count; ++i)
 		{
-			if (_command_parachute[i].empty())
+			_info[i].mtx.lock();
+			bool isempty = _command_parachute[i].empty();
+			_info[i].mtx.unlock();
+			if (isempty)
 			{
 				_kill_one(i);
 				mylog << "player: " << i << " is killed because of sending nothing when parachuting" << std::endl;
@@ -312,7 +317,9 @@ bool Controller::_parse(const std::string & data)
 			c.view_angle = recv.view_angle();
 			c.target_ID = recv.target_id();
 			c.parameter = recv.parameter();
+			_info[playerID].mtx.lock();
 			_command_action[playerID].push_back(c);
+			_info[playerID].mtx.unlock();
 			return true;
 		}
 		else
@@ -322,7 +329,9 @@ bool Controller::_parse(const std::string & data)
 			c.landing_point.y = recv.landing_point().y();
 			c.role = recv.role();
 			c.team = _info[playerID].team;
+			_info[playerID].mtx.lock();
 			_command_parachute[playerID].push_back(c);
+			_info[playerID].mtx.unlock();
 			return true;
 		}
 	}

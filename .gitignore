@@ -1,6 +1,7 @@
 #ignore pycharm/vscode/vs configuration/temp files
 
 /.vscode
+/playback
 
 # platform
 /platform/build

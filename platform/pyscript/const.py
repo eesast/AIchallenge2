@@ -269,7 +269,7 @@ def circle2str(circle_dct):
     return property_str + table
 
 
-DEBUG = True
+DEBUG = False
 
 
 def main():

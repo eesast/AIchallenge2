@@ -43,6 +43,7 @@ class Controller
         //function pointer for callback
         AI_Func player_func = nullptr;
         Recv_Func recv_func = nullptr;
+		std::mutex mtx;
     };
 
 public:
@@ -119,7 +120,6 @@ public:     //comm with pycalling
 
 DWORD WINAPI thread_func(LPVOID lpParameter);
 
-//not atomic, maybe cause bugs.
 bool controller_receive(const std::string data);
 //send data to player immediately
 void controller_update(int player_frame);

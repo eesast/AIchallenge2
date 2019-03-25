@@ -28,11 +28,6 @@ int main()
 	std::string path_str = "./AI/";
 	fs::path path(path_str);
 	path = fs::current_path() / path;
-	// if (argc > 1)
-	// {
-	// 	path_str = argv[1];
-	// 	path = fs::path(path_str);
-	// }
 
 	//log system
 	auto time_str = get_date_string(true);

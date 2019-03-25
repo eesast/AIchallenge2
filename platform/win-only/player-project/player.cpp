@@ -22,8 +22,8 @@ void play_game()
 		std::cout << "pick succeed" << std::endl;
 	if (frame == 0)
 	{
-		srand(time(nullptr) +teammates[0]);
-		XYPosition landing_point = { 100, 200 };
+		srand(time(nullptr) + teammates[0]);
+		XYPosition landing_point = { 150 + rand() % 100, 150 + rand() % 100 };
 		parachute(HACK, landing_point);
 		return;
 	}
