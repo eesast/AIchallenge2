@@ -13,7 +13,6 @@ extern PlayerInfo info;
 
 void play_game()
 {
-	
 	update_info();
 	std::cout << "player:frame" << frame << "\nhp:" << info.self.hp << std::endl;
 	std::cout << "positon" << info.self.xy_pos.x << ' ' << info.self.xy_pos.y << std::endl;
@@ -22,7 +21,7 @@ void play_game()
 	if (frame == 0)
 	{
 		srand(time(nullptr) +teammates[0]);
-		XYPosition landing_point = { rand() % 100 + 450, rand() % 100 + 450 };
+		XYPosition landing_point = { 160,160 };
 		parachute(HACK, landing_point);
 		return;
 	}
@@ -35,16 +34,17 @@ void play_game()
 		std::cout << "jumping" << std::endl;
 		return;
 	}
+	//see nothing
+	double move_angle = 0;
+	double view_angle = move_angle;
+	move(move_angle, view_angle);
+	std::cout << "move" << move_angle << std::endl;
 	if (info.others.empty())
 	{
 		std::cout << "no others" << std::endl;
 		if (info.items.empty())
 		{
-			//see nothing
-			double move_angle = 0;
-			double view_angle = move_angle;
-			move(move_angle, view_angle);
-			std::cout << "move" << move_angle << std::endl;
+
 		}
 		else
 		{

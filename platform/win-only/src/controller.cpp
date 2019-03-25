@@ -251,6 +251,18 @@ void Controller::run()
 			}
 		}
 	}
+	//kill AI who sended nothing when parachuting
+	if (_frame == 0)
+	{
+		for (int i = 0; i < _player_count; ++i)
+		{
+			if (_command_parachute[i].empty())
+			{
+				_kill_one(i);
+				mylog << "player: " << i << " is killed because of sending nothing when parachuting" << std::endl;
+			}
+		}
+	}
 	++_frame;
 }
 

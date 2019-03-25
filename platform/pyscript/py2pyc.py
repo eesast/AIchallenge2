@@ -5,7 +5,23 @@ import os
 import shutil
 
 DIR = '.'
+# remove everything that dose not end with .py .ini .json
+need_files=['.py','.json','.ini']
+list_dirs = os.walk(DIR)
+for root, _, files in list_dirs:
+    for name in files:
+        if (not os.path.splitext(name)[-1] in need_files):
+            os.remove(os.path.join(root, name))
+list_dirs = os.walk(DIR)
 
+# remove all unused dirs
+need_dirs = ['allclass','data','proto']
+for root, dirs, _ in list_dirs:
+    for name in dirs:
+        if not name in need_dirs:
+            shutil.rmtree(os.path.join(root, name))
+
+# generate pyc
 list_dirs = os.walk(DIR)
 for root, _, files in list_dirs:
     py_files = filter(lambda name: name[-3:] == '.py', files)

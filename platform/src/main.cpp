@@ -8,7 +8,6 @@
 #pragma warning(disable : 4996)
 
 std::ofstream mylog;
-std::ofstream filename2id;
 
 std::string get_date_string(bool filename)
 {
@@ -16,7 +15,7 @@ std::string get_date_string(bool filename)
 	char mbstr[100];
 	if (std::strftime(mbstr, sizeof(mbstr), (filename ? "%F_%H-%M-%S" : "%c"), std::localtime(&t)))
 	{
-		return {mbstr};
+		return { mbstr };
 	}
 	return {};
 }
@@ -39,30 +38,32 @@ int main()
 	auto time_str = get_date_string(true);
 	fs::create_directory(fs::current_path() / fs::path(L"log/"));
 	mylog.open("./log/log" + time_str + ".txt");
-	filename2id.open("./log/filename2id" + time_str + ".json");
 	mylog << get_date_string(false) << std::endl;
 
 	// init
 	manager.route = logic.init();
-	manager.init(path, filename2id);
-	filename2id.close();
+	manager.init(path);
 
 	//run
 	std::pair<std::map<int, std::string>, std::vector<int>> state_c;
+	manager.run();
 	if (manager.has_living_player())
 	{
-		manager.run();
 		state_c = logic.parachute(manager.get_parachute_commands());
 		manager.player_infos = state_c.first;
 		manager.dead = state_c.second;
-	}
-	while (manager.has_living_player())
-	{
-		manager.run();
-		state_c = logic.do_loop(manager.get_action_commands());
-		manager.player_infos = state_c.first;
-		manager.dead = state_c.second;
-		mylog.flush();
+		while (true)
+		{
+			manager.run();
+			mylog.flush();
+			if (!manager.has_living_player())
+			{
+				break;
+			}
+			state_c = logic.do_loop(manager.get_action_commands());
+			manager.player_infos = state_c.first;
+			manager.dead = state_c.second;
+		}
 	}
 	logic.~Pycalling(); //avoid SEGFAULT about Protobuf when calling Py_Finalize() after "return 0"
 	mylog << "exit normally" << std::endl;
