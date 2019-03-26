@@ -64,12 +64,11 @@ class Position:  # this is a class for position and reload some operator
 
     # it should be in [0,360)
     def get_angle(self, other=None):
-        if not other:
+        if other is None:
             # get the angle of the vector itself
             angle = atan2(self.y, self.x) * 180 / pi
             return angle if angle >= 0 else angle + 360
-        if not isinstance(other, Position):
-            raise Exception("wrong type of position!")
+
         # get the angle for two vector
         length_product = sqrt(self.length2() * other.length2())
         if length_product < 1e-5:
@@ -122,6 +121,8 @@ class Position:  # this is a class for position and reload some operator
             theta -= 180
         if theta >= 90:
             theta = 180 - theta
+        theta = theta * pi / 180
+        angle = angle * pi / 180
         dx = distance * cos(theta) - radius * cos(angle)
         dy = distance * sin(theta) - radius * sin(angle)
         if dx < 0:
