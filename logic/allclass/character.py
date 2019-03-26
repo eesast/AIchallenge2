@@ -71,6 +71,7 @@ class Character(Object):  # the base class of all characters
         # these variables are just for interface
         self.last_weapon = -1
         self.best_armor = -1
+        self.move_cd_max = None
 
         # for save the killing information
         self.killer = -1
@@ -163,6 +164,9 @@ class Character(Object):  # the base class of all characters
             self.move_cd = 0
             self.shoot_cd = 0
 
+        elif new_status == Character.PICKING:
+            self.move_cd = 0
+
         # consider different current status
         if self.status == Character.RELAX:
             pass
@@ -185,11 +189,8 @@ class Character(Object):  # the base class of all characters
                 new_status = Character.MOVING_SHOOTING
 
         elif self.status == Character.PICKING:
-            if self.move_cd:
-                new_status = Character.MOVING
-                if self.shoot_cd:
-                    new_status = Character.MOVING_SHOOTING
-            elif self.shoot_cd:
+            assert self.move_cd == 0
+            if self.shoot_cd:
                 new_status = Character.SHOOTING
 
         self.status = new_status
@@ -226,6 +227,11 @@ class Character(Object):  # the base class of all characters
         self.view_angle = Character.all_data[self.vocation]['angle'] / times
         self.view_distance = Character.all_data[self.vocation]['distance'] / times
         return True
+
+    def get_height(self):
+        if not self.is_jumping():
+            return 0.
+        return 1 - self.move_cd / self.move_cd_max
 
 
 if __name__ == '__main__':

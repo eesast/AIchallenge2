@@ -83,6 +83,7 @@ class Block(Object):
             block.set_rectangle(param)
             block.bumped = False
             block.block_view = False
+            block.number = -2   # this one shouldn't be got, if you see -2, bug occurs
         else:
             print('resolve failed for block', name)
             assert 0
@@ -148,6 +149,8 @@ class Area:
         for block in area.blocks:
             block.position += Position(number % 10 * 100, number // 10 * 100)
             block.number = number << 8 | block.number
+        for block in area.airdrop_blocks:
+            block.position += Position(number % 10 * 100, number // 10 * 100)
         return area
 
 
@@ -229,8 +232,8 @@ class Map:
                 self.last_bumped_block = block
                 break
         else:
-            return False
-        return True
+            return True
+        return False
 
     def get_random_area_id(self):
         # get area to put item

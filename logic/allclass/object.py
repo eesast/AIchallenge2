@@ -48,7 +48,7 @@ class Object(object):
         if not self.bumped:
             return False
         if self.shape == Object.CIRCLE:
-            return (pos - self.position).length2() >= (radius + self.radius) * (radius + self.radius)
+            return (pos - self.position).length2() < (radius + self.radius) * (radius + self.radius)
         elif self.shape == Object.RECTANGLE:
             distance = pos.distance_to_rectangle(self.position, self.radius, self.angle)
             return True if distance < 0 else distance < radius

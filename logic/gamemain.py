@@ -14,7 +14,8 @@ import struct
 #   here define a debug level variable to debug print-oriented
 #   remember: here is just a initial level for logic
 #   platform may give another number in game_init
-PRINT_DEBUG = 0
+PRINT_DEBUG = 25
+#   !!set PRINT_DEBUG to -1 to close the debug system!!
 
 
 #   level 0: print key stage information for the game
@@ -62,7 +63,7 @@ class GameMain:
         # it's more like a define instead of an initialization
         self.die_order = []  # save the player's dying order and frames
         self.die_list = []  # die order in this frame for platform
-        self.map_items = [[[] for row in range(10)] for column in range(10)]  # try to divide map into 256 parts
+        self.map_items = [[set() for row in range(10)] for column in range(10)]  # try to divide map into 256 parts
         self.map = terrain.Map()
         self.last_alive_teams = []
 
@@ -70,7 +71,8 @@ class GameMain:
         self.all_bullets = []
         self.all_sounds = []
         self.all_drugs = []
-        self.all_wild_items = {}
+        self.new_items = []
+        self.removed_items = []
         self.all_parameters = {}
         self.all_areas_players = {}
         self.all_kills = {}
@@ -149,8 +151,8 @@ class GameMain:
             item_type = item.Item.get_random_item()
             new_id = item.Item.add(item_type, pos)
             new_item = item.Item.all_items[new_id]
-            self.all_wild_items[new_id] = item.Item.all_data[item_type]['number'], pos
-            self.map_items[area_id // 10][area_id % 10].append(new_item)
+            self.new_items.append(new_item)
+            self.map_items[area_id // 10][area_id % 10].add(new_item)
         self.print_debug(0, 'map items initialize finished')
         return
 
@@ -380,9 +382,9 @@ class GameMain:
         def instructions():
             # pick up
             for player_number, command in self.all_commands['pickup'].items():
-                picked_item = item.Item.all_items[command[0]]
+                picked_item = item.Item.all_items.get(command[0], None)
                 player = self.number_to_player[player_number]
-                if self.all_wild_items.get(picked_item.number, None) is None:
+                if picked_item is None:
                     self.print_debug(4, 'player', player_number, 'try to pick item not existing or belonging to others')
                 if picked_item.number not in self.all_info[player_number].items:
                     self.print_debug(4, 'player', player_number, 'try to pick item out of view')
@@ -393,7 +395,9 @@ class GameMain:
                         if picked_item.data['macro'] == 'CODE_CASE':
                             if player.vocation == character.Character.HACK:
                                 item.Item.remove(picked_item.number)
-                                self.all_wild_items.pop(picked_item.number)
+                                area_id = picked_item.position.get_area_id()
+                                self.removed_items.append(command[0])
+                                self.map_items[area_id // 10][area_id % 10].remove(picked_item)
                                 self.print_debug(16, 'player', player_number, 'opens code case', picked_item.number,
                                                  end='')
                                 # now open the case
@@ -411,8 +415,10 @@ class GameMain:
                         # now this player can get it
                         player.bag[picked_item.item_type] = player.bag.setdefault(picked_item.item_type, 0) + \
                                                             picked_item.durability
-                        self.all_wild_items.pop(picked_item.number)
+                        area_id = picked_item.position.get_area_id()
+                        self.map_items[area_id // 10][area_id % 10].remove(picked_item)
                         item.Item.remove(picked_item.number)
+                        self.removed_items.append(command[0])
                         self.number_to_player[player_number].change_status(character.Character.PICKING)
                         self.print_debug(16, 'player', player_number, 'picks', picked_item.data['name'],
                                          picked_item.number)
@@ -543,6 +549,7 @@ class GameMain:
                     self.all_areas_players.setdefault(player.position.get_area_id(), []).append(player)
 
         def items():
+            self.new_items.clear()
             if self.last_poison_flag is None:
                 # initialize items in the map
                 self.map_init()
@@ -560,8 +567,8 @@ class GameMain:
                             item_type = item.Item.get_random_item()
                             new_id = item.Item.add(item_type, pos)
                             new_item = item.Item.all_items[new_id]
-                            self.all_wild_items[new_id] = item.Item.all_data[item_type]['number'], pos
-                            self.map_items[area_id // 10][area_id % 10].append(new_item)
+                            self.new_items.append(new_item)
+                            self.map_items[area_id // 10][area_id % 10].add(new_item)
                 self.print_debug(0, 'items added finished in turn', self.__turn)
             self.last_poison_flag = self.poison.flag
             return
@@ -627,6 +634,8 @@ class GameMain:
                 player = self.number_to_player[player_id]
                 player_info = self.all_info[player_id]
                 player_info.others = [other for other in player_info.others if available(other)]
+
+                return
 
             # update vision first
             for player_number in self.all_info:
@@ -725,12 +734,17 @@ class GameMain:
                 # deal with status
                 if not player.can_be_hit():
                     return
-                if player.move_cd:
-                    player.move_cd -= 1
-                if player.shoot_cd:
-                    player.shoot_cd -= 1
+
                 if player.is_picking():
                     player.change_status(character.Character.RELAX)
+
+                if player.shoot_cd:
+                    player.shoot_cd -= 1
+                    if player.shoot_cd == 0:
+                        player.change_status(character.Character.RELAX)
+
+                if player.move_cd:
+                    player.move_cd -= 1
                 if player.move_cd == 0:
 
                     if player.is_flying():
@@ -739,8 +753,9 @@ class GameMain:
                         player.position = player.jump_position
                         player.move_direction = (player.land_position - player.jump_position).unitize()
                         player.move_speed = character.Character.JUMPING_SPEED
-                        player.move_cd = int((player.land_position - player.jump_position).length() /
+                        player.move_cd_max =int((player.land_position - player.jump_position).length() /
                                              player.move_speed + 1)
+                        player.move_cd = player.move_cd
                         player.face_direction = player.move_direction
                     elif player.is_jumping():
                         # jump to the land, and then relax
@@ -787,15 +802,6 @@ class GameMain:
                 for player in team:
                     if player.is_flying() or not player.is_alive():
                         continue
-                    elif player.is_jumping():
-                        # give parachute information
-                        new_info = data.parachutists.add()
-                        new_info.id = player.number
-                        new_info.HP = int(player.health_point)
-                        new_info.face_direction = player.face_direction.get_angle()
-                        new_info.pos.x, new_info.pos.y = player.position.x, player.position.y
-                        new_info.jump_pos.x, new_info.jump_pos.y = player.jump_position.x, player.jump_position.y
-                        new_info.land_pos.x, new_info.land_pos.y = player.land_position.x, player.land_position.y
                     else:
                         # give normal player information
                         new_info = data.players.add()
@@ -805,13 +811,18 @@ class GameMain:
                         new_info.weapon = player.last_weapon
                         new_info.armor = player.best_armor
                         new_info.face_direction = player.face_direction.get_angle()
-            # give all items information
-            for item_id, type_pos_tuple in self.all_wild_items.items():
-                type_id, pos = type_pos_tuple
-                new_item = data.items.add()
-                new_item.id = item_id
-                new_item.type = type_id
+                        new_info.height = player.get_height()
+
+            # give all new items information
+            for each_item in self.new_items:
+                pos = each_item.position
+                new_item = data.new_items.add()
+                new_item.id = each_item.number
+                new_item.type = each_item.item_type
                 new_item.pos.x, new_item.pos.y = pos.x, pos.y
+
+            # give all removed items information
+            data.removed_items.extend(self.removed_items)
 
             # give circle's information
             data.circle.status = self.poison.flag
@@ -939,6 +950,8 @@ class GameMain:
         return all_data
 
     def write_playback(self, interface_data):
+        if self.playback_file.closed:
+            return
         data = interface_data.SerializeToString()
         self.playback_file.write(struct.pack('i', len(data)))
         self.playback_file.write(data)
