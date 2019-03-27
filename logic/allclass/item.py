@@ -47,9 +47,10 @@ class Item(Object):   # class for each equipment and goods
         with open(parent_path + item_file_path, "r", encoding="utf-8") as file:
             all_data = load(file)
         for key, value in all_data.items():
+            item_type = value['number']
             Item.all_data[key] = value
-            Item.all_data[key]['name'] = key
-            Item.all_data[value['number']] = Item.all_data[key]
+            Item.all_data[item_type] = all_data[key]
+            Item.all_data[item_type]['name'] = key
             occur = value['occur']
             if occur:
                 Item.index_to_type[len(Item.index_to_type)] = value['number']

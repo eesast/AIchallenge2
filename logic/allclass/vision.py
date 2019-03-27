@@ -97,8 +97,8 @@ class Sweep:
             return distance2 <= self.view_distance2 and abs(theta) < self.half_view_angle
 
         visible_areas = []
-        polar_positions = [self.position.get_polar_position2(self.direction, Position(i * 100, j * 100)) for i in range(
-            11) for j in range(11)]
+        polar_positions = [self.position.get_polar_position2(self.direction, Position(x * 100, y * 100)) for y in range(
+            11) for x in range(11)]
         for i in range(100):
             if visible(i) or visible(i + 1) or visible(i + 10) or visible(i + 11):
                 visible_areas.append(i)
@@ -109,29 +109,26 @@ class Sweep:
         for area_id in visible_areas:
             # blocks
             for block in Sweep.areas[area_id].blocks:
-                distance2 = block.position.distance2(self.position)
+                distance2, relative_angle = self.position.get_polar_position2(self.direction, block.position)
                 if distance2 > self.view_distance2:
                     continue
-                relative_angle = self.position.get_angle(block.position)
                 if self.half_view_angle < relative_angle < 360 - self.half_view_angle:
                     continue
                 potential.append((block, relative_angle, distance2))
             # players
             for player in self.area_to_players.get(area_id, []):
                 if player is self.player:
-                    pass
-                distance2 = player.position.distance2(self.position)
+                    continue
+                distance2, relative_angle = self.position.get_polar_position2(self.direction, player.position)
                 if distance2 > self.view_distance2:
                     continue
-                relative_angle = self.position.get_angle(player.position)
                 if self.half_view_angle < relative_angle < 360 - self.half_view_angle:
                     continue
                 potential.append((player, relative_angle, distance2))
             for item in self.map_items[area_id // 10][area_id % 10]:
-                distance2 = item.position.distance2(self.position)
+                distance2, relative_angle = self.position.get_polar_position2(self.direction, item.position)
                 if distance2 > self.view_distance2:
                     continue
-                relative_angle = self.position.get_angle(item.position)
                 if self.half_view_angle < relative_angle < 360 - self.half_view_angle:
                     continue
                 potential.append((item, relative_angle, distance2))
