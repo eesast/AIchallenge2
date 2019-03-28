@@ -2,7 +2,10 @@
     "character":
     {
         "move_step":[0,0.2,0.5,0.3],
-        "reduce":80.0
+        "airplane":50.0,
+        "pick_distance":1.0,
+        "reduce":80.0,
+        "jumping":20.0
     },
     "main":
     {

@@ -221,12 +221,18 @@ def get_parameter_data(sheet_parameter):
     for i in range(1, 9):
         data['main']['score_by_rank'][i] = int(col[i + 4])
 
+    data['character']['airplane'] = col[13]
+    data['character']['pick_distance'] = col[14]
+
     col = sheet_parameter.col_values(4)
     data['main']['damage_param'] = col[2]
     data['character']['reduce'] = col[3]
     data['main']['score_by_kill_one'] = int(col[4])
     for i in range(9, 17):
         data['main']['score_by_rank'][i] = int(col[i - 4])
+
+    data['character']['jumping'] = col[13]
+
     return data
 
 
