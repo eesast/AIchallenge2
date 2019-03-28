@@ -14,7 +14,7 @@ extern PlayerInfo info;
 void play_game()
 {
 	/* Your code in this function */
-/* sample AI */
+	/* sample AI */
 	update_info();
 	std::cout << "player:frame" << frame << "\nhp:" << info.self.hp << std::endl;
 	std::cout << "positon" << info.self.xy_pos.x << ' ' << info.self.xy_pos.y << std::endl;

@@ -765,7 +765,7 @@ class GameMain:
                             # here we should adjust player's position
                             block = self.map.last_bumped_block
                             vector = player.position - block.position
-                            direction = vector.unitize
+                            direction = vector.unitize()
                             if block.shape == object.Object.CIRCLE:
                                 adjust_distance = player.radius + block.radius - abs(vector)
                                 new_position = block.position + direction * adjust_distance

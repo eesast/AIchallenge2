@@ -59,6 +59,7 @@ void play_game()
 				}
 			}
 			std::cout << "status" << info.self.status << std::endl;
+			std::cout << "**closest item angle" << closest_item.polar_pos.angle << "distance" << closest_item.polar_pos.distance << "**" << std::endl;
 			if (closest_item.polar_pos.distance < 1)
 			{
 				pickup(closest_item.item_ID);

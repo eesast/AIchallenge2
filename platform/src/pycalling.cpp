@@ -165,5 +165,8 @@ void Pycalling::_traceback(const std::string &err)
 	mylog << err << std::endl;
 	PyRun_SimpleString("import traceback");
 	PyRun_SimpleString("traceback.print_exc(file = sys.stdout)");
+#ifdef WIN32
+	system("pause");
+#endif
 	exit(1);
 }

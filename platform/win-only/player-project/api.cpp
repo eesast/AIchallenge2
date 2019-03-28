@@ -27,6 +27,7 @@ namespace ts20
 				over_pos.x = recv.over_pos().x();
 				over_pos.y = recv.over_pos().y();
 				std::cout << "teammate:";
+				teammates.clear();
 				for (auto teammate : recv.teammates())
 				{
 					teammates.push_back(teammate);
@@ -46,7 +47,7 @@ namespace ts20
 			comm::PlayerInfo recv;
 			if (recv.ParseFromString(data))
 			{
-				//SelfInfo
+				// SelfInfo
 				const auto & self = recv.self();
 				auto & self_c = info.self;
 				self_c.hp = self.health_point();
@@ -62,6 +63,8 @@ namespace ts20
 				self_c.xy_pos.y = self.pos().y();
 				self_c.view_width = self.view_width();
 				self_c.view_distance = self.view_distance();
+				// bag
+				self_c.bag.clear();
 				for (const auto & item : self.bag())
 				{
 					Item item_c;
@@ -72,12 +75,14 @@ namespace ts20
 					item_c.polar_pos.distance = item.pos().distance();
 					self_c.bag.push_back(item_c);
 				}
-				//landform
+				// landform
+				info.landform_IDs.clear();
 				for (const auto & landform_id : recv.landform_id())
 				{
 					info.landform_IDs.push_back(landform_id);
 				}
-				//items
+				// items
+				info.items.clear();
 				for (const auto & item : recv.items())
 				{
 					Item item_c;
@@ -89,6 +94,7 @@ namespace ts20
 					info.items.push_back(item_c);
 				}
 				//others
+				info.others.clear();
 				for (const auto & other : recv.others())
 				{
 					OtherInfo other_c;
@@ -103,6 +109,7 @@ namespace ts20
 					info.others.push_back(other_c);
 				}
 				//sound
+				info.sounds.clear();
 				for (const auto & sound : recv.sounds())
 				{
 					Sound sound_c;

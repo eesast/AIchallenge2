@@ -241,6 +241,8 @@ void Controller::run()
 				{
 					_info[i].state = AI_STATE::UNUSED;
 					CloseHandle(_info[i].handle);
+					_info[i].handle = 0;
+					_info[i].threadID = static_cast<DWORD>(0);
 				}
 			}
 		}
@@ -250,6 +252,8 @@ void Controller::run()
 			{
 				_info[i].state = AI_STATE::UNUSED;
 				CloseHandle(_info[i].handle);
+				_info[i].handle = 0;
+				_info[i].threadID = static_cast<DWORD>(0);
 			}
 		}
 	}
@@ -389,7 +393,7 @@ std::map<int, COMMAND_PARACHUTE> Controller::get_parachute_commands()
 		return m;
 	for (int i = 0; i < _player_count; ++i)
 	{
-		if (!_command_parachute[i].empty())
+		if (!_command_parachute[i].empty() && _info[i].state!=AI_STATE::DEAD)
 		{
 			m[i] = _command_parachute[i].back();
 		}
@@ -404,7 +408,7 @@ std::map<int, std::vector<COMMAND_ACTION>> Controller::get_action_commands()
 		return m;
 	for (int i = 0; i < _player_count; ++i)
 	{
-		if (!_command_action[i].empty())
+		if (!_command_action[i].empty() && _info[i].state != AI_STATE::DEAD)
 		{
 			m[i] = { _command_action[i].cbegin(),_command_action[i].cend() };
 		}

@@ -22,6 +22,11 @@ std::string get_date_string(bool filename)
 
 int main()
 {
+#ifdef WIN32
+	int batch_size;
+	std::cout << "Choose batch size( <= core number in your computer, input 0 for using all core):";
+	std::cin >> batch_size;
+#endif
 	namespace fs = std::filesystem;
 	std::cout << fs::current_path() << std::endl;
 	fs::create_directory(fs::current_path() / fs::path(L"AI/"));
@@ -37,7 +42,7 @@ int main()
 
 	// init
 	manager.route = logic.init();
-	manager.init(path);
+	manager.init(path, static_cast<DWORD>(batch_size));
 
 	//run
 	std::pair<std::map<int, std::string>, std::vector<int>> state_c;
@@ -63,5 +68,8 @@ int main()
 	logic.~Pycalling(); //avoid SEGFAULT about Protobuf when calling Py_Finalize() after "return 0"
 	mylog << "exit normally" << std::endl;
 	mylog.close();
+#ifdef WIN32
+	system("pause");
+#endif
 	return 0;
 }
