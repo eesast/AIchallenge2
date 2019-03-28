@@ -15,6 +15,8 @@ import struct
 #   remember: here is just a initial level for logic
 #   platform may give another number in game_init
 PRINT_DEBUG = 25
+
+
 #   !!set PRINT_DEBUG to -1 to close the debug system!!
 
 
@@ -109,6 +111,8 @@ class GameMain:
                 parameter_data = load(file)
             self.all_parameters = parameter_data['main']
             character.Character.all_params = parameter_data['character']
+            character.Character.JUMPING_SPEED = parameter_data['character']['jumping']
+            character.Character.AIRPLANE_SPEED = parameter_data['character']['airplane']
             return parameter_data
 
         if file_path[-1] != '/' and file_path[-1] != '\\':
@@ -388,7 +392,7 @@ class GameMain:
                     self.print_debug(4, 'player', player_number, 'try to pick item not existing or belonging to others')
                 if picked_item.number not in self.all_info[player_number].items:
                     self.print_debug(4, 'player', player_number, 'try to pick item out of view')
-                elif not player.position.pick_accessible(picked_item.position):
+                elif not player.pick_accessible(picked_item.position):
                     self.print_debug(4, 'player', player_number, "tyr to pick item beyond pick range")
                 else:
                     if picked_item.data.get('mode', None) == 'TRIGGERED':
@@ -454,7 +458,7 @@ class GameMain:
                 elif item_data['damage'] < 0:
                     if player.vocation == character.Character.MEDIC and other >= 0:
                         if other in self.number_to_team[player.team]:
-                            if self.number_to_player[other].position.pick_accessible(player.position):
+                            if self.number_to_player[other].pick_accessible(player.position):
                                 if self.number_to_player[other].can_be_healed():
                                     self.all_drugs.append((item_type, other, player_id))
                                     player.bag[item_type] -= 1
@@ -753,8 +757,8 @@ class GameMain:
                         player.position = player.jump_position
                         player.move_direction = (player.land_position - player.jump_position).unitize()
                         player.move_speed = character.Character.JUMPING_SPEED
-                        player.move_cd_max =int((player.land_position - player.jump_position).length() /
-                                             player.move_speed + 1)
+                        player.move_cd_max = int((player.land_position - player.jump_position).length() /
+                                                 player.move_speed + 1)
                         player.move_cd = player.move_cd
                         player.face_direction = player.move_direction
                     elif player.is_jumping():
@@ -765,7 +769,7 @@ class GameMain:
                             # here we should adjust player's position
                             block = self.map.last_bumped_block
                             vector = player.position - block.position
-                            direction = vector.unitize
+                            direction = vector.unitize()
                             if block.shape == object.Object.CIRCLE:
                                 adjust_distance = player.radius + block.radius - abs(vector)
                                 new_position = block.position + direction * adjust_distance
