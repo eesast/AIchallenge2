@@ -1,10 +1,16 @@
-# 第二届人工智能挑战赛——枪林弹雨
+    # 第二届人工智能挑战赛——枪林弹雨
 # 平台使用说明与开发注意事项
+版本长期发布链接[清华云盘](https://cloud.tsinghua.edu.cn/d/513cdc8459f742e0980a/)
 #### 版本 v1.0rc1
 ------
+## 平台简介
+* 平台采用伪实时设计，在逻辑返回的同一时刻信息的基础上，所有AI并行运行（并行数受使用的逻辑核心数限制），多个批次之间串行运行，保证所有的AI运行相近的时间，如果在时间限制内函数没有返回，AI将被挂起，等待下一次执行。每一帧后，平台会收集AI调用API的数据反馈给逻辑更新场景信息，并反馈给平台，当AI调用update系列函数后更新信息。
+
+------
+
 ## 平台使用说明
 压缩包`TS20Platform_Win_X86_v1.0.zip`为运行平台
-1. AI目录用于存放玩家AI代码生成的.dll文件，要求将.dll文件改名为`AI_${team}_${number}.dll`，其中${team}为队伍信息，同一值的会被归入同一队伍，取值范围为[0,15]，${number}为队伍中的编号，取值范围为[0,3](例: `AI_3_2.dll`表示队伍3的2号玩家AI)。
+1. AI目录用于存放玩家AI代码生成的.dll文件，要求将.dll文件改名为`AI_${team}_${number}.dll`，其中`${team}`为队伍信息，同一值的会被归入同一队伍，取值范围为`[0,15]`，`${number}`为队伍中的编号，取值范围为`[0,3]`(例: `AI_3_2.dll`表示队伍3的2号玩家AI)。
 2. `log`目录存放平台运行时自动生成的信息，用于开发组debug工作。
 3. `playback`目录存放回放文件以及比赛结果(如果比赛完成)。
 4. 以上3个文件夹内容可以随意删除。
@@ -13,6 +19,8 @@
 7. 平台运行后会提示键入每次运行的AI程序数量，键入内容为数字，为保证不同AI同时运行时对资源占用的公平性，平台会限制每次同时运行的AI数小于等于本机逻辑核心数，并且将不同的AI分配到不同的逻辑核心上。键入0代表使用所有逻辑核心，键入其他大于0的数字代表使用相应数量的逻辑核心，超过实际核心数则会被设置为本机实际最大逻辑核心数。
 8. 不要使用两个逻辑核心（或单核处理器）运行3个AI程序，达成此条件可能会触发<strong>“巨硬的愤怒”</strong>。
 9. 场上至少有2支队伍，否则游戏会立即结束（因为吃鸡了）。
+10. 逻辑文件夹`logic`中有`main.pyc`与`main_debug.pyc`两个文件，默认情况下平台只输出少量错误提示信息，用`main_debug.pyc`替换（改名为）`main.pyc`后平台会输出大量可用于调试的信息，例如AI发送的指令、位置、视野等等。
+
 ---
 ## AI编写说明
 压缩包`player-project.zip`为供选手开发使用的工程（只提供vs2017）
@@ -22,6 +30,7 @@
 4. 工程将生成`AI.dll`文件，重命名移动到平台指定目录即可。
 5. **务必采用Release X86模式生成AI.dll**，否则会报错。
 6. 如有需要，可以通过清华云盘下载`Visual Studio 2017`离线安装包[vs_2017](https://cloud.tsinghua.edu.cn/f/711abb58c40946d7aed4/?dl=1)。
+
 ---
 ## AI工程架构
 ```
@@ -43,90 +52,90 @@ player-project
 ```cpp
 struct XYPosition   //表示绝对位置的直角坐标
 {
-double x, y;
+    double x, y;
 };
 ```
 ```cpp
 struct PolarPosition //表示相对位置的极坐标
 {
-double distance;    //距离
-double angle;       //角度
+    double distance;    //距离
+    double angle;       //角度
 };
 ```
 ### data.h
 ```cpp
 struct Item   //物品信息
 {
-int item_ID;    //物品的ID
-ITEM type;      //物品的种类（参见constant.h中的ITEM枚举）
-PolarPosition polar_pos;    //物品的坐标（如果在地上）
-int durability;             //物品的使用耐久
+	int item_ID;    //物品的ID
+	ITEM type;      //物品的种类（参见constant.h中的ITEM枚举）
+	PolarPosition polar_pos;    //物品的坐标（如果在地上）
+	int durability;             //物品的使用耐久
 };
 ```
 ```cpp
 struct PoisonInfo   //电圈信息
 {
-XYPosition current_center;      //电圈当前中心
-XYPosition next_center;         //下一电圈中心
-double current_radius;          //电圈当前半径
-double next_radius;             //下一电圈起始半径
-int rest_frames;                //帧数，参见下方注释
-// if it's 1, rest_frames means rest frames to move to next status 为1时rest_frames代表当前缩圈完成还需帧数
-// if it's 0, rest_frames means rest frames to start to move 为0时rest_frames代表距离下一次缩圈的帧数
-// if it's -1, the poison ring won't move(has become a node) 为-1时代表圈已经缩为点
-int move_flag;                  //标记，参看上方注释
+    XYPosition current_center;      //电圈当前中心
+    XYPosition next_center;         //下一电圈中心
+    double current_radius;          //电圈当前半径
+    double next_radius;             //下一电圈起始半径
+    int rest_frames;                //帧数，参见下方注释
+    // if it's 1, rest_frames means rest frames to move to next status 为1时rest_frames代表当前缩圈完成还需帧数
+    // if it's 0, rest_frames means rest frames to start to move 为0时rest_frames代表距离下一次缩圈的帧数
+    // if it's -1, the poison ring won't move(has become a node) 为-1时代表圈已经缩为点
+    int move_flag;                  //标记，参看上方注释
 };
 ```
 ```cpp
 struct SelfInfo     //本AI信息
 {
-double hp;          //当前血量
-double hp_limit;    //血量上限
-double move_angle;  //当前行进的绝对角度
-double view_angle;  //当前视线的绝对角度
-double move_speed;  //当前移动速度
-VOCATION vocation;  //职业
-STATUS status;      //当前状态（参看STATUS枚举）
-int move_cd;        //距本次移动结束的帧数
-int attack_cd;      //距可发起下一次攻击的帧数
-XYPosition xy_pos;  //本AI在地图上的XY坐标
-double view_width;  //当前视角
-double view_distance;   //视野（与视角一起形成一个扇形为可见区域）
-std::vector<Item> bag;  //本AI拥有的道具（枪、防具等等）
-//注：防具自动装备
+    double hp;          //当前血量
+    double hp_limit;    //血量上限
+    double move_angle;  //当前行进的绝对角度
+    double view_angle;  //当前视线的绝对角度
+    double move_speed;  //当前移动速度
+    VOCATION vocation;  //职业
+    STATUS status;      //当前状态（参看STATUS枚举）
+    int move_cd;        //距本次移动结束的帧数
+    int attack_cd;      //距可发起下一次攻击的帧数
+    XYPosition xy_pos;  //本AI在地图上的XY坐标
+    double view_width;  //当前视角
+    double view_distance;   //视野（与视角一起形成一个扇形为可见区域）
+    std::vector<Item> bag;  //本AI拥有的道具（枪、防具等等）
+    //注：防具自动装备
 };
 ```
 ```cpp
 struct OtherInfo        //视野中其他AI的信息
 {
-int player_ID;      //该AI的ID
-STATUS status;      //该AI的状态
-double move_angle;  //该AI的行进的绝对角度
-double view_angle;  //该AI的视线的绝对角度
-double move_speed;  //该AI的移动速度
-VOCATION vocation;  //该AI的职业
-PolarPosition polar_pos;    //该AI的相对于自身的极坐标相对位置
+    int player_ID;      //该AI的ID
+    STATUS status;      //该AI的状态
+    double move_angle;  //该AI的行进的绝对角度
+    double view_angle;  //该AI的视线的绝对角度
+    double move_speed;  //该AI的移动速度
+    VOCATION vocation;  //该AI的职业
+    PolarPosition polar_pos;    //该AI的相对于自身的极坐标相对位置
 };
 ```
 ```cpp
 struct Sound            //无线电与声音信息
 {
-int sender;         //无线电发送者ID或环境声音(为-1时)
-int delay;          //延时，用于预估距离
-SOUND type;         //声音类型（参见SOUND枚举）
-int32_t parameter;  //无线电内容
+    int sender;         //无线电发送者ID或环境声音(为-1时)
+    int delay;          //延时，用于预估距离
+    SOUND type;         //声音类型（参见SOUND枚举）
+    int32_t parameter;  //无线电内容
 };
 ```
 ```cpp
 struct PlayerInfo       //所有信息的聚合
 {
-int player_ID;      //本AI的ID
-SelfInfo self;      //自身信息
-std::vector<int> landform_IDs;  //视野中的地形的ID
-std::vector<Item> items;        //视野中的物品（在地上的）
-std::vector<OtherInfo> others;  //视野中的其他AI（自行辨别敌友）
-std::vector<Sound> sounds;      //听到的声音与收到的无线电
-PoisonInfo poison;              //电圈信息
+    int player_ID;      //本AI的ID
+    SelfInfo self;      //自身信息
+    std::vector<int> landform_IDs;  //视野中的地形的ID
+    std::vector<Item> items;        //视野中的物品（在地上的）
+    std::vector<OtherInfo> others;  //视野中的其他AI（自行辨别敌友）
+    std::vector<Sound> sounds;      //听到的声音与收到的无线电
+    PoisonInfo poison;              //电圈信息
 };
 ```
 ### player.cpp
@@ -144,30 +153,57 @@ extern PlayerInfo info;                 //所有信息的聚合
 ```cpp
 enum STATUS //状态
 {
-RELAX = 0,  //无动作
-ON_PLANE = 1,   //在飞机上
-JUMPING = 2,    //正在跳伞   
-MOVING = 3,     //移动中（与move_cd相关联）
-SHOOTING = 4,   //射击中（与attack_cd相关联）
-PICKUP = 5,     //正在捡东西
-MOVING_SHOOTING = 6,    //正在移动中射击
-DEAD = 7,       //假死（可被医疗兵救活）
-REAL_DEAD = 8   //真死
+    RELAX = 0,  	//无动作
+    ON_PLANE = 1,   //在飞机上
+    JUMPING = 2,    //正在跳伞   
+    MOVING = 3,     //移动中（与move_cd相关联）
+    SHOOTING = 4,   //射击中（与attack_cd相关联）
+    PICKUP = 5,     //正在捡东西
+    MOVING_SHOOTING = 6,    //正在移动中射击
+    DEAD = 7,       //假死（可被医疗兵救活）
+    REAL_DEAD = 8   //真死
 };
 ```
 ```cpp
 enum VOCATION
 {
-MEDIC = 0,      //医疗兵
-SIGNALMAN = 1,  //通信兵
-HACK = 2,       //黑客
-SNIPER = 3,     //狙击手
-VOCATION_SZ = 4,    //便于遍历（下同）
+    MEDIC = 0,      //医疗兵
+    SIGNALMAN = 1,  //通信兵
+    HACK = 2,       //黑客
+    SNIPER = 3,     //狙击手
+    VOCATION_SZ = 4,    //便于遍历（下同）
 };
 ```
-* PS:先略去能顾名思义的内容
-* `vocation_property`:存放职业常量的结构体
-* `VOCATION_DATA`:职业信息表格
+```cpp
+struct vocation_property
+{
+    int number;			//职业的编号（没用，看枚举就好，下同）
+    double hp;			//职业血量上限
+    double distance;	//视距
+    double angle;		//视角
+    double radius;		//人物半径
+    double move;		//移动因数（快慢）
+    double skill;		//技能因数
+};
+```
+* `VOCATION_DATA`:职业信息表格（**建议采用VOCATION_DATA[枚举名].xxx访问，下同**）
+```cpp
+
+```
+```cpp
+
+```
+```cpp
+
+```
+```cpp
+
+```
+```cpp
+
+```
+
+
 * `ITEM_TYPE`:道具的类型
 * `ITEM_MODE`:道具的使用模式（值为`ITEM_MODE_SZ`代表无模式）
 * `ITEM`:道具种类枚举
@@ -235,10 +271,10 @@ block get_landform(int landform_ID);
 ## 名词解释
 * 帧数:每个AI每次执行一定时间，称为1帧，相当于整个连续时间的离散化表示
 * 绝对位置:在整个地图上的XY坐标
-* 相对位置:极坐标，以当前人的视野为极坐标角度0值处，逆时针方向增大，角度取值范围在0~360
+* 相对位置:极坐标，以当前人的视野为极坐标角度0值处，逆时针方向增大，角度取值范围在0~360（换算关系与一般的直角坐标到极坐标的换算一致）
+
 ---
-## 平台简介
-* 平台采用伪实时设计，在逻辑返回的同一时刻信息的基础上，所有AI并行运行（并行数受使用的逻辑核心数限制），多个批次之间串行运行，保证所有的AI运行相近的时间，如果在时间限制内函数没有返回，AI将被挂起，等待下一次执行。每一帧后，平台会收集AI调用API的数据反馈给逻辑更新场景信息，并反馈给平台，当AI调用update系列函数后更新信息。
+
 ---
 ## 附
 1. 有任何问题请联系开发组解决
