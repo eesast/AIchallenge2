@@ -406,7 +406,7 @@ class GameMain:
                                                  end='')
                                 # now open the case
                                 picked_item = item.Item.get_reward_item()
-                                player.bag[picked_item.item_type] = player.bag.get(picked_item.item_type,
+                                player.bag[picked_item.item_type] = player.bag.get(picked_item.number,
                                                                                    0) + picked_item.durability
                                 self.number_to_player[player_number].change_status(character.Character.PICKING)
                                 self.print_debug(16, 'and he gets a', picked_item.data['name'])
