@@ -149,7 +149,7 @@
         "range":0,
         "cd":0,
         "damage":0,
-        "reduce":0,
+        "reduce":0.15,
         "param":0.0,
         "occur":50
     },
@@ -163,7 +163,7 @@
         "range":0,
         "cd":0,
         "damage":0,
-        "reduce":0,
+        "reduce":0.25,
         "param":0.0,
         "occur":25
     },
@@ -177,7 +177,7 @@
         "range":0,
         "cd":0,
         "damage":0,
-        "reduce":0,
+        "reduce":0.3,
         "param":0.0,
         "occur":10
     },
@@ -191,7 +191,7 @@
         "range":0,
         "cd":0,
         "damage":0,
-        "reduce":0,
+        "reduce":0.5,
         "param":0.0,
         "occur":30
     },
