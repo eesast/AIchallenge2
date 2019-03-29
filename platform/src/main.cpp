@@ -22,10 +22,18 @@ std::string get_date_string(bool filename)
 
 int main()
 {
+	int debug_level = 100;
+	int batch_size = 0;
 #ifdef WIN32
-	int batch_size;
+	int debug_flag;
 	std::cout << "Choose batch size( <= core number in your computer, input 0 for using all core):";
 	std::cin >> batch_size;
+	std::cout << "Choose debug level (1: lots of output, other: few output)";
+	std::cin >> debug_flag;
+	if (debug_flag != 1)
+	{
+		debug_level = 5;
+	}
 #endif
 	namespace fs = std::filesystem;
 	std::cout << fs::current_path() << std::endl;
@@ -41,7 +49,7 @@ int main()
 	mylog << get_date_string(false) << std::endl;
 
 	// init
-	manager.route = logic.init();
+	manager.route = logic.init(debug_level);
 	manager.init(path, static_cast<DWORD>(batch_size));
 
 	//run

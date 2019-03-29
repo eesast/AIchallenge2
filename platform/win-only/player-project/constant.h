@@ -16,9 +16,6 @@ struct PolarPosition
     double angle;
 };
 
-const double AIRPLANE_SPEED = 5;
-const double JUMPING_SPEED = 1;
-
 enum STATUS
 {
     RELAX = 0,
@@ -32,7 +29,11 @@ enum STATUS
     REAL_DEAD = 8
 };
 
-enum VOCATION
+const double AIRPLANE_SPEED = 50.0;
+const double JUMPING_SPEED = 20.0;
+const double PICKUP_DISTANCE = 1.0;
+
+ enum VOCATION
 {
     MEDIC = 0,
     SIGNALMAN = 1,

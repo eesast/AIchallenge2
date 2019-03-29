@@ -1,8 +1,14 @@
-    # 第二届人工智能挑战赛——枪林弹雨
+# 第二届人工智能挑战赛——枪林弹雨
 # 平台使用说明与开发注意事项
 版本长期发布链接[清华云盘](https://cloud.tsinghua.edu.cn/d/513cdc8459f742e0980a/)
 #### 版本 v1.0rc1
 ------
+### Update
+1. 完善了API文档。
+2. 更改了debug信息的选择方式，不需要自行替换文件了。
+3. 在constant.h中新增了一些信息（飞机速度、跳伞速度、最大拾取距离）
+---
+
 ## 平台简介
 * 平台采用伪实时设计，在逻辑返回的同一时刻信息的基础上，所有AI并行运行（并行数受使用的逻辑核心数限制），多个批次之间串行运行，保证所有的AI运行相近的时间，如果在时间限制内函数没有返回，AI将被挂起，等待下一次执行。每一帧后，平台会收集AI调用API的数据反馈给逻辑更新场景信息，并反馈给平台，当AI调用update系列函数后更新信息。
 
@@ -19,7 +25,7 @@
 7. 平台运行后会提示键入每次运行的AI程序数量，键入内容为数字，为保证不同AI同时运行时对资源占用的公平性，平台会限制每次同时运行的AI数小于等于本机逻辑核心数，并且将不同的AI分配到不同的逻辑核心上。键入0代表使用所有逻辑核心，键入其他大于0的数字代表使用相应数量的逻辑核心，超过实际核心数则会被设置为本机实际最大逻辑核心数。
 8. 不要使用两个逻辑核心（或单核处理器）运行3个AI程序，达成此条件可能会触发<strong>“巨硬的愤怒”</strong>。
 9. 场上至少有2支队伍，否则游戏会立即结束（因为吃鸡了）。
-10. 逻辑文件夹`logic`中有`main.pyc`与`main_debug.pyc`两个文件，默认情况下平台只输出少量错误提示信息，用`main_debug.pyc`替换（改名为）`main.pyc`后平台会输出大量可用于调试的信息，例如AI发送的指令、位置、视野等等。
+10. 平台运行后会提示键入debug等级，输入1平台会输出大量可用于调试的信息，例如AI发送的指令、位置、视野等等输入其他数字平台只输出少量错误提示信息，。
 
 ---
 ## AI编写说明
@@ -147,9 +153,11 @@ extern PlayerInfo info;                 //所有信息的聚合
 ```
 ---
 ## 常量表
+* **推荐对照提供的data.pdf阅读**
 * **结构体数组建议视为表格阅读**
 * `AIRPLANE_SPEED`:飞机速度
 * `JUMPING_SPEED`:跳伞过程中人的移动速度
+* `PICKUP_DISTANCE`:拾取物品的最远距离
 ```cpp
 enum STATUS //状态
 {
@@ -165,7 +173,7 @@ enum STATUS //状态
 };
 ```
 ```cpp
-enum VOCATION
+enum VOCATION		//职业
 {
     MEDIC = 0,      //医疗兵
     SIGNALMAN = 1,  //通信兵
@@ -175,7 +183,7 @@ enum VOCATION
 };
 ```
 ```cpp
-struct vocation_property
+struct vocation_property	//职业属性
 {
     int number;			//职业的编号（没用，看枚举就好，下同）
     double hp;			//职业血量上限
@@ -188,40 +196,103 @@ struct vocation_property
 ```
 * `VOCATION_DATA`:职业信息表格（**建议采用VOCATION_DATA[枚举名].xxx访问，下同**）
 ```cpp
-
+enum ITEM_TYPE		//物品类型
+{
+    WEAPON = 0,		//武器
+    ARMOR = 1,		//防具
+    GOODS = 2,		//道具
+    ITEM_TYPE_SZ = 3,
+};
 ```
 ```cpp
-
+enum ITEM_MODE		//物品使用类型
+{
+    PORTABLE = 0,		//携带即生效
+    SPENDABLE = 1,		//消耗品(shoot使用)
+    TRIGGERED = 2,		//拾取时生效(pickup触发)
+    ITEM_MODE_SZ = 3,	//无模式
+};
 ```
+* `ITEM`:道具种类枚举（太长了，自行参照`data.pdf`）
 ```cpp
-
+struct item_property	//物品属性
+{
+    ITEM_TYPE type;		//类型
+    int number;			//略
+    int durability;		//耐久度
+    ITEM_MODE mode;		//使用类型
+    int range;			//（武器的）射程
+    int cd;				//两次使用间隔帧数
+    int damage;			//（武器的）伤害
+    int reduce;			//略
+    double param;		//参数（武器-散射角 药品-负值-回血量）
+    int occur;			//出现概率因数
+};
 ```
-```cpp
-
-```
-```cpp
-
-```
-
-
-* `ITEM_TYPE`:道具的类型
-* `ITEM_MODE`:道具的使用模式（值为`ITEM_MODE_SZ`代表无模式）
-* `ITEM`:道具种类枚举
-* `item_property`:存放道具常量的结构体
 * `ITEM_DATA`:道具信息表格
-* `SOUND`:声音/无线电种类枚举
-* `sound_property`:存放声音/无线电常量的结构体
+```cpp
+enum SOUND			//声音、无线电
+{
+    RADIO_VOICE = 0,	//无线电
+    FOOTSTEP_SOUND = 1,	//脚步声
+    GUN_SOUND = 2,		//枪声
+    BOOM_SOUND = 3,		//炸弹声（暂无）
+    SOUND_SZ = 4,
+};
+```
+```cpp
+struct sound_property	//声音、无线电属性
+{
+    int number;			//略
+    double speed;		//每帧传播距离
+    double distance;	//最远传播距离
+};
+```
 * `SOUND_DATA`:声音/无线电信息表格
-* `BLOCK_SHAPE`:地形中的物体（树、房子等）的形状
-* `BLOCK_TYPE`:地形中的物体枚举
-* `block`:物体信息的结构体（其中的x0,y0等参数与物体的形状有关，参见代码注释）
+```cpp
+enum BLOCK_SHAPE	//物体形状
+{
+    DOT = 0,		//点，只有坐标
+    CIRCLE = 1,		//圆，提供圆心坐标与半径
+    RECTANGLE = 2,	//矩形，提供左上角和右下角的坐标
+    BLOCK_SHAPE_SZ = 3,
+};
+```
+* `BLOCK_TYPE`:地形中的物体枚举（略）
+```cpp
+struct block {		//物体属性
+    BLOCK_SHAPE shape;		//形状
+    BLOCK_TYPE type;		//类型
+    int x0, y0, r, x1, y1;	//相关坐标
+    //when shape == RECTANGLE, (x0, y0) and (x1, y1) are used (left-top and right-bottom)
+    //when shape == CIRCLE, (x0, y0) and r are used (center and radius)
+    //when shape == DOT, only (x0, y0) is used as its position
+};
+```
 * `AREA`:地形块枚举
 * `AREA_DATA`:每一个地形块的组成方式（每个地形块100×100范围上的物体，位置均为相对位置）
 * `MAP_SZ`:数组`MAP`的大小
-* `MAP`:描述地图的构成（由10×10个地形块构成，排序为先x轴从小到大，再y轴从小到大，整个地图为* 1000×1000）
-* `circle_property`:存放电圈信息的结构体
+* `MAP`:描述地图的构成（由10×10个地形块构成，排序为先x轴从小到大，再y轴从小到大，整个地图为1000×1000）
+```cpp
+struct circle_property	//电圈属性
+{
+    int items;			//刷新的物品数
+    int delay;			//延时（只对第一个圈有意义，在200帧前，不出现电圈）
+    int wait;			//电圈移动前的静止时间
+    int move;			//移动的时间
+    double damage;		//每帧对电圈内的造成的伤害
+    double shrink;		//电圈半径收缩的比例
+};
+```
 * `CIRCLE_SZ`:数组`CIRCLE_DATA`大小
 * `CIRCLE_DATA`:电圈数据表格
+
+---
+## 关于地形的解释
+* 地形的描述方法分为三个层级：地图（1000×1000）->地形块（每个100×100）->物体（树、房子...）。
+* 地形块数据`AREA_DATA`中提供的是物体在地形块的100×100区域内的坐标，具体到地图上需要根据地形块的位置加上适当的偏置。
+* 已有API（`get_landform`）可以实现从地形ID到物体绝对坐标的转化，如果需要自行处理地图，可以参考其中的代码。
+
 ---
 ## API
 * 所有的API均在命名空间ts20下，以避免与标准库冲突
@@ -268,10 +339,12 @@ bool try_update_info();
 block get_landform(int landform_ID);
 ```
 ---
+
 ## 名词解释
 * 帧数:每个AI每次执行一定时间，称为1帧，相当于整个连续时间的离散化表示
 * 绝对位置:在整个地图上的XY坐标
 * 相对位置:极坐标，以当前人的视野为极坐标角度0值处，逆时针方向增大，角度取值范围在0~360（换算关系与一般的直角坐标到极坐标的换算一致）
+* 绝对角度:地图对应的XY直角坐标系X轴正向为0，逆时针方向增大，取值在0~360
 
 ---
 
@@ -279,4 +352,4 @@ block get_landform(int landform_ID);
 ## 附
 1. 有任何问题请联系开发组解决
 
-最后更新于2019年3月28日
+最后更新于2019年3月29日

@@ -63,7 +63,7 @@ public:
     Pycalling(Pycalling &&) = delete;
     Pycalling &operator=(const Pycalling &) = delete;
     Pycalling &operator=(Pycalling &&) = delete;
-    ROUTE_T init();
+	ROUTE_T init(int debug_level = 100);
 	std::pair<std::map<int, std::string>, std::vector<int>> parachute(const std::map<int, COMMAND_PARACHUTE>&m);
 	std::pair<std::map<int, std::string>, std::vector<int>> do_loop(const std::map<int, std::vector<COMMAND_ACTION>>& m);
 

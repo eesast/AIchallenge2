@@ -10,7 +10,7 @@ def load_json(config_path):
     with open(config_path, 'r', encoding='utf-8') as config_file:
         data_paths = json.load(config_file)
     data_dct = {}
-    data_keys = ['CHARACTER', 'ITEM', 'SOUND', 'MAP', 'CIRCLE']
+    data_keys = ['CHARACTER', 'ITEM', 'SOUND', 'MAP', 'CIRCLE', 'PARAMETER']
     for data_key in data_keys:
         path = os.path.join(os.path.dirname(config_path),
                             data_paths[data_key+'_FILE_PATH'])
@@ -269,7 +269,7 @@ def circle2str(circle_dct):
     return property_str + table
 
 
-DEBUG = False
+DEBUG = True
 
 
 def main():
@@ -308,9 +308,6 @@ struct PolarPosition
     double angle;
 };
 
-const double AIRPLANE_SPEED = 5;
-const double JUMPING_SPEED = 1;
-
 enum STATUS
 {
     RELAX = 0,
@@ -324,8 +321,9 @@ enum STATUS
     REAL_DEAD = 8
 };
 
-'''
-    s = s+character2str(constant_dct['CHARACTER'])+item2str(
+''' 
+    s +='const double AIRPLANE_SPEED = %.1f;\nconst double JUMPING_SPEED = %.1f;\nconst double PICKUP_DISTANCE = %.1f;\n\n '% (constant_dct['PARAMETER']['character']['airplane'], constant_dct['PARAMETER']['character']['jumping'], constant_dct['PARAMETER']['character']['pick_distance'])
+    s += character2str(constant_dct['CHARACTER'])+item2str(
         constant_dct['ITEM']) + sound2str(constant_dct['SOUND']) + \
         map2str(constant_dct['MAP']) + circle2str(constant_dct['CIRCLE'])
     s += '#endif'

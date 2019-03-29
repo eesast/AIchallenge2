@@ -4,7 +4,7 @@ extern std::ofstream mylog;
 
 Pycalling Pycalling::_instance;
 
-ROUTE_T Pycalling::init()
+ROUTE_T Pycalling::init(int debug_level)
 {
 #ifdef WIN32
 	Py_SetPath(L".\\python");
@@ -41,7 +41,7 @@ ROUTE_T Pycalling::init()
 	//fix a possible bug that rls does not want to fix.
 	PyRun_SimpleString(("os.makedirs(r\"" + std::string(DATA_PATH) + "../playback/\",exist_ok=True)").c_str());
 	//parachute
-	auto data_dir = Py_BuildValue("(s)", DATA_PATH);
+	auto data_dir = Py_BuildValue("(ssi)", DATA_PATH, "config.ini", debug_level);
 	auto route = PyObject_CallObject(_game_init, data_dir);
 	auto start_pos = PyTuple_GetItem(route, 0);
 	auto over_pos = PyTuple_GetItem(route, 1);
