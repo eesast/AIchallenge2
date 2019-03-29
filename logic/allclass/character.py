@@ -16,6 +16,7 @@ class Character(Object):  # the base class of all characters
     all_data = {}  # save all data from setting file
     AIRPLANE_SPEED = 50  # flying speed, will load from file
     JUMPING_SPEED = 20  # jumping speed, also load from file
+    PICKUP_DISTANCE = 1     # pick up farthest distance, load from file
 
     # save some parameters for calculation
     all_params = {}
@@ -232,6 +233,9 @@ class Character(Object):  # the base class of all characters
         if not self.is_jumping():
             return 0.
         return 1 - self.move_cd / self.move_cd_max
+
+    def pick_accessible(self, other):
+        return self.position.distance(other) <= Character.PICKUP_DISTANCE
 
 
 if __name__ == '__main__':

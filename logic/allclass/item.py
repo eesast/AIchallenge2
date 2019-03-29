@@ -23,6 +23,7 @@ class Item(Object):   # class for each equipment and goods
 
     # to get random item
     probability_weights = [0]
+    modified_weights = [0]
     index_to_type = {}
 
     # get enum data from string
@@ -56,6 +57,10 @@ class Item(Object):   # class for each equipment and goods
                 Item.index_to_type[len(Item.index_to_type)] = value['number']
                 Item.probability_weights.append(Item.probability_weights[-1] + occur)
 
+        # get probability for hacker
+        # now just copy default weights, continue to be finished
+        Item.modified_weights = Item.probability_weights
+
         return all_data
 
     @staticmethod
@@ -71,6 +76,7 @@ class Item(Object):   # class for each equipment and goods
 
     @staticmethod
     def remove(item_id):
+        Item.all_items.pop(item_id)
         pass
 
     def is_weapon(self):
@@ -92,8 +98,8 @@ class Item(Object):   # class for each equipment and goods
 
     @staticmethod
     def get_reward_item():
-        pass
-        return 1
+        # here i decide to use a function to transform the probability
+        return Item.index_to_type[bisect(Item.modified_weights, randint(0, Item.probability_weights[-1] - 1)) - 1]
 
 
 if __name__ == '__main__':
