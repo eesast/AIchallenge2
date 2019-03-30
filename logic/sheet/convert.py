@@ -132,7 +132,7 @@ def get_item_data(file):
             number = int(row[ARMOR_NUMBER])
             macro = row[ARMOR_MACRO]
             durability = int(row[ARMOR_DURABILITY])
-            reduce = int(row[ARMOR_REDUCE])
+            reduce = row[ARMOR_REDUCE]
             param = row[ARMOR_PARAMETER]
             occur = int(row[ARMOR_OCCUR])
             data[macro] = {
