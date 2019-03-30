@@ -219,7 +219,7 @@ class GameMain:
                     # or the whole team should be out
                     for player in alive:
                         player.change_status(character.Character.REAL_DEAD)
-                        self.die_order.append(player.number)
+                        self.die_order.append((player.number, self.__turn))
                         self.die_list.append(player.number)
         self.last_alive_teams = teams
         return teams
