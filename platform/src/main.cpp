@@ -24,15 +24,22 @@ int main()
 {
 	int debug_level = 100;
 	int batch_size = 0;
+	int py_seed = 0;
 #ifdef WIN32
 	int debug_flag;
 	std::cout << "Choose batch size( <= core number in your computer, input 0 for using all core):";
 	std::cin >> batch_size;
 	std::cout << "Choose debug level (1: lots of output, other: few output):";
 	std::cin >> debug_flag;
+	std::cout << "Choose seed (<=0: random, > 0 set logic seed):";
+	std::cin >> py_seed;
 	if (debug_flag != 1)
 	{
 		debug_level = 5;
+	}
+	if (py_seed < 0)
+	{
+		py_seed = 0;
 	}
 #endif
 	namespace fs = std::filesystem;

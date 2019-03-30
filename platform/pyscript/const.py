@@ -320,6 +320,8 @@ enum STATUS
     REAL_DEAD = 8
 };
 
+const int NOMOVE = 0;
+
 ''' 
     s +='const double AIRPLANE_SPEED = %.1f;\nconst double JUMPING_SPEED = %.1f;\nconst double PICKUP_DISTANCE = %.1f;\n\n '% (constant_dct['PARAMETER']['character']['airplane'], constant_dct['PARAMETER']['character']['jumping'], constant_dct['PARAMETER']['character']['pick_distance'])
     s += character2str(constant_dct['CHARACTER'])+item2str(

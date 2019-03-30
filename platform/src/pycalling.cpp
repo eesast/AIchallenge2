@@ -4,7 +4,7 @@ extern std::ofstream mylog;
 
 Pycalling Pycalling::_instance;
 
-ROUTE_T Pycalling::init(int debug_level)
+ROUTE_T Pycalling::init(int debug_level, int seed)
 {
 #ifdef WIN32
 	Py_SetPath(L".\\python");
@@ -41,7 +41,7 @@ ROUTE_T Pycalling::init(int debug_level)
 	//fix a possible bug that rls does not want to fix.
 	PyRun_SimpleString(("os.makedirs(r\"" + std::string(DATA_PATH) + "../playback/\",exist_ok=True)").c_str());
 	//parachute
-	auto data_dir = Py_BuildValue("(ssi)", DATA_PATH, "config.ini", debug_level);
+	auto data_dir = Py_BuildValue("(ssii)", DATA_PATH, "config.ini", debug_level, seed);
 	auto route = PyObject_CallObject(_game_init, data_dir);
 	auto start_pos = PyTuple_GetItem(route, 0);
 	auto over_pos = PyTuple_GetItem(route, 1);
@@ -49,7 +49,7 @@ ROUTE_T Pycalling::init(int debug_level)
 	auto start_pos_y = PyObject_GetAttrString(start_pos, "y");
 	auto over_pos_x = PyObject_GetAttrString(over_pos, "x");
 	auto over_pos_y = PyObject_GetAttrString(over_pos, "y");
-	auto route_c = ROUTE_T{{PyFloat_AsDouble(start_pos_x), PyFloat_AsDouble(start_pos_y)}, {PyFloat_AsDouble(over_pos_x), PyFloat_AsDouble(over_pos_y)}};
+	auto route_c = ROUTE_T{ {PyFloat_AsDouble(start_pos_x), PyFloat_AsDouble(start_pos_y)}, {PyFloat_AsDouble(over_pos_x), PyFloat_AsDouble(over_pos_y)} };
 	Py_XDECREF(over_pos_y);
 	Py_XDECREF(over_pos_x);
 	Py_XDECREF(start_pos_y);
@@ -92,8 +92,8 @@ std::pair<std::map<int, std::string>, std::vector<int>> Pycalling::do_loop(const
 		for (const auto &command : per.second)
 		{
 			auto dct = Py_BuildValue("{s:i,s:i,s:f,s:f,s:i}", "command_type", command.command_type,
-									 "target", command.target_ID, "move_angle", command.move_angle,
-									 "view_angle", command.view_angle, "other", command.parameter);
+				"target", command.target_ID, "move_angle", command.move_angle,
+				"view_angle", command.view_angle, "other", command.parameter);
 			PyList_Append(lst, dct);
 			Py_XDECREF(dct);
 		}
@@ -121,7 +121,7 @@ std::pair<std::map<int, std::string>, std::vector<int>> Pycalling::_parse_dict(P
 	{
 		if (PyLong_Check(key))
 		{
-			player_infos[PyLong_AsLong(key)] = {PyBytes_AsString(value), PyBytes_AsString(value) + PyBytes_Size(value)};
+			player_infos[PyLong_AsLong(key)] = { PyBytes_AsString(value), PyBytes_AsString(value) + PyBytes_Size(value) };
 		}
 		else
 		{
@@ -134,7 +134,7 @@ std::pair<std::map<int, std::string>, std::vector<int>> Pycalling::_parse_dict(P
 		}
 	}
 	Py_XDECREF(state);
-	return {player_infos, dead};
+	return { player_infos, dead };
 }
 
 bool Pycalling::_check_init(bool print)

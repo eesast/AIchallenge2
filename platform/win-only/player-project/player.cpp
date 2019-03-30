@@ -18,7 +18,7 @@ void play_game()
 	update_info();
 	std::cout << "player:frame" << frame << "\nhp:" << info.self.hp << std::endl;
 	std::cout << "positon" << info.self.xy_pos.x << ' ' << info.self.xy_pos.y << std::endl;
-	if (!info.self.bag.empty())
+	if (info.self.bag.size() > 1)
 		std::cout << "pick succeed" << std::endl;
 	if (frame == 0)
 	{
@@ -36,7 +36,7 @@ void play_game()
 		std::cout << "jumping" << std::endl;
 		return;
 	}
-	if (info.others.empty() )
+	if (info.others.empty())
 	{
 		std::cout << "no others" << std::endl;
 		if (info.items.empty())
@@ -68,7 +68,7 @@ void play_game()
 				pickup(closest_item.item_ID);
 				std::cout << "try pickup" << closest_item.item_ID << std::endl;
 			}
-			else if(info.self.status != MOVING)
+			else if (info.self.status != MOVING)
 			{
 				move(closest_item.polar_pos.angle, closest_item.polar_pos.angle);
 				std::cout << "move" << closest_item.polar_pos.angle << std::endl;

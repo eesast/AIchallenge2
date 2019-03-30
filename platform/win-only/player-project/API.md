@@ -7,11 +7,12 @@
 1. 完善了API文档。
 2. 更改了debug信息的选择方式，不需要自行替换文件了。
 3. 在constant.h中新增了一些信息（飞机速度、跳伞速度、最大拾取距离、防具减伤系数）。
-4. 修复了已知的部分bug（打拳还没）。
+4. 修复了已知的bug。
 5. 加入了所有必须的玩家手册。
 6. 加入了转身/头不动的API（详见move部分）。
 7. 注释了api.cpp中的所有非报错输出，有需要可以自行添加。
 8. **constant.h中地形部分取消了DOT**。
+9. 加入了logic部分随机数种子的设置，便于debug。
 
 ---
 
@@ -32,6 +33,7 @@
 8. 不要使用两个逻辑核心（或单核处理器）运行3个AI程序，达成此条件可能会触发<strong>“巨硬的愤怒”</strong>。
 9. 场上至少有2支队伍，否则游戏会立即结束（因为吃鸡了）。
 10. 平台运行后会提示键入debug等级，输入1平台会输出大量可用于调试的信息，例如AI发送的指令、位置、视野等等输入其他数字平台只输出少量错误提示信息，。
+11. 平台运行后会提示键入seed（随机数种子），输入0（或小于0）表示不设置随机数种子，输入大于0的数表示将随机数种子设置为该值。
 
 ---
 ## AI编写说明
@@ -164,6 +166,7 @@ extern PlayerInfo info;                 //所有信息的聚合
 * `AIRPLANE_SPEED`:飞机速度
 * `JUMPING_SPEED`:跳伞过程中人的移动速度
 * `PICKUP_DISTANCE`:拾取物品的最远距离
+* `NOMOVE`:表示不进行移动的宏
 ```cpp
 enum STATUS //状态
 {
@@ -313,7 +316,7 @@ void shoot(ITEM item_type, double shoot_angle, int parameter =-1);
 ```cpp
 //移动
 //参数：前进方向与视角的相对角度（相对于当前视角）
-//parameter == 0时不移动，只调整角度
+//parameter == NOMOVE(0)时不移动，只调整角度
 void move(double move_angle, double view_angle, int parameter = -1);
 ```
 ```cpp
