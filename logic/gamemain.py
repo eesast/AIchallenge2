@@ -219,7 +219,7 @@ class GameMain:
                     # or the whole team should be out
                     for player in alive:
                         player.change_status(character.Character.REAL_DEAD)
-                        self.die_order.append(player.number)
+                        self.die_order.append((player.number, self.__turn))
                         self.die_list.append(player.number)
         self.last_alive_teams = teams
         return teams
@@ -374,9 +374,6 @@ class GameMain:
         # output data for interface
         self.write_playback(get_proto_data())
 
-        # ready process pool for each player
-        # self.pool = Pool(len(self.all_info))
-
         # now everything down, main operation starts
         # return first turn's information
         return self.refresh()
@@ -407,12 +404,12 @@ class GameMain:
                                                  end='')
                                 # now open the case
                                 picked_item = item.Item.get_reward_item()
-                                player.bag[picked_item.item_type] = player.bag.get(picked_item.number,
-                                                                                   0) + picked_item.durability
+                                durability = item.Item.all_data[picked_item].durability
+                                player.bag[picked_item] = player.bag.get(picked_item, 0) + durability
                                 self.number_to_player[player_number].change_status(character.Character.PICKING)
                                 self.print_debug(16, 'and he gets a', picked_item.data['name'])
                             else:
-                                self.print_debug(4, 'player', player_number, "try to pick code case but isn't a hack")
+                                self.print_debug(4, 'player', player_number, "try to open code case but isn't a hack")
                         else:
                             # currently i just design only one triggered item: code case
                             pass
@@ -903,12 +900,10 @@ class GameMain:
             data.self.pos.x, data.self.pos.y = player.position.x, player.position.y
 
             # player's bag information
-            for item_id in player.bag:
+            for item_type in player.bag:
                 new_item = data.self.bag.add()
-                entity = item.Item.all_items[item_id]
-                new_item.item_ID = item_id
-                new_item.type = entity.item_type
-                new_item.durability = entity.durability
+                new_item.type = item_type
+                new_item.durability = player.bag[item_type]
 
             # player's vision for landform
             data.landform_id.extend(player_info.landform)
