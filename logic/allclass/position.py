@@ -121,7 +121,7 @@ class Position:  # this is a class for position and reload some operator
         dx = distance * cos(theta) - radius * cos(angle)
         dy = distance * sin(theta) - radius * sin(angle)
         if dx < 0:
-            return -1 if dy < 0 else dx
+            return -1 if dy < 0 else dy
         else:
             return dx if dy < 0 else abs(Position(dx, dy))
 

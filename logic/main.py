@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*
 from gamemain import *
 from json import *
-import random   # for logic to debug
+import random  # for logic to debug
 
 # use a global variable to manage the whole game
 game = GameMain()
@@ -50,8 +50,17 @@ def main():
                 'command_type': 0,
                 "move_angle": 0,
                 "view_angle": 0,
+                "other": 0,
             }
         ]
+    commands[0] = [
+        {
+            'command_type': 1,
+            'view_angle': 0,
+            'target': 0,
+            'other': -1,
+        }
+    ]
     # start the loop
     # fight until there is only one team alive or be overtime
     while not game.game_over():
