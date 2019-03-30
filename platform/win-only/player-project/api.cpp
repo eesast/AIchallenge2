@@ -26,7 +26,7 @@ namespace ts20
 				start_pos.y = recv.start_pos().y();
 				over_pos.x = recv.over_pos().x();
 				over_pos.y = recv.over_pos().y();
-				std::cout << "teammate:";
+				//std::cout << "teammate:";
 				teammates.clear();
 				for (auto teammate : recv.teammates())
 				{
@@ -34,8 +34,8 @@ namespace ts20
 					std::cout << teammate << ' ';
 				}
 				std::cout << std::endl;
-				std::cout << "start_pos" << start_pos.x << ' ' << start_pos.y << std::endl;
-				std::cout << "over_pos" << over_pos.x << ' ' << over_pos.y << std::endl;
+				//std::cout << "start_pos" << start_pos.x << ' ' << start_pos.y << std::endl;
+				//std::cout << "over_pos" << over_pos.x << ' ' << over_pos.y << std::endl;
 			}
 			else
 			{
@@ -149,7 +149,7 @@ namespace ts20
 		auto pos = sender.mutable_landing_point();
 		pos->set_x(landing_points.x);
 		pos->set_y(landing_points.y);
-		std::cout << "AI:" << sender.DebugString() << std::endl;
+		//std::cout << "AI:" << sender.DebugString() << std::endl;
 		player_send(sender.SerializeAsString());
 	}
 
@@ -163,13 +163,13 @@ namespace ts20
 		player_send(sender.SerializeAsString());
 	}
 
-	void move(double move_angle, double view_angle)
+	void move(double move_angle, double view_angle, int parameter)
 	{
 		comm::Command sender;
 		sender.set_command_type(comm::CommandType::MOVE);
 		sender.set_move_angle(move_angle);
 		sender.set_view_angle(view_angle);
-		sender.set_parameter(-1);
+		sender.set_parameter(parameter);
 		player_send(sender.SerializeAsString());
 	}
 
@@ -224,7 +224,6 @@ namespace ts20
 			int bias_y = 100 * (area_ID / 10);
 			switch (b.shape)
 			{
-			case DOT:
 			case CIRCLE:
 				b.x0 += bias_x;
 				b.y0 += bias_y;

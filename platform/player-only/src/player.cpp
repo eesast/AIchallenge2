@@ -29,6 +29,7 @@ void play_game()
 	}
 	else
 	{
+		return;
 		srand(time(nullptr) + info.player_ID*frame);
 	}
 	if (info.self.status == ON_PLANE || info.self.status == JUMPING)

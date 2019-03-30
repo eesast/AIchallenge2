@@ -36,16 +36,19 @@ void play_game()
 		std::cout << "jumping" << std::endl;
 		return;
 	}
-	if (info.others.empty())
+	if (info.others.empty() )
 	{
 		std::cout << "no others" << std::endl;
 		if (info.items.empty())
 		{
 			//see nothing
-			double move_angle = 0;
-			double view_angle = move_angle;
-			move(move_angle, view_angle);
-			std::cout << "move" << move_angle << std::endl;
+			if (info.self.status != MOVING)
+			{
+				double move_angle = 0;
+				double view_angle = move_angle;
+				move(move_angle, view_angle);
+				std::cout << "move" << move_angle << std::endl;
+			}
 		}
 		else
 		{
@@ -65,7 +68,7 @@ void play_game()
 				pickup(closest_item.item_ID);
 				std::cout << "try pickup" << closest_item.item_ID << std::endl;
 			}
-			else
+			else if(info.self.status != MOVING)
 			{
 				move(closest_item.polar_pos.angle, closest_item.polar_pos.angle);
 				std::cout << "move" << closest_item.polar_pos.angle << std::endl;

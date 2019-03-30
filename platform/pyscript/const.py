@@ -167,7 +167,7 @@ def sound2str(sound_dct):
 def map2str(map_dct):
     ignore_list = ['rectangle_walking', 'probability']
     s = ''
-    block_shape = ['DOT', 'CIRCLE', 'RECTANGLE']
+    block_shape = ['CIRCLE', 'RECTANGLE']
     s += enum2str('BLOCK_SHAPE', block_shape)
     block_type = []
     for key, value in map_dct.items():
@@ -184,7 +184,6 @@ struct block {
     int x0, y0, r, x1, y1;
     //when shape == RECTANGLE, (x0, y0) and (x1, y1) are used (left-top and right-bottom)
     //when shape == CIRCLE, (x0, y0) and r are used (center and radius)
-    //when shape == DOT, only (x0, y0) is used as its position
 };
 
 '''
@@ -209,7 +208,7 @@ struct block {
                 for values in values_list:
                     # shape
                     area_table += '        {%10s,' % (
-                        block_shape[len(values) - 2],)
+                        block_shape[1 if len(values)==4 else 0],)
                     # type
                     area_table += '%20s,' % (key.upper(),)
                     area_table += '%5d,%5d,' % (values[0], values[1])
@@ -219,7 +218,7 @@ struct block {
                         area_table += '%5d,%5d,%5d},\n' % (
                             0, values[2], values[3])
                     else:
-                        area_table += '%5d,%5d,%5d},\n' % (0, 0, 0)
+                        area_table += '%5d,%5d,%5d},\n' % (1, 0, 0)
         area_table += '    },    // %s\n' % (area_name,)
     area_table += '};\n\n'
 

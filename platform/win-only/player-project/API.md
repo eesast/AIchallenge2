@@ -1,12 +1,18 @@
 # 第二届人工智能挑战赛——枪林弹雨
 # 平台使用说明与开发注意事项
 版本长期发布链接[清华云盘](https://cloud.tsinghua.edu.cn/d/513cdc8459f742e0980a/)
-#### 版本 v1.0rc1
+#### 版本 v1.0rc2
 ------
-### Update
+### Update v1.0rc2
 1. 完善了API文档。
 2. 更改了debug信息的选择方式，不需要自行替换文件了。
-3. 在constant.h中新增了一些信息（飞机速度、跳伞速度、最大拾取距离）
+3. 在constant.h中新增了一些信息（飞机速度、跳伞速度、最大拾取距离、防具减伤系数）。
+4. 修复了已知的部分bug（打拳还没）。
+5. 加入了所有必须的玩家手册。
+6. 加入了转身/头不动的API（详见move部分）。
+7. 注释了api.cpp中的所有非报错输出，有需要可以自行添加。
+8. **constant.h中地形部分取消了DOT**。
+
 ---
 
 ## 平台简介
@@ -252,10 +258,9 @@ struct sound_property	//声音、无线电属性
 ```cpp
 enum BLOCK_SHAPE	//物体形状
 {
-    DOT = 0,		//点，只有坐标
-    CIRCLE = 1,		//圆，提供圆心坐标与半径
-    RECTANGLE = 2,	//矩形，提供左上角和右下角的坐标
-    BLOCK_SHAPE_SZ = 3,
+    CIRCLE = 0,		//圆，提供圆心坐标与半径
+    RECTANGLE = 1,	//矩形，提供左上角和右下角的坐标
+    BLOCK_SHAPE_SZ = 2,
 };
 ```
 * `BLOCK_TYPE`:地形中的物体枚举（略）
@@ -266,7 +271,6 @@ struct block {		//物体属性
     int x0, y0, r, x1, y1;	//相关坐标
     //when shape == RECTANGLE, (x0, y0) and (x1, y1) are used (left-top and right-bottom)
     //when shape == CIRCLE, (x0, y0) and r are used (center and radius)
-    //when shape == DOT, only (x0, y0) is used as its position
 };
 ```
 * `AREA`:地形块枚举
@@ -303,17 +307,18 @@ void parachute(VOCATION role, XYPosition landing_points);
 ```
 ```cpp
 //射击与使用道具
-//参数：使用的道具/枪的枚举，相对角度，特殊参数（某些特殊物品需要）
+//参数：使用的道具/枪的枚举，相对角度，特殊参数（医疗兵使用药品的对象ID）
 void shoot(ITEM item_type, double shoot_angle, int parameter =-1);
 ```
 ```cpp
 //移动
 //参数：前进方向与视角的相对角度（相对于当前视角）
-void move(double move_angle, double view_angle);
+//parameter == 0时不移动，只调整角度
+void move(double move_angle, double view_angle, int parameter = -1);
 ```
 ```cpp
 //拾取
-//参数：地上的物品ID，需要在一定范围内才能成功（distance<1?）
+//参数：地上的物品ID，需要在一定范围内才能成功（PICKUP_DISTANCE）
 void pickup(int target_ID, int parameter = -1);
 ```
 ```cpp
@@ -336,6 +341,7 @@ bool try_update_info();
 ```cpp
 //将地形ID转换为具体物体的结构体
 //返回的block中的结构中的位置信息是绝对位置
+//如果解析错误会返回{ BLOCK_SHAPE_SZ,BLOCK_TYPE_SZ,0,0,0,0,0 }
 block get_landform(int landform_ID);
 ```
 ---
@@ -352,4 +358,4 @@ block get_landform(int landform_ID);
 ## 附
 1. 有任何问题请联系开发组解决
 
-最后更新于2019年3月29日
+最后更新于2019年3月30日
