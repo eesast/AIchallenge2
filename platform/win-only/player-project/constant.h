@@ -29,6 +29,8 @@ enum STATUS
     REAL_DEAD = 8
 };
 
+const int NOMOVE = 0;
+
 const double AIRPLANE_SPEED = 50.0;
 const double JUMPING_SPEED = 20.0;
 const double PICKUP_DISTANCE = 1.0;
