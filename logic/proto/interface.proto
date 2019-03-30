@@ -72,7 +72,7 @@ message FrameInfo
 	int32 frame = 1;
 	repeated PlayerInfo players = 2;
 	repeated Item new_items = 3;
-	repeated Item removed_items = 4;
+	repeated int32 removed_items = 4;
 	CircleInfo circle = 5;
 }
 
