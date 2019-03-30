@@ -28,7 +28,7 @@ int main()
 	int debug_flag;
 	std::cout << "Choose batch size( <= core number in your computer, input 0 for using all core):";
 	std::cin >> batch_size;
-	std::cout << "Choose debug level (1: lots of output, other: few output)";
+	std::cout << "Choose debug level (1: lots of output, other: few output):";
 	std::cin >> debug_flag;
 	if (debug_flag != 1)
 	{
