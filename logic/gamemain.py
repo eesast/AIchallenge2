@@ -384,6 +384,7 @@ class GameMain:
     def refresh(self):  # refresh a new frame according to the orders
 
         def instructions():
+            self.removed_items.clear()
             # pick up
             for player_number, command in self.all_commands['pickup'].items():
                 picked_item = item.Item.all_items.get(command[0], None)
