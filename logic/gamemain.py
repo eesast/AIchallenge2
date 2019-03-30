@@ -174,7 +174,7 @@ class GameMain:
             for command in player_commands:
                 command_type = command["command_type"]
                 if command_type == character.MOVE:
-                    self.all_commands["move"][playerID] = command["move_angle"], command["view_angle"]
+                    self.all_commands["move"][playerID] = command["move_angle"], command["view_angle"], command['other']
                 elif command_type == character.SHOOT:
                     self.all_commands["shoot"][playerID] = \
                         command["view_angle"], command["target"], command["other"]
@@ -406,7 +406,7 @@ class GameMain:
                                                  end='')
                                 # now open the case
                                 picked_item = item.Item.get_reward_item()
-                                player.bag[picked_item.item_type] = player.bag.get(picked_item.item_type,
+                                player.bag[picked_item.item_type] = player.bag.get(picked_item.number,
                                                                                    0) + picked_item.durability
                                 self.number_to_player[player_number].change_status(character.Character.PICKING)
                                 self.print_debug(16, 'and he gets a', picked_item.data['name'])
@@ -430,14 +430,16 @@ class GameMain:
                     pass
             # move
             for player_id, command in self.all_commands['move'].items():
-                move_angle, view_angle = command
+                move_angle, view_angle, real_move = command
                 player = self.number_to_player[player_id]
                 if not player.command_status_legal(character.MOVE):
                     self.print_debug(5, 'player', player_id, 'try to move but not in right status')
-                elif not 0 <= move_angle <= 360:
-                    self.print_debug(3, 'player', player_id, 'give wrong move angle as', move_angle)
                 elif not 0 <= view_angle <= 360:
                     self.print_debug(3, 'player', player_id, 'give wrong view angle as', view_angle)
+                elif not real_move:
+                    player.face_direction = position.angle_to_position(view_angle + player.face_direction.get_angle())
+                elif not 0 <= move_angle <= 360:
+                    self.print_debug(3, 'player', player_id, 'give wrong move angle as', move_angle)
                 else:  # now do it
                     player.change_status(character.Character.MOVING)
                     basic_angle = player.face_direction.get_angle()
