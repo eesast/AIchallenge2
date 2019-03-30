@@ -96,7 +96,7 @@ class Sweep:
             distance2, theta = polar_positions[number]
             return distance2 <= self.view_distance2 and abs(theta) < self.half_view_angle
 
-        visible_areas = []
+        visible_areas = [self.position.get_area_id()]
         polar_positions = [self.position.get_polar_position2(self.direction, Position(x * 100, y * 100)) for y in range(
             11) for x in range(11)]
         for i in range(100):

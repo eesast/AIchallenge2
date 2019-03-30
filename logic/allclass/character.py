@@ -49,7 +49,7 @@ class Character(Object):  # the base class of all characters
         # define some variables
         self.health_point_limit = Character.all_data[vocation]['hp']  # max HP
         self.health_point = self.health_point_limit  # current HP
-        self.bag = {}
+        self.bag = {0: 9999}
         self.status = self.RELAX
         self.move_cd = 0  # move finished after move_cd frames
         self.shoot_cd = 0  # shoot finished after move_cd frames
@@ -211,9 +211,11 @@ class Character(Object):  # the base class of all characters
             if damage > 0 and parameter != 'ARMOR_PIERCING':
                 # here we're supposed to consider vest
                 for vest in vests:
-                    reduce += self.all_data[vest]['reduce'] * (1 - exp(- self.bag[vest] / self.all_params['reduce']))
-                    new_durability = self.bag[vest] - self.all_data[vest]['reduce'] * damage
-                    self.bag[vest] = new_durability if new_durability > 0 else 0
+                    vest_durability = self.bag.get(vest, 0)
+                    if vest_durability:
+                        reduce += self.all_data[vest]['reduce'] * (1 - exp(vest_durability / self.all_params['reduce']))
+                        new_durability = self.bag[vest] - self.all_data[vest]['reduce'] * damage
+                        self.bag[vest] = new_durability if new_durability > 0 else 0
             real_damage = damage - reduce
             self.health_point -= real_damage
             if real_damage > self.most_damage:

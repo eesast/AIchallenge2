@@ -437,7 +437,9 @@ class GameMain:
                 elif not 0 <= view_angle <= 360:
                     self.print_debug(3, 'player', player_id, 'give wrong view angle as', view_angle)
                 elif not real_move:
-                    player.face_direction = position.angle_to_position(view_angle + player.face_direction.get_angle())
+                    old_angle = player.face_direction.get_angle()
+                    player.face_direction = position.angle_to_position(view_angle + old_angle)
+                    self.print_debug(15, 'player', player_id, 'adjust view angle to', old_angle + view_angle)
                 elif not 0 <= move_angle <= 360:
                     self.print_debug(3, 'player', player_id, 'give wrong move angle as', move_angle)
                 else:  # now do it
@@ -451,11 +453,13 @@ class GameMain:
                 player = self.number_to_player[player_id]
                 rest = player.bag.get(item_type, 0)
                 item_data = item.Item.all_data[item_type]
-                if player.shoot_cd:
+                if not player.command_status_legal(character.SHOOT):
+                    self.print_debug(5, 'player', player_id, 'try to shoot but not in right status')
+                elif player.shoot_cd:
                     self.print_debug(4, 'player', player_id, 'try to shoot with', player.shoot_cd, ' shoot cd')
                 elif not rest:
                     self.print_debug(4, 'player', player_id, 'try to use weapon without durability')
-                elif item_data['type'] != 'weapon' and item_data['mode'] != 'SPENDABLE':
+                elif item_data['type'] != 'WEAPON' and item_data['mode'] != 'SPENDABLE':
                     self.print_debug(4, 'player', player_id, 'try to use not weapon-like item to shoot')
                 elif item_data['damage'] < 0:
                     if player.vocation == character.Character.MEDIC and other >= 0:
@@ -501,7 +505,7 @@ class GameMain:
                     # here deal with gun sound
                     for _team in self.all_players:
                         muffler = item.Item.all_data['MUFFLER']
-                        factor = muffler['param'] if player.bag[muffler['number']] else 1
+                        factor = muffler['param'] if player.bag.get(muffler['number']) else 1
                         for receiver in _team:
                             if receiver is player:
                                 continue
@@ -615,7 +619,7 @@ class GameMain:
                         # teammate and no hp player will be ignored
                         if player.team == team_id and not player.can_be_hit():
                             continue
-                        dist2, delta = pos.get_polar_position(position.angle_to_position2(view_angle), player.position)
+                        dist2, delta = pos.get_polar_position2(position.angle_to_position(view_angle), player.position)
                         delta = 0 if delta > 360 else 360 - delta if delta > 180 else delta
                         if delta < data['param'] / 2:
                             if dist2 > data['range'] * data['range']:
@@ -662,12 +666,12 @@ class GameMain:
                     direction = position.angle_to_position(view_angle)
                     target = shooter.position
                     dist = abs(position.cross_product(direction, target - pos))
-                    data = item.Item.get_data_by_item_id(item_index)
+                    data = item.Item.all_data[item_index]
                     value = math.exp(- dist * self.all_parameters['damage_param'] / data['range']) ** 2 * data['damage']
                     if shooter.vocation == character.Character.SNIPER and 'SNIPER' in data['name']:
                         value *= character.Character.all_data[character.Character.SNIPER]['skill']
                     parameter = 'ARMOR_PIERCING' if data['name'] == 'CROSSBOW' else None
-                    real_damage, new_record = self.number_to_player[hit_id].get_damage(value, player_id, parameter)
+                    real_damage = self.number_to_player[hit_id].get_damage(value, player_id, parameter)
                     self.print_debug(13, 'player', player_id, data['name'], real_damage, 'damage to player', hit_id)
                 else:
                     if item.Item.all_items[item_index].item_type == 1:

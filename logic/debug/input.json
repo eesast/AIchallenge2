@@ -2,72 +2,72 @@
 	"0": {
 		"vocation": 0,
 		"position": [
-			150,
-			210
+			100.5,
+			200.5
 		],
 		"team": 0
 	},
 	"1": {
 		"vocation": 1,
 		"position": [
-			101,
-			201
+			100,
+			200
 		],
 		"team": 1
 	},
 	"2": {
 		"vocation": 2,
 		"position": [
-			102,
-			202
+			100,
+			200.5
 		],
 		"team": 2
 	},
 	"3": {
 		"vocation": 3,
 		"position": [
-			103,
-			203
+			100.5,
+			200
 		],
 		"team": 2
 	},
 	"4": {
 		"vocation": 1,
 		"position": [
-			104,
-			204
+			101,
+			200
 		],
 		"team": 4
 	},
 	"5": {
 		"vocation": 2,
 		"position": [
-			105,
-			205
+			101,
+			200.5
 		],
 		"team": 4
 	},
 	"6": {
 		"vocation": 3,
 		"position": [
-			106,
-			206
+			100,
+			201
 		],
 		"team": 9
 	},
 	"7": {
 		"vocation": 4,
 		"position": [
-			107,
-			207
+			100.5,
+			201
 		],
 		"team": 9
 	},
 	"8": {
 		"vocation": 2,
 		"position": [
-			108,
-			208
+			101,
+			201
 		],
 		"team": 9
 	},
@@ -82,16 +82,16 @@
 	"10": {
 		"vocation": 4,
 		"position": [
-			110,
-			210
+			159.746,
+			210.954
 		],
 		"team": 10
 	},
 	"11": {
 		"vocation": 1,
 		"position": [
-			125,
-			225
+			187,
+			224
 		],
 		"team": 10
 	}

@@ -25,7 +25,7 @@ class Block(Object):
         right_down = Position(param[2], param[3])
         self.position = (left_up + right_down) / 2
         self.radius = abs(left_up - right_down) / 2
-        self.angle = - (right_down - left_up).get_angle()
+        self.angle = 360 - (right_down - left_up).get_angle()
 
     def set_circle(self, param):
         self.shape = Object.CIRCLE
