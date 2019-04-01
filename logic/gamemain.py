@@ -37,7 +37,7 @@ PRINT_DEBUG = 25
 #   level 15: print player's new position after each move
 #   level 16: print player's new pick-up
 #   level 17: print circle dynamic changing
-
+#   level 18: print player's scope information
 #   level 19: print player's illegal param for instructions
 
 #   level 23: print player's view for other players
@@ -450,11 +450,20 @@ class GameMain:
                 view_angle, item_type, other = command
                 player = self.number_to_player[player_id]
                 rest = player.bag.get(item_type, 0)
-                item_data = item.Item.all_data[item_type]
-                if not player.command_status_legal(character.SHOOT):
+                item_data = item.Item.all_data.get(item_type, None)
+                if item_data is None:
+                    self.print_debug(3, 'player', player_id, 'try to shoot with not existing item', item_type)
+                elif not player.command_status_legal(character.SHOOT):
                     self.print_debug(5, 'player', player_id, 'try to shoot but not in right status')
                 elif player.shoot_cd:
                     self.print_debug(4, 'player', player_id, 'try to shoot with', player.shoot_cd, ' shoot cd')
+                elif item_type == -1:
+                    # abandon current scope
+                    player.equip_scope(1)
+                    self.print_debug(18, 'player', player_id, "abandoned current scope(if he's wearing one)")
+                    if 0 <= view_angle <= 360:
+                        player.face_direction = position.angle_to_position(
+                            player.face_direction.get_angle() + view_angle)
                 elif not rest:
                     self.print_debug(4, 'player', player_id, 'try to use weapon without durability')
                 elif item_data['type'] != 'WEAPON' and item_data['mode'] != 'SPENDABLE':
@@ -485,9 +494,10 @@ class GameMain:
                     player.equip_scope(int(item_data['macro'][-1]))
                     player.bag[item_type] -= 1
                     player.shoot_cd = item_data['cd']
-                    self.print_debug(3, 'player', player_id, 'equip', item_data['macro'])
+                    self.print_debug(18, 'player', player_id, 'equip', item_data['macro'])
                     if 0 <= view_angle <= 360:
-                        player.face_direction = position.angle_to_position(view_angle)
+                        player.face_direction = position.angle_to_position(
+                            player.face_direction.get_angle() + view_angle)
                 elif not 0 <= view_angle <= 360:
                     self.print_debug(3, 'player', player_id, 'give wrong attack angle as', view_angle)
                 else:  # now shoot

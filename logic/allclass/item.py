@@ -56,8 +56,10 @@ class Item(Object):   # class for each equipment and goods
             if occur:
                 Item.index_to_type[len(Item.index_to_type)] = value['number']
                 Item.probability_weights.append(Item.probability_weights[-1] + occur)
+                Item.modified_weights.append(Item.modified_weights[-1] + occur if occur < 50 else 0)
 
         # get probability for hacker
+        Item.modified_weights = [x if x < 50 else 0 for x in Item.probability_weights]
         # now just copy default weights, continue to be finished
         Item.modified_weights = Item.probability_weights
 
@@ -98,8 +100,7 @@ class Item(Object):   # class for each equipment and goods
 
     @staticmethod
     def get_reward_item():
-        # here i decide to use a function to transform the probability
-        return Item.index_to_type[bisect(Item.modified_weights, randint(0, Item.probability_weights[-1] - 1)) - 1]
+        return Item.index_to_type[bisect(Item.modified_weights, randint(0, Item.modified_weights[-1] - 1)) - 1]
 
 
 if __name__ == '__main__':
