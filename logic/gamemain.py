@@ -388,7 +388,7 @@ class GameMain:
                 player = self.number_to_player[player_number]
                 if picked_item is None:
                     self.print_debug(4, 'player', player_number, 'try to pick item not existing or belonging to others')
-                if picked_item.number not in self.all_info[player_number].items:
+                elif picked_item.number not in self.all_info[player_number].items:
                     self.print_debug(4, 'player', player_number, 'try to pick item out of view')
                 elif not player.pick_accessible(picked_item.position):
                     self.print_debug(4, 'player', player_number, "tyr to pick item beyond pick range")
@@ -693,6 +693,9 @@ class GameMain:
             self.die_list.clear()
             for team in self.all_players:
                 for player in team:
+                    if not player.can_be_healed():
+                        # skip real dead player
+                        continue
                     if self.poison.safe(player):
                         if player.can_be_hit():
                             if player.health_point <= 0:
@@ -714,7 +717,7 @@ class GameMain:
                         # if this poor gay
                         if player.get_damage(self.poison.damage_per_frame, -1, 'ARMOR_PIERCING'):
                             self.print_debug(13, 'the circle', self.poison.damage_per_frame, 'damage to', player.number)
-                        if player.can_be_healed() and player.health_point <= 0:
+                        if player.health_point <= 0:
                             player.health_point = 0
                             self.all_kills.setdefault(player.killer, []).append(player.number)
                             self.die_order.append((player.number, self.__turn))
