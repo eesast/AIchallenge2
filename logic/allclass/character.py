@@ -165,6 +165,10 @@ class Character(Object):  # the base class of all characters
             self.move_cd = 0
             self.shoot_cd = 0
 
+        elif new_status == Character.REAL_DEAD:
+            self.move_cd = 0
+            self.shoot_cd = 0
+
         elif new_status == Character.PICKING:
             self.move_cd = 0
 
