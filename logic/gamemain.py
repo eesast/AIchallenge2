@@ -491,7 +491,7 @@ class GameMain:
                         player.last_weapon = item_type
                         player.change_status(character.Character.SHOOTING)
                 elif 'SCOPE' in item_data['macro']:
-                    player.equip_scope(int(item_data['macro'][-1]))
+                    player.equip_scope(int(item_data['param']))
                     player.bag[item_type] -= 1
                     player.shoot_cd = item_data['cd']
                     self.print_debug(18, 'player', player_id, 'equip', item_data['macro'])

@@ -174,6 +174,10 @@ def get_item_data(file):
                 'param': param,
                 'occur': occur,
             }
+        for key, value in data.items():
+            if 'SCOPE' in key:
+                value['param'] = int(value['param'])
+
         return
 
     all_data = {}

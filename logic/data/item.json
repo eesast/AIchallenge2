@@ -262,7 +262,7 @@
         "cd":0,
         "damage":0,
         "reduce":0,
-        "param":0.0,
+        "param":2,
         "occur":50
     },
     "SCOPE_4":
@@ -276,7 +276,7 @@
         "cd":0,
         "damage":0,
         "reduce":0,
-        "param":0.0,
+        "param":4,
         "occur":25
     },
     "SCOPE_8":
@@ -290,7 +290,7 @@
         "cd":0,
         "damage":0,
         "reduce":0,
-        "param":0.0,
+        "param":8,
         "occur":10
     }
 }
