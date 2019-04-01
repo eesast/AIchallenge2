@@ -139,9 +139,9 @@ const item_property ITEM_DATA[ITEM_SZ] =
     {     GOODS,        15,         1,   SPENDABLE,         0,         5,         0,      0.00,    -20.00,        60},    // BONDAGE
     {     GOODS,        16,         1,   SPENDABLE,         0,         8,         0,      0.00,   -100.00,        20},    // FIRST_AID_CASE
     {     GOODS,        17,         1,   TRIGGERED,         0,         0,         0,      0.00,      0.00,        30},    // CODE_CASE
-    {     GOODS,        18,         1,   SPENDABLE,         0,         0,         0,      0.00,      0.00,        50},    // SCOPE_2
-    {     GOODS,        19,         1,   SPENDABLE,         0,         0,         0,      0.00,      0.00,        25},    // SCOPE_4
-    {     GOODS,        20,         1,   SPENDABLE,         0,         0,         0,      0.00,      0.00,        10},    // SCOPE_8
+    {     GOODS,        18,         1,   SPENDABLE,         0,         0,         0,      0.00,      2.00,        50},    // SCOPE_2
+    {     GOODS,        19,         1,   SPENDABLE,         0,         0,         0,      0.00,      4.00,        25},    // SCOPE_4
+    {     GOODS,        20,         1,   SPENDABLE,         0,         0,         0,      0.00,      8.00,        10},    // SCOPE_8
 };
 
 enum SOUND

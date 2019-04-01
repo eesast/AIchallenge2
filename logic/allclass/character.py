@@ -217,8 +217,9 @@ class Character(Object):  # the base class of all characters
                 for vest in vests:
                     vest_durability = self.bag.get(vest, 0)
                     if vest_durability:
-                        reduce += self.all_data[vest]['reduce'] * (1 - exp(vest_durability / self.all_params['reduce']))
-                        new_durability = self.bag[vest] - self.all_data[vest]['reduce'] * damage
+                        reduce_param = Item.all_data[vest]['reduce']
+                        reduce += reduce_param * (1 - exp(vest_durability / reduce_param))
+                        new_durability = self.bag[vest] - reduce_param * damage
                         self.bag[vest] = new_durability if new_durability > 0 else 0
             real_damage = damage - reduce
             self.health_point -= real_damage

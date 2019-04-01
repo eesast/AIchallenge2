@@ -81,13 +81,15 @@ def item2str(item_dct):
                 else:
                     key_infos[key] = ('enum', [value])
             elif isinstance(value, int):
-                key_infos[key] = ('int', [])
+                if key in key_infos and key_infos[key][0] == 'double':
+                    pass
+                else:
+                    key_infos[key] = ('int', [])
             elif isinstance(value, float):
                 key_infos[key] = ('double', [])
             else:
                 raise TypeError
     key_infos.pop('macro')
-    key_infos['reduce'] = ('double', [])
     # enum
     enum_str = ''
     for key_str, info in key_infos.items():
