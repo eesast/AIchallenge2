@@ -16,7 +16,7 @@ class Character(Object):  # the base class of all characters
     all_data = {}  # save all data from setting file
     AIRPLANE_SPEED = 50  # flying speed, will load from file
     JUMPING_SPEED = 20  # jumping speed, also load from file
-    PICKUP_DISTANCE = 1     # pick up farthest distance, load from file
+    PICKUP_DISTANCE = 1  # pick up farthest distance, load from file
 
     # save some parameters for calculation
     all_params = {}
@@ -218,7 +218,7 @@ class Character(Object):  # the base class of all characters
                     vest_durability = self.bag.get(vest, 0)
                     if vest_durability:
                         reduce_param = Item.all_data[vest]['reduce']
-                        reduce += reduce_param * (1 - exp(vest_durability / reduce_param))
+                        reduce += reduce_param * (1 - exp(- vest_durability / Item.all_data[vest]['durability']))
                         new_durability = self.bag[vest] - reduce_param * damage
                         self.bag[vest] = new_durability if new_durability > 0 else 0
             real_damage = damage - reduce

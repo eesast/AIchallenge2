@@ -920,7 +920,7 @@ class GameMain:
             for item_type in player.bag:
                 new_item = data.self.bag.add()
                 new_item.type = item_type
-                new_item.durability = player.bag[item_type]
+                new_item.durability = int(player.bag[item_type])
 
             # player's vision for landform
             data.landform_id.extend(player_info.landform)
