@@ -403,11 +403,12 @@ class GameMain:
                                 self.print_debug(16, 'player', player_number, 'opens code case', picked_item.number,
                                                  end='')
                                 # now open the case
-                                picked_item = item.Item.get_reward_item()
-                                durability = item.Item.all_data[picked_item].durability
-                                player.bag[picked_item] = player.bag.get(picked_item, 0) + durability
+                                new_item = item.Item.get_reward_item()
+                                data = item.Item.all_data[new_item]
+                                durability = data['durability']
+                                player.bag[new_item] = player.bag.get(new_item, 0) + durability
                                 self.number_to_player[player_number].change_status(character.Character.PICKING)
-                                self.print_debug(16, 'and he gets a', picked_item.data['name'])
+                                self.print_debug(16, 'and he gets a', data['name'])
                             else:
                                 self.print_debug(4, 'player', player_number, "try to open code case but isn't a hack")
                         else:
@@ -491,7 +492,7 @@ class GameMain:
                         player.last_weapon = item_type
                         player.change_status(character.Character.SHOOTING)
                 elif 'SCOPE' in item_data['macro']:
-                    player.equip_scope(int(item_data['macro'][-1]))
+                    player.equip_scope(int(item_data['param']))
                     player.bag[item_type] -= 1
                     player.shoot_cd = item_data['cd']
                     self.print_debug(18, 'player', player_id, 'equip', item_data['macro'])
@@ -898,19 +899,22 @@ class GameMain:
         all_data = {}
         for number, player_info in self.all_info.items():
             player = self.number_to_player[number]
-            if not isinstance(player, character.Character):
-                raise Exception("wrong type of player!")
+
             data = platform.PlayerInfo()
             data.player_ID = player.number
+
             data.self.health_point = player.health_point
             data.self.health_point_limit = player_info.hp_max
             data.self.move_angle = player.move_direction.get_angle() if player.move_direction else 0
             data.self.view_angle = player.face_direction.get_angle()
             data.self.move_speed = player.move_speed
+            data.self.vocation = player.vocation
             data.self.status = player.status
             data.self.move_cd = player.move_cd
             data.self.attack_cd = player.shoot_cd
             data.self.pos.x, data.self.pos.y = player.position.x, player.position.y
+            data.self.view_width = player.view_angle
+            data.self.view_distance = player.view_distance
 
             # player's bag information
             for item_type in player.bag:
@@ -935,8 +939,6 @@ class GameMain:
             for player_id in player_info.others:
                 new_other = data.others.add()
                 other = self.number_to_player[player_id]
-                if not isinstance(other, character.Character):
-                    raise Exception("wrong type of player!")
                 new_other.player_ID = player_id
                 new_other.status = other.status
                 new_other.move_angle = other.move_direction.get_angle() if other.move_direction else 0
@@ -964,6 +966,7 @@ class GameMain:
 
             proto_data = data.SerializeToString()
             all_data[number] = proto_data
+
         all_data['dead'] = self.die_list
         self.print_debug(50, "return", len(all_data), "players' data back to platform")
         return all_data
