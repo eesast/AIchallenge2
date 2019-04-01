@@ -404,7 +404,7 @@ class GameMain:
                                                  end='')
                                 # now open the case
                                 picked_item = item.Item.get_reward_item()
-                                durability = item.Item.all_data[picked_item].durability
+                                durability = item.Item.all_data[picked_item]['durability']
                                 player.bag[picked_item] = player.bag.get(picked_item, 0) + durability
                                 self.number_to_player[player_number].change_status(character.Character.PICKING)
                                 self.print_debug(16, 'and he gets a', picked_item.data['name'])
@@ -911,6 +911,7 @@ class GameMain:
             data.self.move_cd = player.move_cd
             data.self.attack_cd = player.shoot_cd
             data.self.pos.x, data.self.pos.y = player.position.x, player.position.y
+            data.self.vocation = player.vocation
 
             # player's bag information
             for item_type in player.bag:

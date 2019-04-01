@@ -13,6 +13,7 @@
 7. 注释了api.cpp中的所有非报错输出，有需要可以自行添加。
 8. **constant.h中地形部分取消了DOT**。
 9. 加入了logic部分随机数种子的设置，便于debug。
+10. 加入了reduce常量的介绍。
 
 ---
 
@@ -233,7 +234,7 @@ struct item_property	//物品属性
     int range;			//（武器的）射程
     int cd;				//两次使用间隔帧数
     int damage;			//（武器的）伤害
-    int reduce;			//略
+    int reduce;			//防具减伤系数
     double param;		//参数（武器-散射角 药品-负值-回血量）
     int occur;			//出现概率因数
 };
