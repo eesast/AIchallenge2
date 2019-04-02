@@ -151,6 +151,7 @@ class GameMain:
             area = self.map.areas[area_id]
             block = area.airdrop_blocks[randrange(0, len(area.airdrop_blocks))]
             pos = block.get_random_position()
+            assert pos.get_ared_id() == area_id
             # add item
             item_type = item.Item.get_random_item()
             new_id = item.Item.add(item_type, pos)
@@ -416,17 +417,33 @@ class GameMain:
                             pass
                     else:
                         # now this player can get it
-                        player.bag[picked_item.item_type] = player.bag.setdefault(picked_item.item_type, 0) + \
-                                                            picked_item.durability
                         area_id = picked_item.position.get_area_id()
-                        self.map_items[area_id // 10][area_id % 10].remove(picked_item)
+                        try:
+                            self.map_items[area_id // 10][area_id % 10].remove(picked_item)
+                        except KeyError:
+                            print('when you see this message, please contact with logic group with log below')
+                            found = False
+                            for i in range(100):
+                                for j in range(100):
+                                    if picked_item in self.map_items[i][j]:
+                                        print('item in the area', i, j, 'but area id is', area_id)
+                                        found = True
+                                        break
+                                if found:
+                                    break
+                            if not found:
+                                print('item', picked_item.number, 'not in the map, maybe has been picked')
+                                continue
+
+                        player.bag[picked_item.item_type] = player.bag.get(picked_item.item_type,
+                                                                           0) + picked_item.durability
                         item.Item.remove(picked_item.number)
                         self.removed_items.append(command[0])
                         self.number_to_player[player_number].change_status(character.Character.PICKING)
                         self.print_debug(16, 'player', player_number, 'picks', picked_item.data['name'],
                                          picked_item.number)
                         # maybe we should deal with command['other'], now ignore it
-                    pass
+
             # move
             for player_id, command in self.all_commands['move'].items():
                 move_angle, view_angle, real_move = command
