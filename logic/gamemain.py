@@ -93,6 +93,9 @@ class GameMain:
         # initialize debug level for logic to use directly and for platform to change it
         self.__debug_level = PRINT_DEBUG
 
+        # for error ai
+        self.no_input_player_list = []
+
         # for playback file
         self.playback_file = None
 
@@ -151,7 +154,8 @@ class GameMain:
             area = self.map.areas[area_id]
             block = area.airdrop_blocks[randrange(0, len(area.airdrop_blocks))]
             pos = block.get_random_position()
-            assert pos.get_ared_id() == area_id
+            # print(pos.get_area_id(), area_id)
+            # assert pos.get_area_id() == area_id
             # add item
             item_type = item.Item.get_random_item()
             new_id = item.Item.add(item_type, pos)
@@ -290,6 +294,10 @@ class GameMain:
                     self.number_to_team[team_number] = new_team
                 else:
                     new_team = self.number_to_team[team_number]
+
+                if new_vocation == character.Character.NO_VOCATION:
+                    self.print_debug(0, 'player', player_number, 'gives nothing or negative vocation')
+                    self.no_input_player_list.append(player_number)
 
                 # first judge if this vocation is legal
                 if not 0 <= new_vocation < character.Character.VOCATION_COUNT:
@@ -719,6 +727,14 @@ class GameMain:
 
         def die():
             self.die_list.clear()
+            if not self.__turn:
+                for player_id in self.no_input_player_list:
+                    player = self.number_to_player[player_id]
+                    player.health_point = 0
+                    self.all_kills.setdefault(player.killer, []).append(player.number)
+                    self.die_order.append((player.number, self.__turn))
+                    player.change_status(character.Character.REAL_DEAD)
+                    self.print_debug(7, 'player', player.number, 'died because of nothing input')
             for team in self.all_players:
                 for player in team:
                     if not player.can_be_healed():
@@ -1023,17 +1039,18 @@ class GameMain:
             team_number = self.number_to_player[number].team
             team_save[team_number].remove(number)
             if not len(team_save[team_number]):
-                team_out_order.append(team_number)
+                team_out_order.append((team_number, frame))
                 team_save.pop(team_number)
 
         # if there is any team alive, must be one team with chicken dinner
         assert len(team_save) <= 1
         if len(team_save):
-            team_out_order.append(team_save.popitem()[0])
+            team_out_order.append((team_save.popitem()[0], self.__turn + 1))
 
         # get score for each one's rank
         for rank in range(-1, -len(team_out_order) - 1, -1):
-            score[team_out_order[rank]] += self.all_parameters['score_by_rank'].get(str(-rank), 0)
+            team_number, frame = team_out_order[rank]
+            score[team_number] += self.all_parameters['score_by_rank'].get(str(-rank), 0) if frame else 0
 
         # output result information
         self.print_debug(0, 'all players score are:', score)

@@ -30,6 +30,9 @@ class Character(Object):  # the base class of all characters
     SNIPER = 3
     VOCATION_COUNT = 4  # an important number to save how many vocations in total
 
+    # error
+    NO_VOCATION = -1
+
     # enum for status
     RELAX = 0
     ON_PLANE = 1
@@ -46,6 +49,8 @@ class Character(Object):  # the base class of all characters
 
     def __init__(self, vocation):
         super().__init__(Object.CIRCLE)
+        if vocation == Character.NO_VOCATION:
+            return
         # define some variables
         self.health_point_limit = Character.all_data[vocation]['hp']  # max HP
         self.health_point = self.health_point_limit  # current HP
