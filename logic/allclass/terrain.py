@@ -58,7 +58,7 @@ class Block(Object):
             block.set_circle(param)
             block.bumped = True
             block.block_view = True
-        elif name == 'wall':
+        elif name == 'wall': 
             block.set_rectangle(param)
             block.bumped = True
             block.block_view = False
