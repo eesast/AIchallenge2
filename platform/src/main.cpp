@@ -62,9 +62,9 @@ int main()
 	//run
 	std::pair<std::map<int, std::string>, std::vector<int>> state_c;
 	manager.run();
+	state_c = logic.parachute(manager.get_parachute_commands());
 	if (manager.has_living_player())
 	{
-		state_c = logic.parachute(manager.get_parachute_commands());
 		manager.player_infos = state_c.first;
 		manager.dead = state_c.second;
 		while (true)
