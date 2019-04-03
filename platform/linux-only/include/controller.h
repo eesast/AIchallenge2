@@ -62,7 +62,7 @@ public:
   }
   //manager init
 public:
-  void init(const std::filesystem::path &path, std::ofstream& filename2id, long used_core_count = 0);
+  void init(const std::filesystem::path &path, long used_core_count = 0);
 
 private:
   bool _check_init();
