@@ -65,22 +65,22 @@ void Controller::init(const std::filesystem::path &path, long used_core_count)
                         if (bind_api == NULL || _info[player_count].player_func == NULL || _info[player_count].recv_func == NULL)
                         {
                             mylog << "Cannot Get AI API from " << std::endl;
-                            continue;
+                            _info[player_count].state = AI_STATE::DEAD;
                         }
                         else
                         {
                             (*bind_api)(&controller_receive, &controller_update);
                             _team[team].push_back(player_count);
                             mylog << "Load AI " << fullpath << " as team" << team << std::endl;
-                            if(isfirst)
+                            if (isfirst)
                             {
                                 isfirst = false;
                             }
                             else
                             {
                             }
-                            ++player_count;
                         }
+                        ++player_count;
                     }
                 }
                 else
@@ -304,22 +304,22 @@ void Controller::run()
         }
     }
     //kill AI who sended nothing when parachuting
-	if (_frame == 0)
-	{
-		for (int i = 0; i < _player_count; ++i)
-		{
-			if (_command_parachute[i].empty())
-			{
-				_kill_one(i);
-				mylog << "player: " << i << " is killed because of sending nothing when parachuting" << std::endl;
+    if (_frame == 0)
+    {
+        for (int i = 0; i < _player_count; ++i)
+        {
+            if (_command_parachute[i].empty())
+            {
+                _kill_one(i);
+                mylog << "player: " << i << " is killed because of sending nothing when parachuting" << std::endl;
                 COMMAND_PARACHUTE c;
-				c.role = -1;
-				c.team = _info[i].team;
-				c.landing_point = { 0,0 };
-				_command_parachute[i].push_back(c);
+                c.role = -1;
+                c.team = _info[i].team;
+                c.landing_point = {0, 0};
+                _command_parachute[i].push_back(c);
             }
-		}
-	}
+        }
+    }
     ++_frame;
 }
 void Controller::_run_player()
@@ -506,7 +506,7 @@ std::map<int, std::vector<COMMAND_ACTION>> Controller::get_action_commands()
         return m;
     for (int i = 0; i < _player_count; ++i)
     {
-        if (!_command_action[i].empty() && _info[i].state!=AI_STATE::DEAD)
+        if (!_command_action[i].empty() && _info[i].state != AI_STATE::DEAD)
         {
             m[i] = {_command_action[i].cbegin(), _command_action[i].cend()};
         }
