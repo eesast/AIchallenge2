@@ -244,7 +244,7 @@ def get_circle_data(sheet_circle):
     data = {}
     for i in range(START_ROW, sheet_circle.nrows):
         row = sheet_circle.row_values(i)
-        if int(row[CIRCLE_MOVE]) < 1:
+        if not row[CIRCLE_MOVE]:
             break
         stage = int(row[CIRCLE_STAGE])
         items = int(row[CIRCLE_ITEMS])

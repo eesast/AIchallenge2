@@ -38,7 +38,7 @@ class Circle:
         rho = edge + 1
         self.center_now = Position(edge/2, edge/2)
         while rho > edge/4:
-            rho = abs(gauss(edge/2, edge/12))
+            rho = abs(gauss(0, edge/12))
         self.center_next = self.center_now + angle_to_position(random() * 360) * rho
         self.radius_now = edge
         self.radius_next = self.all_data[0]['shrink'] * edge
@@ -52,7 +52,7 @@ class Circle:
         # update circle current status
         assert 0 <= self.flag <= 3 and isinstance(self.flag, int)
         if self.flag == 3:
-            # -1 means all over
+            # 3 means all over
             return False
         elif self.flag == 2:
             # 2 means the circle is waiting
@@ -76,7 +76,10 @@ class Circle:
                 self.radius_now = self.radius_next
                 self.center_now = self.center_next
                 self.radius_next = self.radius_now * self.all_data[self.stage]['shrink']
-                self.center_next = self.get_next_center()
+                new_center = self.get_next_center()
+                while not new_center.good():
+                    new_center = self.get_next_center()
+                self.center_next = new_center
                 self.flag = 2
                 self.rest_frames = self.all_data[self.stage]['wait']
                 self.damage_per_frame = self.all_data[self.stage]['damage']
