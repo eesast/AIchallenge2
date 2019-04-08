@@ -20,10 +20,13 @@ struct PoisonInfo
     double current_radius;
     double next_radius;
     int rest_frames;
-    // if it's 1, rest_frames means rest frames to move to next status
-    // if it's 0, rest_frames means rest frames to start to move
-    // if it's -1, the poison ring won't move(has become a node)
+    // if move_flag is 3, the poison ring won't move(has become a node)
+    // if move_flag is 2, rest_frames for (wait->move)
+    // if move_flag is 1, rest_frames for (move->wait)
+    // if move_flag is 0, rest_frames for (no circle->the 1st circle)
     int move_flag;
+    //  0 means hasn't started, 1 means moving
+    //  2 means waiting, 3 means over
 };
 
 struct SelfInfo

@@ -23,8 +23,9 @@ void play_game()
 	if (frame == 0)
 	{
 		srand(time(nullptr) + teammates[0]);
-		XYPosition landing_point = { 150 + rand() % 100, 150 + rand() % 100 };
-		parachute(HACK, landing_point);
+		XYPosition landing_point = { rand() % 1000, rand() % 1000 };
+		VOCATION v = (VOCATION)(rand() % 4);
+		parachute(v, landing_point);
 		return;
 	}
 	else

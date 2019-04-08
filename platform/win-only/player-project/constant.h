@@ -121,7 +121,7 @@ struct item_property
 
 const item_property ITEM_DATA[ITEM_SZ] = 
 { //        type     number durability       mode      range         cd     damage     reduce      param      occur
-    {    WEAPON,         0,      9999,ITEM_MODE_SZ,         1,         4,        30,      0.00,     30.00,         0},    // FIST
+    {    WEAPON,         0,      9999,ITEM_MODE_SZ,         1,         4,        20,      0.00,     30.00,         0},    // FIST
     {    WEAPON,         1,         8,ITEM_MODE_SZ,        80,         4,        25,      0.00,      2.50,       100},    // HAND_GUN
     {    WEAPON,         2,        20,ITEM_MODE_SZ,       100,         1,        25,      0.00,      2.50,        50},    // SUBMACHINE_GUN
     {    WEAPON,         3,        15,ITEM_MODE_SZ,       150,         3,        30,      0.00,      1.50,        50},    // SEMI_AUTOMATIC_RILE

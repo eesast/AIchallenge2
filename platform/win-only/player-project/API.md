@@ -4,12 +4,16 @@
 #### 版本 v1.0rc3
 ------
 ### Update v1.0rc3
+
+0. **调整了PoisonInfo中move_flag的作用**
 1. 修改了地图，删除了部分矮墙，将部分“线”状墙修正为矩形。
 2. 修正了dll文件判断逻辑在特殊情况下错误bug。
 3. 逻辑修复了部分bugs。
 4. 逻辑加入了对于拾取物品bug的log信息，便于差错，希望选手在看到相应输出信息及时保存并告知开发组。
 5. 医疗兵最大救治距离包含在常量`PICKUP_DISTANCE`中。
 6. 平台能够合理应对选手代码未进行跳伞的情况并返回分数。
+7. 修改了毒圈的缩圈逻辑，圈中心不会出现在不合理的位置。
+8. 调整了拳头的攻击力。
 
 ------
 ### Update v1.0rc2
@@ -104,11 +108,16 @@ struct PoisonInfo   //电圈信息
     XYPosition next_center;         //下一电圈中心
     double current_radius;          //电圈当前半径
     double next_radius;             //下一电圈起始半径
-    int rest_frames;                //帧数，参见下方注释
-    // if it's 1, rest_frames means rest frames to move to next status 为1时rest_frames代表当前缩圈完成还需帧数
-    // if it's 0, rest_frames means rest frames to start to move 为0时rest_frames代表距离下一次缩圈的帧数
-    // if it's -1, the poison ring won't move(has become a node) 为-1时代表圈已经缩为点
-    int move_flag;                  //标记，参看上方注释
+    int rest_frames;                //距离下一个状态的帧数，参见下方注释
+    // if move_flag is 3, the poison ring won't move(has become a node)
+    // if move_flag is 2, rest_frames for (wait->move)
+    // if move_flag is 1, rest_frames for (move->wait)
+    // if move_flag is 0, rest_frames for (no circle->the 1st circle)
+    int move_flag;
+    // 0 表示缩圈还没有开始（第一个圈还没出现）
+    // 1 正在缩圈
+    // 2 正在等待下一次缩圈
+    // 3 圈已经缩成一个点
 };
 ```
 ```cpp
