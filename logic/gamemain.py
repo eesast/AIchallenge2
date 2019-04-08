@@ -431,8 +431,8 @@ class GameMain:
                         except KeyError:
                             print('when you see this message, please contact with logic group with log below')
                             found = False
-                            for i in range(100):
-                                for j in range(100):
+                            for i in range(10):
+                                for j in range(10):
                                     if picked_item in self.map_items[i][j]:
                                         print('item in the area', i, j, 'but area id is', area_id)
                                         found = True
