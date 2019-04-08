@@ -823,13 +823,13 @@ class GameMain:
                             direction = vector.unitize()
                             if block.shape == object.Object.CIRCLE:
                                 adjust_distance = player.radius + block.radius - abs(vector)
-                                new_position = block.position + direction * adjust_distance
+                                new_position = player.position + direction * adjust_distance
                             else:
                                 distance = abs(vector) + block.radius / 10
                                 new_position = player.position
                                 while block.is_bumped(new_position, player.radius):
                                     distance += block.radius / 10
-                                    new_position = block.position + direction * distance
+                                    new_position = player.position + direction * distance
                             print('player', player.number, 'from', player.position, "adjusted to", new_position)
                             player.position = new_position
                         player.move_direction = None
