@@ -101,8 +101,9 @@ class Block(Object):
             theta = random() * 2 * pi
             return self.position + Position(r * cos(theta), r * sin(theta))
         else:
-            dx = self.radius * cos(self.angle)
-            dy = self.radius * sin(self.angle)
+            angle = self.angle / 180 * pi
+            dx = self.radius * cos(angle)
+            dy = self.radius * sin(angle)
             return self.position + Position((random() * 2 - 1) * dx, (random() * 2 - 1) * dy)
 
 
