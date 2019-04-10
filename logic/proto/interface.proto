@@ -30,6 +30,7 @@ message PlayerInfo
 	int32 armor = 5;
 	double face_direction = 6;
 	double height = 7;
+	bool real_dead = 8;
 }
 
 message Item

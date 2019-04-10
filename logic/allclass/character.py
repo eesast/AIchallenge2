@@ -244,7 +244,7 @@ class Character(Object):  # the base class of all characters
     def get_height(self):
         if not self.is_jumping():
             return 0.
-        return 1 - self.move_cd / self.move_cd_max
+        return self.move_cd / self.move_cd_max
 
     def pick_accessible(self, other):
         return self.position.distance(other) <= Character.PICKUP_DISTANCE
