@@ -226,6 +226,8 @@ class GameMain:
                         player.change_status(character.Character.REAL_DEAD)
                         self.die_order.append((player.number, self.__turn))
                         self.die_list.append(player.number)
+                        self.all_kills.setdefault(player.killer, []).append(player.number)
+                        self.print_debug(7, 'player', player.number, 'died because of no medic')
         self.last_alive_teams = teams
         return teams
 
