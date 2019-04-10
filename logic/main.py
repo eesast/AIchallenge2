@@ -33,7 +33,7 @@ def main():
     # this function is just to debug for logic
     # import debug.ai as ai
     # me = ai.AI()
-    game_init("./", "config.ini", set_seed=50)
+    game_init("./", "config.ini", set_seed=0)
     file = open("./debug/input.json", 'r', encoding='utf-8')
     information_tem = load(file)
     information = {}

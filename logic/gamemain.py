@@ -43,7 +43,7 @@ PRINT_DEBUG = 25
 #   level 23: print player's view for other players
 #   level 24: print player's view for items
 #   level 25: print player's view for landforms
-
+#   level 26: print player's missing shooting
 #   level 27: print player's sounds list
 
 #   level 29: print all non-redundant commands for each frame
@@ -226,6 +226,8 @@ class GameMain:
                         player.change_status(character.Character.REAL_DEAD)
                         self.die_order.append((player.number, self.__turn))
                         self.die_list.append(player.number)
+                        self.all_kills.setdefault(player.killer, []).append(player.number)
+                        self.print_debug(7, 'player', player.number, 'died because of no medic')
         self.last_alive_teams = teams
         return teams
 
@@ -400,7 +402,7 @@ class GameMain:
                 elif picked_item.number not in self.all_info[player_number].items:
                     self.print_debug(4, 'player', player_number, 'try to pick item out of view')
                 elif not player.pick_accessible(picked_item.position):
-                    self.print_debug(4, 'player', player_number, "tyr to pick item beyond pick range")
+                    self.print_debug(4, 'player', player_number, "try to pick item beyond pick range")
                 else:
                     if picked_item.data.get('mode', None) == 'TRIGGERED':
                         if picked_item.data['macro'] == 'CODE_CASE':
@@ -431,8 +433,8 @@ class GameMain:
                         except KeyError:
                             print('when you see this message, please contact with logic group with log below')
                             found = False
-                            for i in range(100):
-                                for j in range(100):
+                            for i in range(10):
+                                for j in range(10):
                                     if picked_item in self.map_items[i][j]:
                                         print('item in the area', i, j, 'but area id is', area_id)
                                         found = True
@@ -651,7 +653,7 @@ class GameMain:
                     for target_id in self.all_info[player_id].others:
                         player = self.number_to_player[target_id]
                         # teammate and no hp player will be ignored
-                        if player.team == team_id and not player.can_be_hit():
+                        if player.team == team_id or not player.can_be_hit():
                             continue
                         dist2, delta = pos.get_polar_position2(position.angle_to_position(view_angle), player.position)
                         delta = 0 if delta > 360 else 360 - delta if delta > 180 else delta
@@ -708,10 +710,12 @@ class GameMain:
                     real_damage = self.number_to_player[hit_id].get_damage(value, player_id, parameter)
                     self.print_debug(13, 'player', player_id, data['name'], real_damage, 'damage to player', hit_id)
                 else:
-                    if item.Item.all_items[item_index].item_type == 1:
-                        bullets[index] = pos, view_angle, item_index, player_id, True
+                    '''if item.Item.all_items[item_index].item_type == 1:
+                        bullets[index] = pos, view_angle, item_index, player_id, True'''
+                    self.print_debug(14, 'player', player_id, 'shoot at nothing')
 
-            self.all_bullets = [bullet for bullet in bullets if bullet[4] is None]
+            # self.all_bullets = [bullet for bullet in bullets if bullet[4] is None]
+            self.all_bullets.clear()
 
             for drug_index, receiver, emitter in self.all_drugs:
                 drug = item.Item.all_data[drug_index]
@@ -810,8 +814,9 @@ class GameMain:
                         player.move_speed = character.Character.JUMPING_SPEED
                         player.move_cd_max = int((player.land_position - player.jump_position).length() /
                                                  player.move_speed + 1)
-                        player.move_cd = player.move_cd
+                        player.move_cd = player.move_cd_max
                         player.face_direction = player.move_direction
+                        self.print_debug(8, "player", player.number, "leave the plane at", player.position)
                     elif player.is_jumping():
                         # jump to the land, and then relax
                         player.status = character.Character.RELAX
@@ -855,12 +860,15 @@ class GameMain:
             # give information for each player
             for team in self.all_players:
                 for player in team:
-                    if player.is_flying() or not player.is_alive():
+                    if player.is_flying():
                         continue
                     else:
                         # give normal player information
                         new_info = data.players.add()
                         new_info.id = player.number
+                        if not player.is_alive():
+                            new_info.real_dead = True
+                            continue
                         new_info.HP = int(player.health_point)
                         new_info.pos.x, new_info.pos.y = player.position.x, player.position.y
                         new_info.weapon = player.last_weapon

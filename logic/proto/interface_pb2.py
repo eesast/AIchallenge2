@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='logic_to_interface',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0finterface.proto\x12\x12logic_to_interface\"\x1b\n\x03Pos\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\"M\n\x0fPlayerBasicInfo\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04team\x18\x02 \x01(\x05\x12\x10\n\x08vocation\x18\x03 \x01(\x05\x12\x0e\n\x06HP_max\x18\x04 \x01(\x05\"\x91\x01\n\nPlayerInfo\x12\n\n\x02id\x18\x01 \x01(\x05\x12\n\n\x02HP\x18\x02 \x01(\x05\x12$\n\x03pos\x18\x03 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12\x0e\n\x06weapon\x18\x04 \x01(\x05\x12\r\n\x05\x61rmor\x18\x05 \x01(\x05\x12\x16\n\x0e\x66\x61\x63\x65_direction\x18\x06 \x01(\x01\x12\x0e\n\x06height\x18\x07 \x01(\x01\"F\n\x04Item\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04type\x18\x02 \x01(\x05\x12$\n\x03pos\x18\x03 \x01(\x0b\x32\x17.logic_to_interface.Pos\"A\n\x06\x43ircle\x12\'\n\x06\x63\x65nter\x18\x01 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12\x0e\n\x06radius\x18\x02 \x01(\x01\"\x7f\n\nCircleInfo\x12\x0e\n\x06status\x18\x01 \x01(\x05\x12\x0e\n\x06\x66rames\x18\x02 \x01(\x05\x12\'\n\x03now\x18\x03 \x01(\x0b\x32\x1a.logic_to_interface.Circle\x12(\n\x04next\x18\x04 \x01(\x0b\x32\x1a.logic_to_interface.Circle\"\x92\x01\n\x0bInitialInfo\x12&\n\x05start\x18\x01 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12%\n\x04over\x18\x02 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12\x34\n\x07players\x18\x03 \x03(\x0b\x32#.logic_to_interface.PlayerBasicInfo\"\xbf\x01\n\tFrameInfo\x12\r\n\x05\x66rame\x18\x01 \x01(\x05\x12/\n\x07players\x18\x02 \x03(\x0b\x32\x1e.logic_to_interface.PlayerInfo\x12+\n\tnew_items\x18\x03 \x03(\x0b\x32\x18.logic_to_interface.Item\x12\x15\n\rremoved_items\x18\x04 \x03(\x05\x12.\n\x06\x63ircle\x18\x05 \x01(\x0b\x32\x1e.logic_to_interface.CircleInfob\x06proto3')
+  serialized_pb=_b('\n\x0finterface.proto\x12\x12logic_to_interface\"\x1b\n\x03Pos\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\"M\n\x0fPlayerBasicInfo\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04team\x18\x02 \x01(\x05\x12\x10\n\x08vocation\x18\x03 \x01(\x05\x12\x0e\n\x06HP_max\x18\x04 \x01(\x05\"\xa4\x01\n\nPlayerInfo\x12\n\n\x02id\x18\x01 \x01(\x05\x12\n\n\x02HP\x18\x02 \x01(\x05\x12$\n\x03pos\x18\x03 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12\x0e\n\x06weapon\x18\x04 \x01(\x05\x12\r\n\x05\x61rmor\x18\x05 \x01(\x05\x12\x16\n\x0e\x66\x61\x63\x65_direction\x18\x06 \x01(\x01\x12\x0e\n\x06height\x18\x07 \x01(\x01\x12\x11\n\treal_dead\x18\x08 \x01(\x08\"F\n\x04Item\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04type\x18\x02 \x01(\x05\x12$\n\x03pos\x18\x03 \x01(\x0b\x32\x17.logic_to_interface.Pos\"A\n\x06\x43ircle\x12\'\n\x06\x63\x65nter\x18\x01 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12\x0e\n\x06radius\x18\x02 \x01(\x01\"\x7f\n\nCircleInfo\x12\x0e\n\x06status\x18\x01 \x01(\x05\x12\x0e\n\x06\x66rames\x18\x02 \x01(\x05\x12\'\n\x03now\x18\x03 \x01(\x0b\x32\x1a.logic_to_interface.Circle\x12(\n\x04next\x18\x04 \x01(\x0b\x32\x1a.logic_to_interface.Circle\"\x92\x01\n\x0bInitialInfo\x12&\n\x05start\x18\x01 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12%\n\x04over\x18\x02 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12\x34\n\x07players\x18\x03 \x03(\x0b\x32#.logic_to_interface.PlayerBasicInfo\"\xbf\x01\n\tFrameInfo\x12\r\n\x05\x66rame\x18\x01 \x01(\x05\x12/\n\x07players\x18\x02 \x03(\x0b\x32\x1e.logic_to_interface.PlayerInfo\x12+\n\tnew_items\x18\x03 \x03(\x0b\x32\x18.logic_to_interface.Item\x12\x15\n\rremoved_items\x18\x04 \x03(\x05\x12.\n\x06\x63ircle\x18\x05 \x01(\x0b\x32\x1e.logic_to_interface.CircleInfob\x06proto3')
 )
 
 
@@ -172,6 +172,13 @@ _PLAYERINFO = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='real_dead', full_name='logic_to_interface.PlayerInfo.real_dead', index=7,
+      number=8, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -185,7 +192,7 @@ _PLAYERINFO = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=148,
-  serialized_end=293,
+  serialized_end=312,
 )
 
 
@@ -229,8 +236,8 @@ _ITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=295,
-  serialized_end=365,
+  serialized_start=314,
+  serialized_end=384,
 )
 
 
@@ -267,8 +274,8 @@ _CIRCLE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=367,
-  serialized_end=432,
+  serialized_start=386,
+  serialized_end=451,
 )
 
 
@@ -319,8 +326,8 @@ _CIRCLEINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=434,
-  serialized_end=561,
+  serialized_start=453,
+  serialized_end=580,
 )
 
 
@@ -364,8 +371,8 @@ _INITIALINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=564,
-  serialized_end=710,
+  serialized_start=583,
+  serialized_end=729,
 )
 
 
@@ -423,8 +430,8 @@ _FRAMEINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=713,
-  serialized_end=904,
+  serialized_start=732,
+  serialized_end=923,
 )
 
 _PLAYERINFO.fields_by_name['pos'].message_type = _POS

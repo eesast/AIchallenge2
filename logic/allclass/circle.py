@@ -77,7 +77,7 @@ class Circle:
                 self.center_now = self.center_next
                 self.radius_next = self.radius_now * self.all_data[self.stage]['shrink']
                 new_center = self.get_next_center()
-                while not new_center.good():
+                while not new_center.good(self.edge):
                     new_center = self.get_next_center()
                 self.center_next = new_center
                 self.flag = 2
