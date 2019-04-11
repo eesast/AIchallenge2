@@ -63,6 +63,7 @@ struct Sound
     int delay;
 	SOUND type;
     int32_t parameter;      //user-defined
+	int angle;		//the relative direction of sound (not radio)
 };
 
 struct PlayerInfo

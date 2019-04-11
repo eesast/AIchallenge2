@@ -3,6 +3,12 @@
 版本长期发布链接[清华云盘](https://cloud.tsinghua.edu.cn/d/513cdc8459f742e0980a/)
 #### 版本 v1.0rc3
 ------
+### Update v1.0rc3 Patch3
+1. 新增声音角度
+2. 逻辑修正部分bug
+3. 界面alpha版（使用需谨慎）
+4. 更新了规则手册
+
 ### Update v1.0rc3 Patch2
 修复以下bug：
 1. 物品刷新可能出现在非法区域
@@ -168,6 +174,7 @@ struct Sound            //无线电与声音信息
     int delay;          //延时，用于预估距离
     SOUND type;         //声音类型（参见SOUND枚举）
     int32_t parameter;  //无线电内容
+    int angle;			//声音来源的相对角度（无线电为0）
 };
 ```
 ```cpp
