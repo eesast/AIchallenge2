@@ -227,7 +227,7 @@ class GameMain:
                         self.die_order.append((player.number, self.__turn))
                         self.die_list.append(player.number)
                         self.all_kills.setdefault(player.killer, []).append(player.number)
-                        self.print_debug(7, 'player', player.number, 'died because of no medic')
+                        self.print_debug(7, 'player', player.number, 'died because of team wipe')
         self.last_alive_teams = teams
         return teams
 
@@ -712,7 +712,7 @@ class GameMain:
                 else:
                     '''if item.Item.all_items[item_index].item_type == 1:
                         bullets[index] = pos, view_angle, item_index, player_id, True'''
-                    self.print_debug(14, 'player', player_id, 'shoot at nothing')
+                    self.print_debug(26, 'player', player_id, 'shoot at nothing')
 
             # self.all_bullets = [bullet for bullet in bullets if bullet[4] is None]
             self.all_bullets.clear()

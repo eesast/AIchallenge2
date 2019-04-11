@@ -53,6 +53,9 @@ class Position:  # this is a class for position and reload some operator
             if length:
                 self.x = self.x / length
                 self.y = self.y / length
+            else:
+                self.x = 1
+                self.y = 0
             return self
         else:  # else return the unitization(not misspelling) of other position
             return other_position / self.length()
