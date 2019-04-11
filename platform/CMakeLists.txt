@@ -3,14 +3,12 @@ project(platform)
 set(CMAKE_MAJOR_VERSION 0)
 set(CMAKE_MINOR_VERSION 1)
 
-set(CMAKE_BUILD_TYPE Debug)
-
 set(CMAKE_CXX_STANDARD 17)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/player-only/)
 add_subdirectory(${PROJECT_SOURCE_DIR}/proto/)
 
-find_package (Python3 COMPONENTS Interpreter Development)
+find_package (Python3 3.6 COMPONENTS Interpreter Development)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src DIR_SRC)

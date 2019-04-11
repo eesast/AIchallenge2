@@ -6,12 +6,17 @@
 #pragma warning(disable : 4996)
 #endif
 
-#include"platform.h"
-#include<Windows.h>
-#include<mutex>
-#include"comm.pb.h"
-#include<filesystem>
-#include<regex>
+#include "platform.h"
+#include <Windows.h>
+#include <mutex>
+#include "comm.pb.h"
+#include <filesystem>
+#include <regex>
+#include <vector>
+#include <string>
+#include <map>
+#include <iostream>
+#include <fstream>
 
 #define manager (Controller::get_instance())
 
@@ -38,12 +43,13 @@ class Controller
         //function pointer for callback
         AI_Func player_func = nullptr;
         Recv_Func recv_func = nullptr;
+		std::mutex mtx;
     };
 
 public:
     //win-only, for CreateThread
     friend DWORD WINAPI thread_func(LPVOID lpParameter);
-
+	friend void controller_update(int);
     //singleton
     ~Controller();
     Controller(const Controller &) = delete;
@@ -58,8 +64,7 @@ public:
     //manager init
 public:
     //find dll in path
-    void init(const std::string &path, DWORD used_core_count = 0);
-    [[deprecated]] void register_AI(int playerID, AI_Func pfunc, Recv_Func precv);
+    void init(const std::filesystem::path &path, DWORD used_core_count = 0);
 private:
     //if init,return true.
     bool _check_init();
@@ -67,9 +72,11 @@ private:
     //thread control
 public:
     void run();
+	bool has_living_player();
 private:
     //return -1 if failed
     int _get_playerID_by_threadID();
+	void _kill_one(int playerID);
 
     //communication
 public:
@@ -97,9 +104,9 @@ private:
     DWORD _total_core_count;
     AI_INFO _info[MAX_PLAYER];
     HANDLE* _waiting_thread;    //size == _used_core_count
-    int _now_offset;
     int _player_count;
     int _frame;
+	std::vector<int> _batch;
 
     //communication
     std::vector<COMMAND_PARACHUTE> _command_parachute[MAX_PLAYER];
@@ -108,11 +115,12 @@ private:
 public:     //comm with pycalling
     ROUTE_T route;
     std::map<int, std::string> player_infos;
+	std::vector<int> dead;
 };
 
 DWORD WINAPI thread_func(LPVOID lpParameter);
 
-//not atomic, maybe cause bugs.
 bool controller_receive(const std::string data);
-
+//send data to player immediately
+void controller_update(int player_frame);
 #endif // !CONTROLLER_H

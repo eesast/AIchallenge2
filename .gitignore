@@ -1,6 +1,7 @@
 #ignore pycharm/vscode/vs configuration/temp files
 
 /.vscode
+/playback
 
 # platform
 /platform/build
@@ -20,6 +21,9 @@
 /platform/player-only/build
 /logic/.ipynb_checkpoints
 /logic/platform_test.ipynb
+/platform/win-only/player-project/Debug
+/platform/win-only/player-project/Release
+/platform/win-only/player-project/.vs
 
 
 # logic

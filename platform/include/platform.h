@@ -2,19 +2,32 @@
 #define PLATFORM_H
 
 //struct, header, constant that platform needs
-
-#include "constant.h"
-#include <map>
-#include <vector>
-#include <iostream>
+#include <cstdint>
 #include <string>
-#include <cstdlib>
+#include <utility>
+
+struct XYPosition
+{
+	double x, y;
+};
+
+struct PolarPosition
+{
+	double distance;
+	double angle;
+};
+
+const int START_TIMEOUT = 1000;
+const int TIMEOUT = 50;
+const int MEMBER_COUNT = 4;
+const int MAX_TEAM = 16;
+const int MAX_PLAYER = MEMBER_COUNT * MAX_TEAM;
 
 struct COMMAND_PARACHUTE
 {
-    VOCATION role;
-    XYPosition landing_point;
+    int32_t role;
     int team;
+    XYPosition landing_point;
 };
 
 enum class COMMAND_TYPE
@@ -28,14 +41,13 @@ enum class COMMAND_TYPE
 struct COMMAND_ACTION
 {
     COMMAND_TYPE command_type;
-    int target_ID;
+	int32_t target_ID;
     double move_angle;
     double view_angle;
-    int parameter;
+	int32_t parameter;
 };
 
 using ROUTE_T = std::pair<XYPosition, XYPosition>;
-
 
 //type of "player_receive" in AI.dll/so
 using Recv_Func = void(*)(int, const std::string);
@@ -43,6 +55,7 @@ using Recv_Func = void(*)(int, const std::string);
 using AI_Func = void(*)();
 //type of "player_send" in AI.dll/so
 using Player_Send_Func = bool(*)(const std::string);
-
+//type of "player_update" in AI.dll/so
+using Player_Update = void(*)(int);
 
 #endif

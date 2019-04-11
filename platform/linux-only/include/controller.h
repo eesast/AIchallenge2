@@ -17,6 +17,7 @@
 #include <filesystem>
 #include <dlfcn.h>
 #include <regex>
+#include <fstream>
 
 #define manager (Controller::get_instance())
 
@@ -41,7 +42,7 @@ private:
     void *lib = nullptr;
     pid_t pid = 0;
     AI_STATE state = AI_STATE::UNUSED;
-    int frame = 0; //frame of game
+    int frame = -1; //frame of game
     int shmid;
     COMM_BLOCK *shm = nullptr;
     AI_Func player_func = nullptr;
@@ -61,8 +62,7 @@ public:
   }
   //manager init
 public:
-  void init(const std::string &path, long used_core_count = 0);
-  [[deprecated]] void register_AI(int playerID, AI_Func pfunc, Recv_Func precv);
+  void init(const std::filesystem::path &path, std::ofstream& filename2id, long used_core_count = 0);
 
 private:
   bool _check_init();
@@ -71,9 +71,11 @@ private:
 public:
   void run();
   void notify_one_finish(pid_t pid);
+  bool has_living_player();
 
 private:
   void _run_player();
+  void _kill_one(int playerID);
 
   //communication
 public:
@@ -107,8 +109,9 @@ private:
   long _used_core_count;
   long _total_core_count;
   long _used_cpuID;
-  int _now_offset;
   int _playerID = -1; //just for childprocess
+  std::vector<int> _batch;
+  int _frame = 0;
 
   //communication
   std::vector<COMMAND_PARACHUTE> _command_parachute[MAX_PLAYER];
@@ -118,8 +121,14 @@ private:
 public: //comm with pycalling
   ROUTE_T route;
   std::map<int, std::string> player_infos;
+  std::vector<int> dead;
+
+public:
+  friend void controller_update(int);
 };
 
 bool controller_receive(const std::string data);
+//send data to player immediately
+void controller_update(int);
 
 #endif // !CONTROLLER_H

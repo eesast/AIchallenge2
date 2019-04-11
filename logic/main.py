@@ -8,7 +8,7 @@ import random  # for logic to debug
 game = GameMain()
 
 
-def game_init(file_path="./", config_file_name="config.ini", debug_level=None, set_seed=0):
+def game_init(file_path="./", config_file_name="config.ini", debug_level=5, set_seed=0):
     if set_seed:
         random.seed(set_seed)
     # first adjust debug level if necessary
