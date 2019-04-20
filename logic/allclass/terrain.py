@@ -34,10 +34,13 @@ class Block(Object):
 
     def __contains__(self, item):
         if self.shape == Object.CIRCLE:
-            return item.position.distance(self.position) <= self.radius - item.radius
+            return item.position.distance2(self.position) <= self.radius * self.radius
         else:
-
-            return
+            theta = self.angle * pi / 180
+            x = self.radius * cos(theta)
+            y = self.radius * sin(theta)
+            vector = item.position - self.position
+            return abs(vector.x) < x or abs(vector.y) < y
 
     @staticmethod
     def generate_block(name, param):

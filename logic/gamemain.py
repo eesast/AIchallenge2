@@ -5,6 +5,7 @@ import proto.interface_pb2 as interface
 import proto.platform_pb2 as platform
 # from multiprocessing import Pool
 from random import randrange
+from random import random
 from json import load
 from json import dump
 import math
@@ -104,7 +105,7 @@ class GameMain:
         return
 
     def set_debug_level(self, level):
-        if level:
+        if level is not None:
             self.__debug_level = level
         return
 
@@ -574,8 +575,14 @@ class GameMain:
                             self.print_debug(15, 'player', player.number, 'move to', player.position)
                             # check if player is standing on a block such as grass
                             for block in self.map.areas[player.position.get_area_id()].blocks:
-                                if block.bumped or not block.is_opaque():
-                                    continue
+                                if block.name == 'shallow_water' and player in block:
+                                    player.block = block
+                                    break
+                                elif 'grass' in block.name and player in block:
+                                    player.block = block
+                                    break
+                            else:
+                                player.block = None
 
                             if player.move_cd == 1 and player.can_make_footsteps():
                                 # for foot step sound
@@ -655,12 +662,15 @@ class GameMain:
                         # teammate and no hp player will be ignored
                         if player.team == team_id or not player.can_be_hit():
                             continue
+                        # player in water has 30 percent probability to miss the bullet
+                        if player.block.name == 'shallow_water' and random() < 0.3:
+                            continue
                         dist2, delta = pos.get_polar_position2(position.angle_to_position(view_angle), player.position)
                         delta = 0 if delta > 360 else 360 - delta if delta > 180 else delta
                         if delta < data['param'] / 2:
                             if dist2 > data['range'] * data['range']:
                                 continue
-                            if not shortest or shortest < dist2:
+                            if shortest is None or shortest < dist2:
                                 # modify hit player
                                 shortest = dist2
                                 bullets[index] = pos, view_angle, item_type, player_id, player.number
@@ -671,9 +681,7 @@ class GameMain:
                 def available(target):
                     other_player = self.number_to_player[target]
                     if other_player.block and 'grass' in other_player.block.name:
-                        if player.block and player.block.number == other_player.block.number:
-                            return True
-                        return False
+                        return player.block is other_player.block
                     return True
 
                 # here deal with grass
@@ -874,7 +882,7 @@ class GameMain:
                         new_info.weapon = player.last_weapon
                         new_info.armor = player.best_armor
                         new_info.face_direction = player.face_direction.get_angle()
-                        new_info.height = player.get_height()
+                        new_info.height = float(player.get_height())
 
             # give all new items information
             for each_item in self.new_items:
@@ -1062,7 +1070,7 @@ class GameMain:
             score[team_number] += self.all_parameters['score_by_rank'].get(str(-rank), 0) if frame else 0
 
         # output result information
-        self.print_debug(0, 'all players score are:', score)
+        self.print_debug(0, "all teams' scores are:", score)
         result = {
             'score': score,
             'team_out_order': team_out_order,
