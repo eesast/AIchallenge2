@@ -2,6 +2,7 @@
 
 /.vscode
 /playback
+/mmr.py
 
 # platform
 /platform/build
@@ -28,6 +29,7 @@
 
 # logic
 /logic/.idea
+/logic/.vscode
 /logic/__pycache__
 /logic/allclass/__pycache__
 /logic/proto/__pycache__

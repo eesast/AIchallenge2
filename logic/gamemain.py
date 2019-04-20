@@ -104,7 +104,7 @@ class GameMain:
         return
 
     def set_debug_level(self, level):
-        if level:
+        if level is not None:
             self.__debug_level = level
         return
 

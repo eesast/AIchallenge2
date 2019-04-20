@@ -114,7 +114,7 @@ class Sweep:
                     continue
                 if self.half_view_angle < relative_angle < 360 - self.half_view_angle:
                     continue
-                potential.append((block, relative_angle, distance2))
+                potential.append((block, relative_angle if relative_angle <= 180 else relative_angle - 360, distance2))
             # players
             for player in self.area_to_players.get(area_id, []):
                 if player is self.player:
@@ -124,14 +124,14 @@ class Sweep:
                     continue
                 if self.half_view_angle < relative_angle < 360 - self.half_view_angle:
                     continue
-                potential.append((player, relative_angle, distance2))
+                potential.append((player, relative_angle if relative_angle <= 180 else relative_angle - 360, distance2))
             for item in self.map_items[area_id // 10][area_id % 10]:
                 distance2, relative_angle = self.position.get_polar_position2(self.direction, item.position)
                 if distance2 > self.view_distance2:
                     continue
                 if self.half_view_angle < relative_angle < 360 - self.half_view_angle:
                     continue
-                potential.append((item, relative_angle, distance2))
+                potential.append((item, relative_angle if relative_angle <= 180 else relative_angle - 360, distance2))
 
         return potential
 
