@@ -242,8 +242,10 @@ class Character(Object):  # the base class of all characters
         return True
 
     def get_height(self):
+        if self.is_flying():
+            return 0
         if not self.is_jumping():
-            return 0.
+            return 0 if self.block is None else self.block.name == 'shallow_water' and -1
         return self.move_cd / self.move_cd_max
 
     def pick_accessible(self, other):
