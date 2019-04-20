@@ -2,7 +2,6 @@
 
 /.vscode
 /playback
-/mmr.py
 
 # platform
 /platform/build

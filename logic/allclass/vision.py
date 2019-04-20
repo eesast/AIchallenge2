@@ -5,25 +5,6 @@ from .position import *
 from heapq import *
 from .item import Item
 
-'''
-class Vision:
-    def __init__(self, angle):
-        self.interval = intervals.closed(- angle / 2, angle / 2)
-
-    def see(self, other):
-        other = intervals.closed(other[0], other[1])
-        if self.interval & other:
-            self.interval -= other
-            return True
-        return False
-
-    def empty(self):
-        return len(self.interval) <= 0.1
-
-    def __contains__(self, item):
-        return item in self.interval
-'''
-
 
 class AreaManager:
     def __init__(self, position, angle, width, distance):
