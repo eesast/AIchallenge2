@@ -663,7 +663,7 @@ class GameMain:
                         if player.team == team_id or not player.can_be_hit():
                             continue
                         # player in water has 30 percent probability to miss the bullet
-                        if player.block.name == 'shallow_water' and random() < 0.3:
+                        if player.block and player.block.name == 'shallow_water' and random() < 0.3:
                             continue
                         dist2, delta = pos.get_polar_position2(position.angle_to_position(view_angle), player.position)
                         delta = 0 if delta > 360 else 360 - delta if delta > 180 else delta
