@@ -7,7 +7,7 @@ Controller Controller::_instance;
 void Controller::init(const std::filesystem::path &path, DWORD used_core_count)
 {
 	using namespace std::filesystem;
-	auto PAT = std::regex(R"((AI_(\d*)_(\d*)).dll)", std::regex_constants::ECMAScript | std::regex_constants::icase);
+	auto PAT = std::regex(R"((AI_(\d+)_(\d+)).dll)", std::regex_constants::ECMAScript | std::regex_constants::icase);
 	std::smatch m;
 	int player_count = 0;
 	_frame = 0;
@@ -269,6 +269,11 @@ void Controller::run()
 			{
 				_kill_one(i);
 				mylog << "player: " << i << " is killed because of sending nothing when parachuting" << std::endl;
+				COMMAND_PARACHUTE c;
+				c.role = -1;
+				c.team = _info[i].team;
+				c.landing_point = { 0,0 };
+				_command_parachute[i].push_back(c);
 			}
 		}
 	}
@@ -393,7 +398,7 @@ std::map<int, COMMAND_PARACHUTE> Controller::get_parachute_commands()
 		return m;
 	for (int i = 0; i < _player_count; ++i)
 	{
-		if (!_command_parachute[i].empty() && _info[i].state!=AI_STATE::DEAD)
+		if (!_command_parachute[i].empty())
 		{
 			m[i] = _command_parachute[i].back();
 		}

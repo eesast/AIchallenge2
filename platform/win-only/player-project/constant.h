@@ -114,34 +114,34 @@ struct item_property
     int range;
     int cd;
     int damage;
-    int reduce;
+    double reduce;
     double param;
     int occur;
 };
 
 const item_property ITEM_DATA[ITEM_SZ] = 
 { //        type     number durability       mode      range         cd     damage     reduce      param      occur
-    {    WEAPON,         0,      9999,ITEM_MODE_SZ,         1,         4,        30,         0,     30.00,         0},    // FIST
-    {    WEAPON,         1,         8,ITEM_MODE_SZ,        80,         4,        25,         0,      2.50,       100},    // HAND_GUN
-    {    WEAPON,         2,        20,ITEM_MODE_SZ,       100,         1,        25,         0,      2.50,        50},    // SUBMACHINE_GUN
-    {    WEAPON,         3,        15,ITEM_MODE_SZ,       150,         3,        30,         0,      1.50,        50},    // SEMI_AUTOMATIC_RILE
-    {    WEAPON,         4,        20,ITEM_MODE_SZ,       150,         2,        40,         0,      2.00,        35},    // ASSAULT_RIFLE
-    {    WEAPON,         5,        50,ITEM_MODE_SZ,       100,         1,        40,         0,      3.00,        20},    // MACHINE_GUN
-    {    WEAPON,         6,         8,ITEM_MODE_SZ,       600,         8,       100,         0,      0.50,        20},    // SNIPER_RILFE
-    {    WEAPON,         7,         5,ITEM_MODE_SZ,      1000,        10,       150,         0,      0.30,        10},    // SNIPER_BARRETT
-    {    WEAPON,         8,        20,ITEM_MODE_SZ,         2,         5,        50,         0,     60.00,        30},    // TIGER_BILLOW_HAMMER
-    {    WEAPON,         9,        10,ITEM_MODE_SZ,       100,         6,        30,         0,      1.00,        25},    // CROSSBOW
-    {     ARMOR,        10,       100,ITEM_MODE_SZ,         0,         0,         0,         0,      0.00,        50},    // VEST_1
-    {     ARMOR,        11,       150,ITEM_MODE_SZ,         0,         0,         0,         0,      0.00,        25},    // VEST_2
-    {     ARMOR,        12,       200,ITEM_MODE_SZ,         0,         0,         0,         0,      0.00,        10},    // VEST_3
-    {     ARMOR,        13,       100,ITEM_MODE_SZ,         0,         0,         0,         0,      0.00,        30},    // INSULATED_CLOTHING
-    {     GOODS,        14,         1,    PORTABLE,         0,         0,         0,         0,      0.30,        10},    // MUFFLER
-    {     GOODS,        15,         1,   SPENDABLE,         0,         5,         0,         0,    -20.00,        60},    // BONDAGE
-    {     GOODS,        16,         1,   SPENDABLE,         0,         8,         0,         0,   -100.00,        20},    // FIRST_AID_CASE
-    {     GOODS,        17,         1,   TRIGGERED,         0,         0,         0,         0,      0.00,        30},    // CODE_CASE
-    {     GOODS,        18,         1,   SPENDABLE,         0,         0,         0,         0,      0.00,        50},    // SCOPE_2
-    {     GOODS,        19,         1,   SPENDABLE,         0,         0,         0,         0,      0.00,        25},    // SCOPE_4
-    {     GOODS,        20,         1,   SPENDABLE,         0,         0,         0,         0,      0.00,        10},    // SCOPE_8
+    {    WEAPON,         0,      9999,ITEM_MODE_SZ,         1,         4,        20,      0.00,     30.00,         0},    // FIST
+    {    WEAPON,         1,         8,ITEM_MODE_SZ,        80,         4,        25,      0.00,      2.50,       100},    // HAND_GUN
+    {    WEAPON,         2,        20,ITEM_MODE_SZ,       100,         1,        25,      0.00,      2.50,        50},    // SUBMACHINE_GUN
+    {    WEAPON,         3,        15,ITEM_MODE_SZ,       150,         3,        30,      0.00,      1.50,        50},    // SEMI_AUTOMATIC_RILE
+    {    WEAPON,         4,        20,ITEM_MODE_SZ,       150,         2,        40,      0.00,      2.00,        35},    // ASSAULT_RIFLE
+    {    WEAPON,         5,        50,ITEM_MODE_SZ,       100,         1,        40,      0.00,      3.00,        20},    // MACHINE_GUN
+    {    WEAPON,         6,         8,ITEM_MODE_SZ,       600,         8,       100,      0.00,      0.50,        20},    // SNIPER_RILFE
+    {    WEAPON,         7,         5,ITEM_MODE_SZ,      1000,        10,       150,      0.00,      0.30,        10},    // SNIPER_BARRETT
+    {    WEAPON,         8,        20,ITEM_MODE_SZ,         2,         5,        50,      0.00,     60.00,        30},    // TIGER_BILLOW_HAMMER
+    {    WEAPON,         9,        10,ITEM_MODE_SZ,       100,         6,        30,      0.00,      1.00,        25},    // CROSSBOW
+    {     ARMOR,        10,       100,ITEM_MODE_SZ,         0,         0,         0,      0.15,      0.00,        50},    // VEST_1
+    {     ARMOR,        11,       150,ITEM_MODE_SZ,         0,         0,         0,      0.25,      0.00,        25},    // VEST_2
+    {     ARMOR,        12,       200,ITEM_MODE_SZ,         0,         0,         0,      0.30,      0.00,        10},    // VEST_3
+    {     ARMOR,        13,       100,ITEM_MODE_SZ,         0,         0,         0,      0.50,      0.00,        30},    // INSULATED_CLOTHING
+    {     GOODS,        14,         1,    PORTABLE,         0,         0,         0,      0.00,      0.30,        10},    // MUFFLER
+    {     GOODS,        15,         1,   SPENDABLE,         0,         5,         0,      0.00,    -20.00,        60},    // BONDAGE
+    {     GOODS,        16,         1,   SPENDABLE,         0,         8,         0,      0.00,   -100.00,        20},    // FIRST_AID_CASE
+    {     GOODS,        17,         1,   TRIGGERED,         0,         0,         0,      0.00,      0.00,        30},    // CODE_CASE
+    {     GOODS,        18,         1,   SPENDABLE,         0,         0,         0,      0.00,      2.00,        50},    // SCOPE_2
+    {     GOODS,        19,         1,   SPENDABLE,         0,         0,         0,      0.00,      4.00,        25},    // SCOPE_4
+    {     GOODS,        20,         1,   SPENDABLE,         0,         0,         0,      0.00,      8.00,        10},    // SCOPE_8
 };
 
 enum SOUND
@@ -243,14 +243,14 @@ const std::vector<block> AREA_DATA[AREA_SZ] =
         {    CIRCLE,     CIRCLE_BUILDING,   10,   10,    4,    0,    0},
     },    // beach
     {
-        { RECTANGLE,                WALL,    5,    5,    0,   35,    5},
-        { RECTANGLE,                WALL,    5,    5,    0,    5,   35},
-        { RECTANGLE,                WALL,   95,    5,    0,   65,    5},
-        { RECTANGLE,                WALL,   95,    5,    0,   95,   35},
-        { RECTANGLE,                WALL,    5,   95,    0,    5,   65},
-        { RECTANGLE,                WALL,    5,   95,    0,   35,   95},
-        { RECTANGLE,                WALL,   95,   95,    0,   95,   65},
-        { RECTANGLE,                WALL,   95,   95,    0,   65,   95},
+        { RECTANGLE,                WALL,    5,    6,    0,   35,    4},
+        { RECTANGLE,                WALL,    4,   35,    0,    6,    5},
+        { RECTANGLE,                WALL,   65,    6,    0,   95,    4},
+        { RECTANGLE,                WALL,   94,   35,    0,   96,    5},
+        { RECTANGLE,                WALL,    4,   95,    0,    6,   65},
+        { RECTANGLE,                WALL,    5,   96,    0,   35,   94},
+        { RECTANGLE,                WALL,   94,   95,    0,   96,   65},
+        { RECTANGLE,                WALL,   65,   96,    0,   95,   94},
         { RECTANGLE,  RECTANGLE_BUILDING,   10,   30,    0,   30,   10},
         { RECTANGLE,  RECTANGLE_BUILDING,   40,   30,    0,   60,   10},
         { RECTANGLE,  RECTANGLE_BUILDING,   70,   30,    0,   90,   10},
@@ -288,12 +288,6 @@ const std::vector<block> AREA_DATA[AREA_SZ] =
         {    CIRCLE,                TREE,   85,   30,    1,    0,    0},
     },    // farmland
     {
-        { RECTANGLE,                WALL,   20,   10,    0,   40,   30},
-        { RECTANGLE,                WALL,   50,   40,    0,   70,   60},
-        { RECTANGLE,                WALL,   80,   70,    0,  100,   90},
-        { RECTANGLE,                WALL,   10,   20,    0,   30,   40},
-        { RECTANGLE,                WALL,   40,   50,    0,   60,   70},
-        { RECTANGLE,                WALL,   70,   80,    0,   90,  100},
         {    CIRCLE,        CIRCLE_GRASS,   40,   10,    5,    0,    0},
         {    CIRCLE,        CIRCLE_GRASS,   70,   30,    6,    0,    0},
         {    CIRCLE,        CIRCLE_GRASS,   85,   10,    5,    0,    0},
@@ -310,12 +304,6 @@ const std::vector<block> AREA_DATA[AREA_SZ] =
         {    CIRCLE,                TREE,   65,   90,    1,    0,    0},
     },    // roadA
     {
-        { RECTANGLE,                WALL,   10,   80,    0,   30,   60},
-        { RECTANGLE,                WALL,   40,   50,    0,   60,   30},
-        { RECTANGLE,                WALL,   70,   20,    0,   90,    0},
-        { RECTANGLE,                WALL,   20,   90,    0,   40,   70},
-        { RECTANGLE,                WALL,   50,   60,    0,   70,   40},
-        { RECTANGLE,                WALL,   80,   30,    0,  100,   10},
         {    CIRCLE,        CIRCLE_GRASS,   55,   80,    4,    0,    0},
         {    CIRCLE,        CIRCLE_GRASS,   75,   55,    5,    0,    0},
         {    CIRCLE,        CIRCLE_GRASS,   85,   90,    6,    0,    0},

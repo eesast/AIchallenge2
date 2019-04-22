@@ -15,7 +15,7 @@ std::string get_date_string(bool filename)
 	char mbstr[100];
 	if (std::strftime(mbstr, sizeof(mbstr), (filename ? "%F_%H-%M-%S" : "%c"), std::localtime(&t)))
 	{
-		return { mbstr };
+		return {mbstr};
 	}
 	return {};
 }
@@ -41,6 +41,9 @@ int main()
 	{
 		py_seed = 0;
 	}
+	DWORD core = static_cast<DWORD>(batch_size);
+#else
+	long core = 0;
 #endif
 	namespace fs = std::filesystem;
 	std::cout << fs::current_path() << std::endl;
@@ -57,14 +60,14 @@ int main()
 
 	// init
 	manager.route = logic.init(debug_level);
-	manager.init(path, static_cast<DWORD>(batch_size));
+	manager.init(path, core);
 
 	//run
 	std::pair<std::map<int, std::string>, std::vector<int>> state_c;
 	manager.run();
+	state_c = logic.parachute(manager.get_parachute_commands());
 	if (manager.has_living_player())
 	{
-		state_c = logic.parachute(manager.get_parachute_commands());
 		manager.player_infos = state_c.first;
 		manager.dead = state_c.second;
 		while (true)

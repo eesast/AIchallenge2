@@ -28,14 +28,13 @@ bool Controller::_check_init()
     return _is_init;
 }
 
-void Controller::init(const std::filesystem::path &path, std::ofstream &filename2id, long used_core_count)
+void Controller::init(const std::filesystem::path &path, long used_core_count)
 {
     using namespace std::filesystem;
-    auto PAT = std::regex(R"((libAI_(\d*)_(\d*)).so)", std::regex_constants::ECMAScript | std::regex_constants::icase);
+    auto PAT = std::regex(R"((libAI_(\d+)_(\d+)).so)", std::regex_constants::ECMAScript | std::regex_constants::icase);
     std::smatch m;
     int player_count = 0;
 
-    filename2id << "{\n";
     bool isfirst = true;
 
     for (const auto &entry : directory_iterator(path))
@@ -66,24 +65,22 @@ void Controller::init(const std::filesystem::path &path, std::ofstream &filename
                         if (bind_api == NULL || _info[player_count].player_func == NULL || _info[player_count].recv_func == NULL)
                         {
                             mylog << "Cannot Get AI API from " << std::endl;
-                            continue;
+                            _info[player_count].state = AI_STATE::DEAD;
                         }
                         else
                         {
                             (*bind_api)(&controller_receive, &controller_update);
                             _team[team].push_back(player_count);
                             mylog << "Load AI " << fullpath << " as team" << team << std::endl;
-                            if(isfirst)
+                            if (isfirst)
                             {
                                 isfirst = false;
                             }
                             else
                             {
-                                filename2id << ",\n";
                             }
-                            filename2id << "  \"" << name << "\": " << player_count;
-                            ++player_count;
                         }
+                        ++player_count;
                     }
                 }
                 else
@@ -93,7 +90,6 @@ void Controller::init(const std::filesystem::path &path, std::ofstream &filename
             }
         }
     }
-    filename2id << "\n}\n";
     _player_count = player_count;
     _used_core_count = used_core_count;
     //set CPU
@@ -307,6 +303,23 @@ void Controller::run()
             _info[i].shm->unlock_commands();
         }
     }
+    //kill AI who sended nothing when parachuting
+    if (_frame == 0)
+    {
+        for (int i = 0; i < _player_count; ++i)
+        {
+            if (_command_parachute[i].empty())
+            {
+                _kill_one(i);
+                mylog << "player: " << i << " is killed because of sending nothing when parachuting" << std::endl;
+                COMMAND_PARACHUTE c;
+                c.role = -1;
+                c.team = _info[i].team;
+                c.landing_point = {0, 0};
+                _command_parachute[i].push_back(c);
+            }
+        }
+    }
     ++_frame;
 }
 void Controller::_run_player()
@@ -493,7 +506,7 @@ std::map<int, std::vector<COMMAND_ACTION>> Controller::get_action_commands()
         return m;
     for (int i = 0; i < _player_count; ++i)
     {
-        if (!_command_action[i].empty())
+        if (!_command_action[i].empty() && _info[i].state != AI_STATE::DEAD)
         {
             m[i] = {_command_action[i].cbegin(), _command_action[i].cend()};
         }

@@ -971,6 +971,7 @@ class GameMain:
             data.self.move_cd = player.move_cd
             data.self.attack_cd = player.shoot_cd
             data.self.pos.x, data.self.pos.y = player.position.x, player.position.y
+            data.self.vocation = player.vocation
             data.self.view_width = player.view_angle
             data.self.view_distance = player.view_distance
 

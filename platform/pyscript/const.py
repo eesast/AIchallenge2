@@ -81,13 +81,15 @@ def item2str(item_dct):
                 else:
                     key_infos[key] = ('enum', [value])
             elif isinstance(value, int):
-                key_infos[key] = ('int', [])
+                if key in key_infos and key_infos[key][0] == 'double':
+                    pass
+                else:
+                    key_infos[key] = ('int', [])
             elif isinstance(value, float):
                 key_infos[key] = ('double', [])
             else:
                 raise TypeError
     key_infos.pop('macro')
-
     # enum
     enum_str = ''
     for key_str, info in key_infos.items():
@@ -208,7 +210,7 @@ struct block {
                 for values in values_list:
                     # shape
                     area_table += '        {%10s,' % (
-                        block_shape[1 if len(values)==4 else 0],)
+                        block_shape[1 if len(values) == 4 else 0],)
                     # type
                     area_table += '%20s,' % (key.upper(),)
                     area_table += '%5d,%5d,' % (values[0], values[1])
@@ -322,8 +324,9 @@ enum STATUS
 
 const int NOMOVE = 0;
 
-''' 
-    s +='const double AIRPLANE_SPEED = %.1f;\nconst double JUMPING_SPEED = %.1f;\nconst double PICKUP_DISTANCE = %.1f;\n\n '% (constant_dct['PARAMETER']['character']['airplane'], constant_dct['PARAMETER']['character']['jumping'], constant_dct['PARAMETER']['character']['pick_distance'])
+'''
+    s += 'const double AIRPLANE_SPEED = %.1f;\nconst double JUMPING_SPEED = %.1f;\nconst double PICKUP_DISTANCE = %.1f;\n\n ' % (
+        constant_dct['PARAMETER']['character']['airplane'], constant_dct['PARAMETER']['character']['jumping'], constant_dct['PARAMETER']['character']['pick_distance'])
     s += character2str(constant_dct['CHARACTER'])+item2str(
         constant_dct['ITEM']) + sound2str(constant_dct['SOUND']) + \
         map2str(constant_dct['MAP']) + circle2str(constant_dct['CIRCLE'])
