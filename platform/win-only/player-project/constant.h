@@ -58,7 +58,7 @@ struct vocation_property
 const vocation_property VOCATION_DATA[VOCATION_SZ] = 
 { //     number        hp  distance     angle    radius      move     skill
     {        0,   120.00,   160.00,   124.00,     0.50,     1.80,     0.50},    // MEDIC
-    {        1,   100.00,   160.00,   124.00,     0.45,     1.60,     2.00},    // SIGNALMAN
+    {        1,   100.00,   160.00,   124.00,     0.45,     1.60,     5.00},    // SIGNALMAN
     {        2,    90.00,   160.00,   124.00,     0.43,     1.20,     1.00},    // HACK
     {        3,    80.00,   200.00,   115.00,     0.40,     1.00,     1.50},    // SNIPER
 };
