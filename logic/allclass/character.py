@@ -251,6 +251,9 @@ class Character(Object):  # the base class of all characters
     def pick_accessible(self, other):
         return self.position.distance(other) <= Character.PICKUP_DISTANCE
 
+    def __str__(self):
+        return 'player ' + str(self.number)
+
 
 if __name__ == '__main__':
     # if necessary, test here

@@ -557,10 +557,19 @@ class GameMain:
                 if emitter.vocation != character.Character.SIGNALMAN:
                     # if he isn't signal man, only last instruction will be processed
                     commands = commands[-1]
+                else:
+                    commands = commands[-int(character.Character.all_data['SIGNALMAN']['skill']):]
                 for receiver_id, data in commands:
-                    receiver = self.number_to_player[receiver_id]
-                    self.all_sounds.append(sound.Sound(sound.Sound.RADIO_VOICE, receiver_id, emitter.position,
-                                                       abs(emitter.position - receiver.posistion), emitter_id, data))
+                    receiver = self.number_to_player.get(receiver_id)
+                    if not receiver:
+                        self.print_debug(4, emitter, 'try to send radio to player not existing')
+                    elif receiver.team != emitter.team:
+                        self.print_debug(4, emitter, 'try to send radio to other team')
+                    elif receiver is emitter:
+                        self.print_debug(4, emitter, 'try to send radio to himself')
+                    else:
+                        self.all_sounds.append(sound.Sound(sound.Sound.RADIO_VOICE, receiver_id, emitter.position, abs(
+                            emitter.position - receiver.posistion), emitter_id, data))
             return
 
         def move():
