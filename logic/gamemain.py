@@ -558,7 +558,7 @@ class GameMain:
                     # if he isn't signal man, only last instruction will be processed
                     commands = commands[-1]
                 else:
-                    commands = commands[-int(character.Character.all_data['SIGNALMAN']['skill']):]
+                    commands = commands[-int(character.Character.all_data[emitter.vocation]['skill']):]
                 for receiver_id, data in commands:
                     receiver = self.number_to_player.get(receiver_id)
                     if not receiver:
