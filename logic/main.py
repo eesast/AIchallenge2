@@ -43,6 +43,7 @@ def main():
     print(information)
     parachute(information)
     # for debug
+    game.number_to_player[0].get_damage(70)
     commands = {}
     for i in range(12):
         commands[i] = [
@@ -57,7 +58,7 @@ def main():
         {
             'command_type': 1,
             'view_angle': 0,
-            'target': 0,
+            'target': 15,
             'other': -1,
         }
     ]
