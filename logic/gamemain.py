@@ -497,7 +497,7 @@ class GameMain:
                     self.print_debug(4, 'player', player_id, 'try to use weapon without durability')
                 elif item_data['type'] != 'WEAPON' and item_data['mode'] != 'SPENDABLE':
                     self.print_debug(4, 'player', player_id, 'try to use not weapon-like item to shoot')
-                elif item_data['damage'] < 0:
+                elif item_data['param'] < 0:
                     if player.vocation == character.Character.MEDIC and other >= 0:
                         if other in self.number_to_team[player.team]:
                             if self.number_to_player[other].pick_accessible(player.position):
@@ -569,7 +569,7 @@ class GameMain:
                         self.print_debug(4, emitter, 'try to send radio to himself')
                     else:
                         self.all_sounds.append(sound.Sound(sound.Sound.RADIO_VOICE, receiver_id, emitter.position, abs(
-                            emitter.position - receiver.posistion), emitter_id, data))
+                            emitter.position - receiver.position), emitter_id, data))
             return
 
         def move():
@@ -736,14 +736,15 @@ class GameMain:
 
             for drug_index, receiver, emitter in self.all_drugs:
                 drug = item.Item.all_data[drug_index]
-                value = drug['damage']
+                value = drug['param']
                 if emitter is None:
                     self.number_to_player[receiver].get_damage(value)
                     self.print_debug(13, 'player', receiver, drug['name'], value, 'heal points to himself')
                 else:
-                    self.number_to_player[receiver].get_damage(
-                        value * character.Character.all_data[character.Character.MEDIC]['skill'])
+                    value *= character.Character.all_data[character.Character.MEDIC]['skill']
+                    self.number_to_player[receiver].get_damage(value)
                     self.print_debug(13, 'player', emitter, drug['name'], value, 'head points to player', receiver)
+            self.all_drugs.clear()
             return
 
         def die():
