@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='logic_to_interface',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0finterface.proto\x12\x12logic_to_interface\"\x1b\n\x03Pos\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\"M\n\x0fPlayerBasicInfo\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04team\x18\x02 \x01(\x05\x12\x10\n\x08vocation\x18\x03 \x01(\x05\x12\x0e\n\x06HP_max\x18\x04 \x01(\x05\"\xa4\x01\n\nPlayerInfo\x12\n\n\x02id\x18\x01 \x01(\x05\x12\n\n\x02HP\x18\x02 \x01(\x05\x12$\n\x03pos\x18\x03 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12\x0e\n\x06weapon\x18\x04 \x01(\x05\x12\r\n\x05\x61rmor\x18\x05 \x01(\x05\x12\x16\n\x0e\x66\x61\x63\x65_direction\x18\x06 \x01(\x01\x12\x0e\n\x06height\x18\x07 \x01(\x01\x12\x11\n\treal_dead\x18\x08 \x01(\x08\"F\n\x04Item\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04type\x18\x02 \x01(\x05\x12$\n\x03pos\x18\x03 \x01(\x0b\x32\x17.logic_to_interface.Pos\"A\n\x06\x43ircle\x12\'\n\x06\x63\x65nter\x18\x01 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12\x0e\n\x06radius\x18\x02 \x01(\x01\"\x7f\n\nCircleInfo\x12\x0e\n\x06status\x18\x01 \x01(\x05\x12\x0e\n\x06\x66rames\x18\x02 \x01(\x05\x12\'\n\x03now\x18\x03 \x01(\x0b\x32\x1a.logic_to_interface.Circle\x12(\n\x04next\x18\x04 \x01(\x0b\x32\x1a.logic_to_interface.Circle\"\x92\x01\n\x0bInitialInfo\x12&\n\x05start\x18\x01 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12%\n\x04over\x18\x02 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12\x34\n\x07players\x18\x03 \x03(\x0b\x32#.logic_to_interface.PlayerBasicInfo\"\xbf\x01\n\tFrameInfo\x12\r\n\x05\x66rame\x18\x01 \x01(\x05\x12/\n\x07players\x18\x02 \x03(\x0b\x32\x1e.logic_to_interface.PlayerInfo\x12+\n\tnew_items\x18\x03 \x03(\x0b\x32\x18.logic_to_interface.Item\x12\x15\n\rremoved_items\x18\x04 \x03(\x05\x12.\n\x06\x63ircle\x18\x05 \x01(\x0b\x32\x1e.logic_to_interface.CircleInfob\x06proto3')
+  serialized_pb=_b('\n\x0finterface.proto\x12\x12logic_to_interface\"\x1b\n\x03Pos\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\"M\n\x0fPlayerBasicInfo\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04team\x18\x02 \x01(\x05\x12\x10\n\x08vocation\x18\x03 \x01(\x05\x12\x0e\n\x06HP_max\x18\x04 \x01(\x05\"\xd1\x01\n\nPlayerInfo\x12\n\n\x02id\x18\x01 \x01(\x05\x12\n\n\x02HP\x18\x02 \x01(\x05\x12$\n\x03pos\x18\x03 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12\x0e\n\x06weapon\x18\x04 \x01(\x05\x12\r\n\x05\x61rmor\x18\x05 \x01(\x05\x12\x16\n\x0e\x66\x61\x63\x65_direction\x18\x06 \x01(\x01\x12\x0e\n\x06height\x18\x07 \x01(\x01\x12\x11\n\treal_dead\x18\x08 \x01(\x08\x12+\n\tfire_info\x18\t \x01(\x0b\x32\x18.logic_to_interface.Fire\"4\n\x04\x46ire\x12\x0c\n\x04\x66ire\x18\x01 \x01(\x08\x12\x0e\n\x06target\x18\x02 \x01(\x05\x12\x0e\n\x06weapon\x18\x03 \x01(\x05\"F\n\x04Item\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04type\x18\x02 \x01(\x05\x12$\n\x03pos\x18\x03 \x01(\x0b\x32\x17.logic_to_interface.Pos\"A\n\x06\x43ircle\x12\'\n\x06\x63\x65nter\x18\x01 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12\x0e\n\x06radius\x18\x02 \x01(\x01\"\x7f\n\nCircleInfo\x12\x0e\n\x06status\x18\x01 \x01(\x05\x12\x0e\n\x06\x66rames\x18\x02 \x01(\x05\x12\'\n\x03now\x18\x03 \x01(\x0b\x32\x1a.logic_to_interface.Circle\x12(\n\x04next\x18\x04 \x01(\x0b\x32\x1a.logic_to_interface.Circle\"\x92\x01\n\x0bInitialInfo\x12&\n\x05start\x18\x01 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12%\n\x04over\x18\x02 \x01(\x0b\x32\x17.logic_to_interface.Pos\x12\x34\n\x07players\x18\x03 \x03(\x0b\x32#.logic_to_interface.PlayerBasicInfo\"\xbf\x01\n\tFrameInfo\x12\r\n\x05\x66rame\x18\x01 \x01(\x05\x12/\n\x07players\x18\x02 \x03(\x0b\x32\x1e.logic_to_interface.PlayerInfo\x12+\n\tnew_items\x18\x03 \x03(\x0b\x32\x18.logic_to_interface.Item\x12\x15\n\rremoved_items\x18\x04 \x03(\x05\x12.\n\x06\x63ircle\x18\x05 \x01(\x0b\x32\x1e.logic_to_interface.CircleInfob\x06proto3')
 )
 
 
@@ -179,6 +179,13 @@ _PLAYERINFO = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='fire_info', full_name='logic_to_interface.PlayerInfo.fire_info', index=8,
+      number=9, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -192,7 +199,52 @@ _PLAYERINFO = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=148,
-  serialized_end=312,
+  serialized_end=357,
+)
+
+
+_FIRE = _descriptor.Descriptor(
+  name='Fire',
+  full_name='logic_to_interface.Fire',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='fire', full_name='logic_to_interface.Fire.fire', index=0,
+      number=1, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='target', full_name='logic_to_interface.Fire.target', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='weapon', full_name='logic_to_interface.Fire.weapon', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=359,
+  serialized_end=411,
 )
 
 
@@ -236,8 +288,8 @@ _ITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=314,
-  serialized_end=384,
+  serialized_start=413,
+  serialized_end=483,
 )
 
 
@@ -274,8 +326,8 @@ _CIRCLE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=386,
-  serialized_end=451,
+  serialized_start=485,
+  serialized_end=550,
 )
 
 
@@ -326,8 +378,8 @@ _CIRCLEINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=453,
-  serialized_end=580,
+  serialized_start=552,
+  serialized_end=679,
 )
 
 
@@ -371,8 +423,8 @@ _INITIALINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=583,
-  serialized_end=729,
+  serialized_start=682,
+  serialized_end=828,
 )
 
 
@@ -430,11 +482,12 @@ _FRAMEINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=732,
-  serialized_end=923,
+  serialized_start=831,
+  serialized_end=1022,
 )
 
 _PLAYERINFO.fields_by_name['pos'].message_type = _POS
+_PLAYERINFO.fields_by_name['fire_info'].message_type = _FIRE
 _ITEM.fields_by_name['pos'].message_type = _POS
 _CIRCLE.fields_by_name['center'].message_type = _POS
 _CIRCLEINFO.fields_by_name['now'].message_type = _CIRCLE
@@ -448,6 +501,7 @@ _FRAMEINFO.fields_by_name['circle'].message_type = _CIRCLEINFO
 DESCRIPTOR.message_types_by_name['Pos'] = _POS
 DESCRIPTOR.message_types_by_name['PlayerBasicInfo'] = _PLAYERBASICINFO
 DESCRIPTOR.message_types_by_name['PlayerInfo'] = _PLAYERINFO
+DESCRIPTOR.message_types_by_name['Fire'] = _FIRE
 DESCRIPTOR.message_types_by_name['Item'] = _ITEM
 DESCRIPTOR.message_types_by_name['Circle'] = _CIRCLE
 DESCRIPTOR.message_types_by_name['CircleInfo'] = _CIRCLEINFO
@@ -475,6 +529,13 @@ PlayerInfo = _reflection.GeneratedProtocolMessageType('PlayerInfo', (_message.Me
   # @@protoc_insertion_point(class_scope:logic_to_interface.PlayerInfo)
   ))
 _sym_db.RegisterMessage(PlayerInfo)
+
+Fire = _reflection.GeneratedProtocolMessageType('Fire', (_message.Message,), dict(
+  DESCRIPTOR = _FIRE,
+  __module__ = 'interface_pb2'
+  # @@protoc_insertion_point(class_scope:logic_to_interface.Fire)
+  ))
+_sym_db.RegisterMessage(Fire)
 
 Item = _reflection.GeneratedProtocolMessageType('Item', (_message.Message,), dict(
   DESCRIPTOR = _ITEM,

@@ -15,7 +15,7 @@ import struct
 #   here define a debug level variable to debug print-oriented
 #   remember: here is just a initial level for logic
 #   platform may give another number in game_init
-PRINT_DEBUG = 25
+PRINT_DEBUG = 26
 
 
 #   !!set PRINT_DEBUG to -1 to close the debug system!!
@@ -394,6 +394,8 @@ class GameMain:
 
         def instructions():
             self.removed_items.clear()
+            self.all_bullets.clear()
+            self.all_drugs.clear()
             # pick up
             for player_number, command in self.all_commands['pickup'].items():
                 picked_item = item.Item.all_items.get(command[0], None)
@@ -725,14 +727,12 @@ class GameMain:
                         value *= character.Character.all_data[character.Character.SNIPER]['skill']
                     parameter = 'ARMOR_PIERCING' if data['name'] == 'CROSSBOW' else None
                     real_damage = self.number_to_player[hit_id].get_damage(value, player_id, parameter)
+                    shooter.fire = hit_id, item_index
                     self.print_debug(13, 'player', player_id, data['name'], real_damage, 'damage to player', hit_id)
                 else:
-                    '''if item.Item.all_items[item_index].item_type == 1:
-                        bullets[index] = pos, view_angle, item_index, player_id, True'''
+                    shooter = self.number_to_player[player_id]
+                    shooter.fire = -1, item_index
                     self.print_debug(26, 'player', player_id, 'shoot at nothing')
-
-            # self.all_bullets = [bullet for bullet in bullets if bullet[4] is None]
-            self.all_bullets.clear()
 
             for drug_index, receiver, emitter in self.all_drugs:
                 drug = item.Item.all_data[drug_index]
@@ -744,7 +744,7 @@ class GameMain:
                     value *= character.Character.all_data[character.Character.MEDIC]['skill']
                     self.number_to_player[receiver].get_damage(value)
                     self.print_debug(13, 'player', emitter, drug['name'], value, 'head points to player', receiver)
-            self.all_drugs.clear()
+
             return
 
         def die():
@@ -893,6 +893,10 @@ class GameMain:
                         new_info.armor = player.best_armor
                         new_info.face_direction = player.face_direction.get_angle()
                         new_info.height = float(player.get_height())
+                        if player.fire:
+                            new_info.fire_info.fire = True
+                            new_info.fire_info.target, new_info.fire_info.weapon = player.fire
+                            player.fire = None
 
             # give all new items information
             for each_item in self.new_items:
@@ -942,9 +946,10 @@ class GameMain:
         # 8. update player's view, cd and etc
         update()
 
-        self.__turn += 1
         # output data for playback file
         self.write_playback(pack_for_interface())
+
+        self.__turn += 1
 
         # deal with last frame
         if self.game_over():
