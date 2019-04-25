@@ -58,7 +58,7 @@ def main():
         {
             'command_type': 1,
             'view_angle': 0,
-            'target': 15,
+            'target': 0,
             'other': -1,
         }
     ]
