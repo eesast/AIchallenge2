@@ -3,7 +3,11 @@
 版本长期发布链接[清华云盘](https://cloud.tsinghua.edu.cn/d/513cdc8459f742e0980a/)
 #### 版本 v1.0rc3
 ------
+### Update v1.0rc3 Patch6
+1. 修复治疗问题
+
 ### Update v1.0rc3 Patch5
+
 1. 信号兵可以正确地发送无线电（每回合上限5条）
 
 ### Update v1.0rc3 Patch4
