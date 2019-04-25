@@ -31,6 +31,15 @@ message PlayerInfo
 	double face_direction = 6;
 	double height = 7;
 	bool real_dead = 8;
+	Fire fire_info = 9;
+}
+
+message Fire
+{
+	bool fire = 1;
+	// -1 means miss, or player id
+	int32 target = 2;
+	int32 weapon = 3;
 }
 
 message Item

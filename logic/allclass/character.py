@@ -78,6 +78,7 @@ class Character(Object):  # the base class of all characters
         self.last_weapon = -1
         self.best_armor = -1
         self.move_cd_max = None
+        self.fire = None            # (target, weapon)
 
         # for save the killing information
         self.killer = -1
