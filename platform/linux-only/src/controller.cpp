@@ -103,6 +103,14 @@ void Controller::init(const std::filesystem::path &path, long used_core_count)
         _used_core_count = used_core_count;
     }
     mylog << "total core = " << _total_core_count << " used core = " << _used_core_count << std::endl;
+    for (int i = 0; i < _player_count; i++)
+    {
+        _info[i].cpuID = i % _used_core_count + (_total_core_count - _used_core_count);
+    }
+    for(int i = 0; i < _used_core_count; i++)
+    {
+        _cpu_batchs.emplace_back(std::vector<int>());
+    }
     _is_init = true;
 }
 
@@ -157,43 +165,45 @@ void Controller::run()
         _command_parachute[i].clear();
         _command_action[i].clear();
     }
-    int now = 0;
+    for (int i = 0; i < _used_core_count; ++i)
+    {
+        _cpu_batchs[i].clear();
+    }
+    for (int i = _player_count-1; i >= 0; --i)
+    {
+        if(_info[i].state!=AI_STATE::DEAD)
+        {
+            _cpu_batchs[_info[i].cpuID].push_back(i);
+        }
+    }
     //main_loop
-    while (now < _player_count)
+    while (true)
     {
         //set batch
         _batch.clear();
-        for (int i = 0; i < static_cast<int>(_used_core_count);)
+        for(int i = 0; i < _used_core_count; ++i)
         {
-            if (now >= _player_count)
+            if(!_cpu_batchs[i].empty())
             {
-                break;
-            }
-            else if (_info[now].state != AI_STATE::DEAD)
-            {
-                _batch.push_back(now);
-                ++now;
-                ++i;
-            }
-            else
-            {
-                ++now;
+                _batch.push_back(_cpu_batchs[i].back());
+                _cpu_batchs[i].pop_back();  
             }
         }
+        if(_batch.empty())
+            break;
         mylog << "batch: ";
         for (const auto i : _batch)
         {
             mylog << i << ' ';
         }
         mylog << std::endl;
-        int core_num = _total_core_count - _used_core_count;
         //execute some players each loop. The number is equal to the number of core(_used_core_count)
         for (int i : _batch)
         {
             switch (_info[i].state)
             {
             case AI_STATE::UNUSED: //only first time
-                _used_cpuID = core_num++;
+                _used_cpuID = _info[i].cpuID;
                 _info[i].shmid = shmget(IPC_PRIVATE, sizeof(COMM_BLOCK), IPC_CREAT | 0600);
                 _info[i].pid = fork();
                 if (_info[i].pid > 0) //manager

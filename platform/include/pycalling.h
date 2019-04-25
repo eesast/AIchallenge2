@@ -12,7 +12,7 @@
 #endif // _DEBUG
 
 #else
-#include <python3.6m/Python.h>
+#include <python3.7m/Python.h>
 #endif // WIN32
 
 

@@ -44,6 +44,7 @@ private:
     AI_STATE state = AI_STATE::UNUSED;
     int frame = -1; //frame of game
     int shmid;
+    long cpuID;
     COMM_BLOCK *shm = nullptr;
     AI_Func player_func = nullptr;
     Recv_Func recv_func = nullptr;
@@ -112,6 +113,7 @@ private:
   int _playerID = -1; //just for childprocess
   std::vector<int> _batch;
   int _frame = 0;
+  std::vector<std::vector<int>> _cpu_batchs;
 
   //communication
   std::vector<COMMAND_PARACHUTE> _command_parachute[MAX_PLAYER];
