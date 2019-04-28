@@ -285,11 +285,6 @@ class GameMain:
                 team_number = player_information['team']
                 new_vocation = player_information['vocation']
 
-                if not isinstance(player_information, dict):
-                    raise Exception("wrong team_information!")
-                if not isinstance(team_number, int):
-                    raise Exception("wrong team_number!")
-
                 new_team = []
                 # if this is the first player in this team, add team information
                 if self.number_to_team.get(team_number, None) is None:
@@ -320,7 +315,9 @@ class GameMain:
                 new_player.land_position = position.Position(player_information['position'])
                 if not new_player.land_position.good(self.map_size):  # for illegal aim, auto fall in the end
                     self.print_debug(1, "number", player_number, "choose illegal aim", new_player.land_position)
-                    new_player.land_position = self.__over_position
+                    new_player.land_position.x = min(999, self.__over_position.x)
+                    new_player.land_position.y = min(999, self.__over_position.y)
+
                 new_team.append(new_player)
                 self.number_to_player[player_number] = new_player
             self.last_alive_teams = self.all_players
