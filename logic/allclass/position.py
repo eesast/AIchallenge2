@@ -63,7 +63,7 @@ class Position:  # this is a class for position and reload some operator
     def good(self, size_x, size_y=0):
         if size_y == 0:
             size_y = size_x
-        return 0 <= self.x <= size_x and 0 <= self.y <= size_y
+        return 0 <= self.x < size_x and 0 <= self.y < size_y
 
     # it should be in [0,360)
     def get_angle(self, other=None):
