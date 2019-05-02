@@ -1038,7 +1038,7 @@ class GameMain:
         if self.playback_file.closed:
             return
         data = interface_data.SerializeToString()
-        self.playback_file.write(struct.pack('i', len(data)))
+        self.playback_file.write(len(data).to_bytes(4, 'little'))
         self.playback_file.write(data)
         self.playback_file.flush()
         self.print_debug(50, "write", len(data), "bytes into the playback file")
@@ -1089,9 +1089,17 @@ class GameMain:
             'team_out_order': team_out_order,
             'order_of_death': self.die_order,
         }
-        with open(self.playback_file.name[:-2] + '.json', 'w') as file:
+        
+        result_name = self.playback_file.name[:-2] + '.json'
+        with open(result_name, 'w') as file:
             dump(result, file)
 
+        with open(result_name, 'r') as file:
+            result = file.read().encode()
+
+        self.playback_file.write(bytes(4))  # write b'\x00\x00\x00\x00'
+        self.playback_file.write(len(result).to_bytes(4, 'little'))
+        self.playback_file.write(result)
         self.playback_file.close()
         return
 
