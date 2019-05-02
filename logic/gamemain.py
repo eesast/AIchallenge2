@@ -568,7 +568,7 @@ class GameMain:
                         self.print_debug(4, emitter, 'try to send radio to himself')
                     else:
                         self.all_sounds.append(sound.Sound(sound.Sound.RADIO_VOICE, receiver_id, emitter.position, abs(
-                            emitter.position - receiver.posistion), emitter_id, data))
+                            emitter.position - receiver.position), emitter_id, data))
             return
 
         def move():
