@@ -57,7 +57,7 @@
     {
         "items":50,
         "delay":0,
-        "wait":200,
+        "wait":150,
         "move":80,
         "damage":3.0,
         "shrink":0.5
@@ -66,7 +66,7 @@
     {
         "items":50,
         "delay":0,
-        "wait":200,
+        "wait":100,
         "move":60,
         "damage":5.0,
         "shrink":0.5
@@ -75,7 +75,7 @@
     {
         "items":50,
         "delay":0,
-        "wait":200,
+        "wait":100,
         "move":40,
         "damage":10.0,
         "shrink":0.0

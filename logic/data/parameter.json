@@ -5,7 +5,8 @@
         "airplane":50.0,
         "pick_distance":1.0,
         "reduce":80.0,
-        "jumping":20.0
+        "jumping":20.0,
+        "swimming":0.6
     },
     "main":
     {

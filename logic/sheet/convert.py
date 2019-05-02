@@ -236,6 +236,7 @@ def get_parameter_data(sheet_parameter):
         data['main']['score_by_rank'][i] = int(col[i - 4])
 
     data['character']['jumping'] = col[13]
+    data['character']['swimming'] = col[14]
 
     return data
 
