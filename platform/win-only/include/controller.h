@@ -43,7 +43,11 @@ class Controller
         //function pointer for callback
         AI_Func player_func = nullptr;
         Recv_Func recv_func = nullptr;
-		std::mutex mtx;
+		DWORD cpuID;
+		std::mutex comm_mtx;
+		std::mutex run_mtx;
+		std::atomic_bool started = false;
+		std::atomic_bool next = false;
     };
 
 public:
@@ -77,6 +81,7 @@ private:
     //return -1 if failed
     int _get_playerID_by_threadID();
 	void _kill_one(int playerID);
+	void _run_player(int playerID);
 
     //communication
 public:
@@ -103,15 +108,17 @@ private:
     DWORD _used_core_count;
     DWORD _total_core_count;
     AI_INFO _info[MAX_PLAYER];
-    HANDLE* _waiting_thread;    //size == _used_core_count
     int _player_count;
     int _frame;
 	std::vector<int> _batch;
+	std::condition_variable _cv;
 
     //communication
     std::vector<COMMAND_PARACHUTE> _command_parachute[MAX_PLAYER];
     std::vector<COMMAND_ACTION> _command_action[MAX_PLAYER];
     std::vector<int> _team[MAX_TEAM];
+	std::vector<std::vector<int>> _cpu_batchs;
+	HANDLE _timer;
 public:     //comm with pycalling
     ROUTE_T route;
     std::map<int, std::string> player_infos;

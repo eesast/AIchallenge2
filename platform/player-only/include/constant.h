@@ -60,7 +60,7 @@ const vocation_property VOCATION_DATA[VOCATION_SZ] =
     {        0,   120.00,   160.00,   124.00,     0.50,     1.80,     0.50},    // MEDIC
     {        1,   100.00,   160.00,   124.00,     0.45,     1.60,     5.00},    // SIGNALMAN
     {        2,    90.00,   160.00,   124.00,     0.43,     1.20,     1.00},    // HACK
-    {        3,    80.00,   200.00,   115.00,     0.40,     1.00,     1.50},    // SNIPER
+    {        3,    90.00,   200.00,   115.00,     0.40,     1.00,     1.50},    // SNIPER
 };
 
 enum ITEM_TYPE
@@ -149,8 +149,7 @@ enum SOUND
     RADIO_VOICE = 0,
     FOOTSTEP_SOUND = 1,
     GUN_SOUND = 2,
-    BOOM_SOUND = 3,
-    SOUND_SZ = 4,
+    SOUND_SZ = 3,
 };
 
 struct sound_property
@@ -165,7 +164,6 @@ const sound_property SOUND_DATA[SOUND_SZ] =
     {        0,   500.00,  3000.00},    // RADIO_VOICE
     {        1,    50.00,   100.00},    // FOOTSTEP_SOUND
     {        2,   100.00,   300.00},    // GUN_SOUND
-    {        3,   200.00,   600.00},    // BOOM_SOUND
 };
 
 enum BLOCK_SHAPE
@@ -243,14 +241,14 @@ const std::vector<block> AREA_DATA[AREA_SZ] =
         {    CIRCLE,     CIRCLE_BUILDING,   10,   10,    4,    0,    0},
     },    // beach
     {
-        { RECTANGLE,                WALL,    5,    6,    0,   35,    4},
-        { RECTANGLE,                WALL,    4,   35,    0,    6,    5},
-        { RECTANGLE,                WALL,   65,    6,    0,   95,    4},
-        { RECTANGLE,                WALL,   94,   35,    0,   96,    5},
-        { RECTANGLE,                WALL,    4,   95,    0,    6,   65},
-        { RECTANGLE,                WALL,    5,   96,    0,   35,   94},
-        { RECTANGLE,                WALL,   94,   95,    0,   96,   65},
-        { RECTANGLE,                WALL,   65,   96,    0,   95,   94},
+        { RECTANGLE,                WALL,    5,    6,    0,   35,    5},
+        { RECTANGLE,                WALL,    5,   35,    0,    6,    6},
+        { RECTANGLE,                WALL,   65,    6,    0,   95,    5},
+        { RECTANGLE,                WALL,   95,   35,    0,   96,    6},
+        { RECTANGLE,                WALL,    4,   95,    0,    5,   65},
+        { RECTANGLE,                WALL,    5,   96,    0,   35,   95},
+        { RECTANGLE,                WALL,   95,   95,    0,   96,   65},
+        { RECTANGLE,                WALL,   65,   95,    0,   95,   94},
         { RECTANGLE,  RECTANGLE_BUILDING,   10,   30,    0,   30,   10},
         { RECTANGLE,  RECTANGLE_BUILDING,   40,   30,    0,   60,   10},
         { RECTANGLE,  RECTANGLE_BUILDING,   70,   30,    0,   90,   10},
@@ -475,9 +473,9 @@ const circle_property CIRCLE_DATA[CIRCLE_SZ] =
     {      125,        0,      200,      140,     1.25,     0.50},
     {       50,        0,      200,      120,     1.50,     0.50},
     {       50,        0,      200,      100,     2.00,     0.50},
-    {       50,        0,      200,       80,     3.00,     0.50},
-    {       50,        0,      200,       60,     5.00,     0.50},
-    {       50,        0,      200,       40,    10.00,     0.00},
+    {       50,        0,      150,       80,     3.00,     0.50},
+    {       50,        0,      100,       60,     5.00,     0.50},
+    {       50,        0,      100,       40,    10.00,     0.00},
 };
 
 #endif
