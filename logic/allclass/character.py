@@ -78,7 +78,7 @@ class Character(Object):  # the base class of all characters
         self.last_weapon = -1
         self.best_armor = -1
         self.move_cd_max = None
-        self.fire = None            # (target, weapon)
+        self.fire = None            # (target, weapon, damage)
 
         # for save the killing information
         self.killer = -1
@@ -142,6 +142,8 @@ class Character(Object):  # the base class of all characters
             self.position += self.move_direction * self.move_speed
         else:
             move_distance = self.move_speed * Character.all_params['move_step'][self.move_cd]
+            if self.block and self.block.name == 'shallow_water':
+                move_distance *= Character.all_params['swimming']
             new_position = self.position + self.move_direction * move_distance
             if new_position.good(1000):
                 self.position = new_position

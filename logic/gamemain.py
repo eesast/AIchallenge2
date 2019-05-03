@@ -724,24 +724,25 @@ class GameMain:
                         value *= character.Character.all_data[character.Character.SNIPER]['skill']
                     parameter = 'ARMOR_PIERCING' if data['name'] == 'CROSSBOW' else None
                     real_damage = self.number_to_player[hit_id].get_damage(value, player_id, parameter)
-                    shooter.fire = hit_id, item_index
+                    shooter.fire = hit_id, item_index, real_damage
                     self.print_debug(13, 'player', player_id, data['name'], real_damage, 'damage to player', hit_id)
                 else:
                     shooter = self.number_to_player[player_id]
-                    shooter.fire = -1, item_index
+                    shooter.fire = -1, item_index, 0
                     self.print_debug(26, 'player', player_id, 'shoot at nothing')
 
             for drug_index, receiver, emitter in self.all_drugs:
                 drug = item.Item.all_data[drug_index]
                 value = drug['param']
                 if emitter is None:
-                    self.number_to_player[receiver].get_damage(value)
+                    real_damage = self.number_to_player[receiver].get_damage(value)
                     self.print_debug(13, 'player', receiver, drug['name'], value, 'heal points to himself')
+                    self.number_to_player[receiver].fire = receiver, drug_index, real_damage
                 else:
                     value *= character.Character.all_data[character.Character.MEDIC]['skill']
-                    self.number_to_player[receiver].get_damage(value)
+                    real_damage = self.number_to_player[receiver].get_damage(value)
                     self.print_debug(13, 'player', emitter, drug['name'], value, 'head points to player', receiver)
-
+                    self.number_to_player[emitter] = receiver, drug_index, real_damage
             return
 
         def die():
@@ -891,8 +892,8 @@ class GameMain:
                         new_info.face_direction = player.face_direction.get_angle()
                         new_info.height = float(player.get_height())
                         if player.fire:
-                            new_info.fire_info.fire = True
-                            new_info.fire_info.target, new_info.fire_info.weapon = player.fire
+                            fire = new_info.fire_info
+                            fire.target, fire.weapon, fire.damage = player.fire
                             player.fire = None
 
             # give all new items information
@@ -1037,7 +1038,7 @@ class GameMain:
         if self.playback_file.closed:
             return
         data = interface_data.SerializeToString()
-        self.playback_file.write(struct.pack('i', len(data)))
+        self.playback_file.write(len(data).to_bytes(4, 'little'))
         self.playback_file.write(data)
         self.playback_file.flush()
         self.print_debug(50, "write", len(data), "bytes into the playback file")
@@ -1088,9 +1089,17 @@ class GameMain:
             'team_out_order': team_out_order,
             'order_of_death': self.die_order,
         }
-        with open(self.playback_file.name[:-2] + '.json', 'w') as file:
+        
+        result_name = self.playback_file.name[:-2] + '.json'
+        with open(result_name, 'w') as file:
             dump(result, file)
 
+        with open(result_name, 'r') as file:
+            result = file.read().encode()
+
+        self.playback_file.write(bytes(4))  # write b'\x00\x00\x00\x00'
+        self.playback_file.write(len(result).to_bytes(4, 'little'))
+        self.playback_file.write(result)
         self.playback_file.close()
         return
 

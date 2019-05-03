@@ -20,7 +20,7 @@ message PlayerBasicInfo
 	// maybe here should be more information
 }
 
-// for players on the groud
+// for players on the ground
 message PlayerInfo
 {
 	int32 id = 1;
@@ -36,10 +36,11 @@ message PlayerInfo
 
 message Fire
 {
-	bool fire = 1;
 	// -1 means miss, or player id
 	int32 target = 2;
 	int32 weapon = 3;
+    // negative means heal, positive means harm
+    float damage = 4;
 }
 
 message Item

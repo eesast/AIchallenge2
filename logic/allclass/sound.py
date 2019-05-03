@@ -41,7 +41,6 @@ class Sound:
         Sound.RADIO_VOICE = data['RADIO_VOICE']['number']
         Sound.FOOTSTEP_SOUND = data['FOOTSTEP_SOUND']['number']
         Sound.GUN_SOUND = data['GUN_SOUND']['number']
-        Sound.BOOM_SOUND = data['BOOM_SOUND']['number']
         for key, value in data.items():
             Sound.speed[value['number']] = value['speed']
             Sound.farthest[key[0: key.find('_')].lower()] = value['distance']

@@ -32,7 +32,7 @@
     "SNIPER":
     {
         "number":3,
-        "hp":80,
+        "hp":90,
         "distance":200.0,
         "angle":115.0,
         "radius":0.4,

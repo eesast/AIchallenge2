@@ -16,11 +16,5 @@
         "number":2,
         "speed":100.0,
         "distance":300.0
-    },
-    "BOOM_SOUND":
-    {
-        "number":3,
-        "speed":200.0,
-        "distance":600.0
     }
 }
