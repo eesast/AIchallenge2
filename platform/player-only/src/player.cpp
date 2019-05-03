@@ -16,10 +16,8 @@ void play_game()
 	/* Your code in this function */
 	/* sample AI */
 	update_info();
-	std::cout << "player:frame" << frame << "\nhp:" << info.self.hp << std::endl;
-	std::cout << "positon" << info.self.xy_pos.x << ' ' << info.self.xy_pos.y << std::endl;
 	if (info.self.bag.size() > 1)
-		std::cout << "pick succeed" << std::endl;
+	{ }
 	if (frame == 0)
 	{
 		srand(time(nullptr) + teammates[0]);
@@ -33,12 +31,10 @@ void play_game()
 	}
 	if (info.self.status == ON_PLANE || info.self.status == JUMPING)
 	{
-		std::cout << "jumping" << std::endl;
 		return;
 	}
 	if (info.others.empty())
 	{
-		std::cout << "no others" << std::endl;
 		if (info.items.empty())
 		{
 			//see nothing
@@ -47,7 +43,6 @@ void play_game()
 				double move_angle = 0;
 				double view_angle = move_angle;
 				move(move_angle, view_angle);
-				std::cout << "move" << move_angle << std::endl;
 			}
 		}
 		else
@@ -61,17 +56,13 @@ void play_game()
 					closest_item = info.items[i];
 				}
 			}
-			std::cout << "status" << info.self.status << std::endl;
-			std::cout << "**closest item angle" << closest_item.polar_pos.angle << "distance" << closest_item.polar_pos.distance << "**" << std::endl;
 			if (closest_item.polar_pos.distance < 1)
 			{
 				pickup(closest_item.item_ID);
-				std::cout << "try pickup" << closest_item.item_ID << std::endl;
 			}
 			else if (info.self.status != MOVING)
 			{
 				move(closest_item.polar_pos.angle, closest_item.polar_pos.angle);
-				std::cout << "move" << closest_item.polar_pos.angle << std::endl;
 			}
 		}
 	}

@@ -26,16 +26,11 @@ namespace ts20
 				start_pos.y = recv.start_pos().y();
 				over_pos.x = recv.over_pos().x();
 				over_pos.y = recv.over_pos().y();
-				//std::cout << "teammate:";
 				teammates.clear();
 				for (auto teammate : recv.teammates())
 				{
 					teammates.push_back(teammate);
-					std::cout << teammate << ' ';
 				}
-				std::cout << std::endl;
-				//std::cout << "start_pos" << start_pos.x << ' ' << start_pos.y << std::endl;
-				//std::cout << "over_pos" << over_pos.x << ' ' << over_pos.y << std::endl;
 			}
 			else
 			{
@@ -157,7 +152,6 @@ namespace ts20
 		auto pos = sender.mutable_landing_point();
 		pos->set_x(landing_points.x);
 		pos->set_y(landing_points.y);
-		//std::cout << "AI:" << sender.DebugString() << std::endl;
 		player_send(sender.SerializeAsString());
 	}
 

@@ -57,8 +57,15 @@ void Controller::init(const std::filesystem::path &path, DWORD used_core_count)
 			}
 		}
 	}
+	_timer = CreateWaitableTimer(NULL, FALSE, NULL);
+	if (_timer == NULL)
+	{
+		mylog << "CreateWaitableTimer fails" << std::endl;
+		std::cout << "CreateWaitableTimer fails" << std::endl;
+		system("pause");
+		exit(1);
+	}
 	_player_count = player_count;
-	_waiting_thread = nullptr;
 	//get core number
 	SYSTEM_INFO systemInfo;
 	GetSystemInfo(&systemInfo);
@@ -71,8 +78,15 @@ void Controller::init(const std::filesystem::path &path, DWORD used_core_count)
 	{
 		_used_core_count = used_core_count;
 	}
+	for (int i = 0; i < _player_count; i++)
+	{
+		_info[i].cpuID = i % _used_core_count;
+	}
+	for (int i = 0; i < _used_core_count; i++)
+	{
+		_cpu_batchs.emplace_back(std::vector<int>());
+	}
 	mylog << "total core = " << _total_core_count << " used core = " << _used_core_count << std::endl;
-	_waiting_thread = new HANDLE[_used_core_count];
 	_is_init = true;
 }
 
@@ -91,22 +105,20 @@ Controller::~Controller()
 		return;
 	for (int i = 0; i < _player_count; i++)
 	{
-		_kill_one(i);
+		if (_info[i].state != AI_STATE::UNUSED)
+		{
+			TerminateThread(_info[i].handle, 0);
+			CloseHandle(_info[i].handle);
+		}
+		FreeLibrary(_info[i].lib);
 	}
-	delete _waiting_thread;
-	_waiting_thread = nullptr;
+	CloseHandle(_timer);
 }
 
 void Controller::_kill_one(int playerID)
 {
 	if (_info[playerID].state != AI_STATE::DEAD)
 	{
-		if (_info[playerID].state != AI_STATE::UNUSED)
-		{
-			TerminateThread(_info[playerID].handle, 0);
-			CloseHandle(_info[playerID].handle);
-		}
-		FreeLibrary(_info[playerID].lib);
 		_info[playerID].state = AI_STATE::DEAD;
 		mylog << "kill player: " << playerID << std::endl;
 	}
@@ -139,29 +151,32 @@ void Controller::run()
 		_command_parachute[i].clear();
 		_command_action[i].clear();
 	}
-	int now = 0;
+	for (int i = 0; i < _used_core_count; ++i)
+	{
+		_cpu_batchs[i].clear();
+	}
+	for (int i = _player_count - 1; i >= 0; --i)
+	{
+		if (_info[i].state != AI_STATE::DEAD)
+		{
+			_cpu_batchs[_info[i].cpuID].push_back(i);
+		}
+	}
 	//main_loop
-	while (now < _player_count)
+	while (true)
 	{
 		//set batch
 		_batch.clear();
-		for (int i = 0; i < static_cast<int>(_used_core_count); )
+		for (int i = 0; i < _used_core_count; ++i)
 		{
-			if (now >= _player_count)
+			if (!_cpu_batchs[i].empty())
 			{
-				break;
-			}
-			else if (_info[now].state != AI_STATE::DEAD)
-			{
-				_batch.push_back(now);
-				++now;
-				++i;
-			}
-			else
-			{
-				++now;
+				_batch.push_back(_cpu_batchs[i].back());
+				_cpu_batchs[i].pop_back();
 			}
 		}
+		if (_batch.empty())
+			break;
 		mylog << "batch: ";
 		for (const auto i : _batch)
 		{
@@ -169,14 +184,13 @@ void Controller::run()
 		}
 		mylog << std::endl;
 		//execute some players each loop. The number is equal to the number of core(_used_core_count) 
-		int core_num = _total_core_count - _used_core_count;
 		for (int i : _batch)
 		{
 			//  i == playerID
 			if (_info[i].state == AI_STATE::UNUSED)
 			{
 				//create or recreate a subthread.
-				_info[i].handle = CreateThread(nullptr, 0, thread_func, nullptr, CREATE_SUSPENDED, &_info[i].threadID);
+				_info[i].handle = CreateThread(nullptr, 0, thread_func, reinterpret_cast<LPVOID>(i), 0, &_info[i].threadID);
 				if (_info[i].handle == NULL)
 				{
 					mylog << "player: " << i << " Cannot create thread. Error Code: " << GetLastError() << std::endl;
@@ -186,21 +200,15 @@ void Controller::run()
 				}
 				_info[i].state = AI_STATE::SUSPENDED;
 				//CPU control, choose the core which the thread uses. When the used core number is less than that CPU actually has, using core with higher ID firstly 
-				if (SetThreadAffinityMask(_info[i].handle, (static_cast<DWORD_PTR>(1) << core_num)))
-				{
-					++core_num;
-				}
-				else
+				if (!SetThreadAffinityMask(_info[i].handle, (static_cast<DWORD_PTR>(1) << (_info[i].cpuID + _total_core_count - _used_core_count))))
 				{
 					mylog << "player: " << i << " CPU core setting fails. Error Code: " << GetLastError() << std::endl;
 				}
 			}
-			_waiting_thread[i] = _info[i].handle;    //if the player's thread is suspended, just resume it
 		}
-		//send route and start subthread.
+		//send route
 		for (int i : _batch)
 		{
-			_info[i].state = AI_STATE::ACTIVE;
 			if (_frame > 0)
 			{
 				_send(i, _frame, _serialize_info(i));
@@ -214,47 +222,50 @@ void Controller::run()
 				mylog << "player: " << i << " Cannot resume Thread" << _info[i].threadID << " Error Code: " << GetLastError() << std::endl;
 			}
 		}
-		DWORD threadNumber = static_cast<DWORD>(_batch.size());
+		//start subthreads
+		bool allstarted;
+		do
+		{
+			allstarted = true;
+			for (int i : _batch)
+			{
+				if (!_info[i].started)
+				{
+					allstarted = false;
+					break;
+				}
+			}
+		} while (!allstarted);
+		{
+			std::vector<std::unique_lock<std::mutex>> lks;
+			for (int i : _batch)
+			{
+				lks.emplace_back(_info[i].run_mtx);
+				_info[i].next.store(true);
+			}
+			assert(_cv.native_handle() != nullptr);
+			_cv.notify_all();
+			lks.empty();
+		}
 		//let sunthreads run timeout ms.
 		int timeout = TIMEOUT;
 		if (_frame == 0)
 		{
 			timeout = START_TIMEOUT;
 		}
-		if (WaitForMultipleObjects(threadNumber, _waiting_thread, true, timeout) == WAIT_TIMEOUT)
-		{    //if one thread does not exit 
-			DWORD exitCode;
-			for (int i : _batch)
-			{    //look out still active thread and suspend it forcefully
-				GetExitCodeThread(_info[i].handle, &exitCode);
-				if (exitCode == STILL_ACTIVE)
-				{
-					_info[i].mtx.lock();
-					if (SuspendThread(_info[i].handle) == 0xFFFFFFFF)
-					{
-						mylog << "player: " << i << " Cannot suspend Thread" << _info[i].threadID << " Error Code: " << GetLastError() << std::endl;
-					}
-					_info[i].mtx.unlock();
-					_info[i].state = AI_STATE::SUSPENDED;
-				}
-				else
-				{
-					_info[i].state = AI_STATE::UNUSED;
-					CloseHandle(_info[i].handle);
-					_info[i].handle = 0;
-					_info[i].threadID = static_cast<DWORD>(0);
-				}
-			}
-		}
-		else
+		LARGE_INTEGER DueTime;
+		DueTime.QuadPart = -timeout * 1000'0;
+		SetWaitableTimer(_timer, &DueTime, 0, NULL, NULL, FALSE);
+		WaitForSingleObject(_timer, INFINITE);
+		for (int i : _batch)
 		{
-			for (int i : _batch)
+			_info[i].comm_mtx.lock();
+			if (SuspendThread(_info[i].handle) == 0xFFFFFFFF)
 			{
-				_info[i].state = AI_STATE::UNUSED;
-				CloseHandle(_info[i].handle);
-				_info[i].handle = 0;
-				_info[i].threadID = static_cast<DWORD>(0);
+				mylog << "player: " << i << " Cannot suspend Thread" << _info[i].threadID << " Error Code: " << GetLastError() << std::endl;
 			}
+			_info[i].comm_mtx.unlock();
+			_info[i].state = AI_STATE::SUSPENDED;
 		}
 	}
 	//kill AI who sended nothing when parachuting
@@ -262,9 +273,9 @@ void Controller::run()
 	{
 		for (int i = 0; i < _player_count; ++i)
 		{
-			_info[i].mtx.lock();
+			_info[i].comm_mtx.lock();
 			bool isempty = _command_parachute[i].empty();
-			_info[i].mtx.unlock();
+			_info[i].comm_mtx.unlock();
 			if (isempty)
 			{
 				_kill_one(i);
@@ -326,9 +337,9 @@ bool Controller::_parse(const std::string & data)
 			c.view_angle = recv.view_angle();
 			c.target_ID = recv.target_id();
 			c.parameter = recv.parameter();
-			_info[playerID].mtx.lock();
+			_info[playerID].comm_mtx.lock();
 			_command_action[playerID].push_back(c);
-			_info[playerID].mtx.unlock();
+			_info[playerID].comm_mtx.unlock();
 			return true;
 		}
 		else
@@ -338,9 +349,9 @@ bool Controller::_parse(const std::string & data)
 			c.landing_point.y = recv.landing_point().y();
 			c.role = recv.role();
 			c.team = _info[playerID].team;
-			_info[playerID].mtx.lock();
+			_info[playerID].comm_mtx.lock();
 			_command_parachute[playerID].push_back(c);
-			_info[playerID].mtx.unlock();
+			_info[playerID].comm_mtx.unlock();
 			return true;
 		}
 	}
@@ -348,6 +359,23 @@ bool Controller::_parse(const std::string & data)
 	{
 		return false;
 	}
+}
+
+void Controller::_run_player(int playerID)
+{
+	if (_info[playerID].player_func == nullptr)
+		return;
+	_info[playerID].started = true;
+	while (true)
+	{
+		{
+			auto lk = std::unique_lock<std::mutex>(_info[playerID].run_mtx);
+			_info[playerID].next.store(false);
+			_cv.wait(lk, [&] {return _info[playerID].next.load(); });
+		}
+		(*_info[playerID].player_func)();
+	}
+	return;
 }
 
 int Controller::_get_playerID_by_threadID()
@@ -378,11 +406,8 @@ Controller::Controller()
 
 DWORD WINAPI thread_func(LPVOID lpParameter)
 {
-	auto playerID = manager._get_playerID_by_threadID();
-	if (manager._info[playerID].player_func != nullptr)
-	{
-		(*manager._info[playerID].player_func)();
-	}
+	int playerID = reinterpret_cast<int>(lpParameter);
+	manager._run_player(playerID);
 	return 0;
 }
 
