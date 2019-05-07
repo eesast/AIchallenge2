@@ -111,14 +111,15 @@ namespace ts20
 					sound_c.sender = sound.sender();
 					sound_c.delay = sound.delay();
 					sound_c.parameter = sound.parameter();
-					sound_c.type = static_cast<SOUND>((sound_c.parameter >> 29) & 0x00000007);
-					sound_c.parameter &= 0x1FFFFFFF;
-					if (sound_c.type == RADIO_VOICE)
+					if (sound_c.sender != -1)
 					{
+						sound_c.type = RADIO_VOICE;
 						sound_c.angle = 0;
 					}
 					else
 					{
+						sound_c.type = static_cast<SOUND>((sound_c.parameter >> 29) & 0x00000007);
+						sound_c.parameter &= 0x1FFFFFFF;
 						sound_c.angle = sound_c.parameter - int(info.self.view_angle);
 					}
 					info.sounds.push_back(sound_c);
