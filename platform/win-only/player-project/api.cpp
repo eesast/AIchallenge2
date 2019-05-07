@@ -49,7 +49,7 @@ namespace ts20
 				self_c.hp_limit = self.health_point_limit();
 				self_c.move_angle = self.move_angle();
 				self_c.view_angle = self.view_angle();
-				self_c.move_angle = self.move_speed();
+				self_c.move_speed = self.move_speed();
 				self_c.vocation = static_cast<VOCATION>(self.vocation());
 				self_c.status = static_cast<STATUS>(self.status());
 				self_c.move_cd = self.move_cd();
