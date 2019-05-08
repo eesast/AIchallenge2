@@ -2,32 +2,32 @@
 	"0": {
 		"vocation": 3,
 		"position": [
-			405.5,
-			406.1
+			105.5,
+			106.1
 		],
 		"team": 2
 	},
 	"1": {
 		"vocation": 1,
 		"position": [
-			431,
-			420
+			131,
+			120
 		],
 		"team": 1
 	},
 	"2": {
 		"vocation": 2,
 		"position": [
-			420,
-			409
+			520,
+			509
 		],
 		"team": 2
 	},
 	"3": {
 		"vocation": 3,
 		"position": [
-			420,
-			431
+			120,
+			131
 		],
 		"team": 2
 	},
