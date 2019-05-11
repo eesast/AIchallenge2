@@ -893,7 +893,9 @@ class GameMain:
                         new_info.height = float(player.get_height())
                         if player.fire:
                             fire = new_info.fire_info
-                            fire.target, fire.weapon, fire.damage = player.fire
+                            fire.fire = True
+                            # fire.target, fire.weapon, fire.damage = player.fire
+                            fire.target, fire.weapon = player.fire[0], player.fire[1]
                             player.fire = None
 
             # give all new items information
@@ -967,7 +969,7 @@ class GameMain:
 
             data.self.health_point = player.health_point
             data.self.health_point_limit = player_info.hp_max
-            data.self.move_angle = player.move_direction.get_angle() if player.move_direction else 0
+            data.self.move_angle = player.move_direction.get_angle() if player.move_direction else 0.
             data.self.view_angle = player.face_direction.get_angle()
             data.self.move_speed = player.move_speed
             data.self.vocation = player.vocation
@@ -1097,9 +1099,9 @@ class GameMain:
         with open(result_name, 'r') as file:
             result = file.read().encode()
 
-        self.playback_file.write(bytes(4))  # write b'\x00\x00\x00\x00'
-        self.playback_file.write(len(result).to_bytes(4, 'little'))
-        self.playback_file.write(result)
+        # self.playback_file.write(bytes(4))  # write b'\x00\x00\x00\x00'
+        # self.playback_file.write(len(result).to_bytes(4, 'little'))
+        # self.playback_file.write(result)
         self.playback_file.close()
         return
 
