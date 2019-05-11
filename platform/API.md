@@ -3,6 +3,10 @@
 版本长期发布链接[清华云盘](https://cloud.tsinghua.edu.cn/d/513cdc8459f742e0980a/)
 #### 版本 v1.1
 ------
+### Update v1.1 Patch3
+1. 将沙滩部分石头的半径进行调整
+2. 修复了移动第一步和第三步距离倒置的bug
+
 ### Update v1.1 Patch2
 1. 修复了无线电与-1的bug
 2. 修复了move angle的bug

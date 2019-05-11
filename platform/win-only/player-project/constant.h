@@ -229,8 +229,8 @@ const std::vector<block> AREA_DATA[AREA_SZ] =
         { RECTANGLE,  RECTANGLE_BUILDING,   75,   70,    0,   85,   30},
     },    // pool
     {
-        {    CIRCLE,     CIRCLE_BUILDING,   20,   30,   10,    0,    0},
-        {    CIRCLE,     CIRCLE_BUILDING,   70,   80,   10,    0,    0},
+        {    CIRCLE,     CIRCLE_BUILDING,   20,   30,   13,    0,    0},
+        {    CIRCLE,     CIRCLE_BUILDING,   70,   80,   13,    0,    0},
         {    CIRCLE,     CIRCLE_BUILDING,   50,   10,    7,    0,    0},
         {    CIRCLE,     CIRCLE_BUILDING,   30,   70,    7,    0,    0},
         {    CIRCLE,     CIRCLE_BUILDING,   80,   40,    7,    0,    0},
