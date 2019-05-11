@@ -127,8 +127,6 @@ class Character(Object):  # the base class of all characters
     def can_be_healed(self):
         return self.status != Character.REAL_DEAD
 
-    move_factor = [0, 0.2, 0.5, 0.3]
-
     def update(self):
         # first initialize some variables for this turn
         self.most_damage = 0

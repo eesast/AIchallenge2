@@ -36,6 +36,7 @@ message PlayerInfo
 
 message Fire
 {
+	bool fire = 1;
 	// -1 means miss, or player id
 	int32 target = 2;
 	int32 weapon = 3;

@@ -221,7 +221,7 @@ def get_parameter_data(sheet_parameter):
         },
     }
     col = sheet_parameter.col_values(1)
-    data['character']['move_step'] = [0, col[2], col[3], col[4]]
+    data['character']['move_step'] = [0, col[4], col[3], col[2]]
     for i in range(1, 9):
         data['main']['score_by_rank'][i] = int(col[i + 4])
 
