@@ -44,23 +44,23 @@ def main():
     # for debug
     game.number_to_player[0].get_damage(70)
     commands = {}
-    for i in range(12):
+    for i in range(2):
         commands[i] = [
             {
                 'command_type': 0,
                 "move_angle": 0,
-                "view_angle": 0,
+                "view_angle": 3,
                 "other": 0,
             }
         ]
-    commands[0] = [
+    '''commands[0] = [
         {
             'command_type': 1,
             'view_angle': 0,
             'target': 0,
             'other': -1,
         }
-    ]
+    ]'''
     # start the loop
     # fight until there is only one team alive or be overtime
     while not game.game_over():

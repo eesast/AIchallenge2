@@ -77,12 +77,15 @@ class Sweep:
             distance2, theta = polar_positions[number]
             return distance2 <= self.view_distance2 and abs(theta) < self.half_view_angle
 
-        visible_areas = [self.position.get_area_id()]
+        basic_id = self.position.get_area_id()
+        # add neighborhood in the set
+        basic_areas = [basic_id, basic_id + 1, basic_id - 1, basic_id + 10, basic_id - 10]
+        visible_areas = set([area_id for area_id in basic_areas if 0 <= area_id < 100])
         polar_positions = [self.position.get_polar_position2(self.direction, Position(x * 100, y * 100)) for y in range(
             11) for x in range(11)]
         for i in range(100):
             if visible(i) or visible(i + 1) or visible(i + 10) or visible(i + 11):
-                visible_areas.append(i)
+                visible_areas.add(i)
         return visible_areas
 
     def get_potential_targets(self, visible_areas):
