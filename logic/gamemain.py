@@ -779,7 +779,8 @@ class GameMain:
                         # if this player is alive but get poison to die with some other damage in the same frame, then
                         # if somebody give him more damage than circle, killer will be him, or killer is -1
                         # if this poor gay
-                        if player.get_damage(self.poison.damage_per_frame, -1, 'ARMOR_PIERCING'):
+                        if player.health_point > 0 and player.get_damage(self.poison.damage_per_frame, -1,
+                                                                         'ARMOR_PIERCING'):
                             self.print_debug(13, 'the circle', self.poison.damage_per_frame, 'damage to', player.number)
                         if player.health_point <= 0:
                             player.health_point = 0
