@@ -32,7 +32,7 @@ class Sound:
 
     # judge if the sound has arrived
     def arrived(self):
-        return not self.__delay
+        return self.__delay <= 0
 
     @staticmethod
     def load_data(parent_path, sound_file_path):

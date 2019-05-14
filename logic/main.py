@@ -49,8 +49,8 @@ def main():
             {
                 'command_type': 0,
                 "move_angle": 0,
-                "view_angle": 3,
-                "other": 0,
+                "view_angle": 0,
+                "other": 1,
             }
         ]
     '''commands[0] = [
