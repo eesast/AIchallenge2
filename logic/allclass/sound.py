@@ -47,7 +47,7 @@ class Sound:
         return data
 
     def get_data(self, position):
-        if not self.data:
+        if self.data is None:
             # for environment voice
             # high 3 bits means type
             # low 9 bits means relative angle (int)

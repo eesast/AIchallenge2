@@ -47,10 +47,11 @@ def main():
     for i in range(2):
         commands[i] = [
             {
-                'command_type': 0,
+                'command_type': character.RADIO,
                 "move_angle": 0,
                 "view_angle": 0,
-                "other": 1,
+                "other": 0,
+                "target": 2
             }
         ]
     '''commands[0] = [

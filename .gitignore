@@ -33,7 +33,7 @@
 /logic/allclass/__pycache__
 /logic/proto/__pycache__
 /logic/.vscode/settings.json
-/logic/debug/__pycache__
+/logic/debug/*
 /logic/interface
 /logic/.vscode
 
