@@ -40,7 +40,7 @@ class Block(Object):
             x = self.radius * cos(theta)
             y = self.radius * sin(theta)
             vector = item.position - self.position
-            return abs(vector.x) < x or abs(vector.y) < y
+            return abs(vector.x) < x and abs(vector.y) < y
 
     @staticmethod
     def generate_block(name, param):
