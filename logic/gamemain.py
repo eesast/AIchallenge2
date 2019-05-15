@@ -15,7 +15,7 @@ import struct
 #   here define a debug level variable to debug print-oriented
 #   remember: here is just a initial level for logic
 #   platform may give another number in game_init
-PRINT_DEBUG = 26
+PRINT_DEBUG = 0
 
 
 #   !!set PRINT_DEBUG to -1 to close the debug system!!
@@ -477,6 +477,15 @@ class GameMain:
             for player_id, command in self.all_commands['shoot'].items():
                 view_angle, item_type, other = command
                 player = self.number_to_player[player_id]
+                if item_type == -1:
+                    # abandon current scope
+                    player.equip_scope(1)
+                    self.print_debug(18, 'player', player_id, "abandoned current scope(if he's wearing one)")
+                    if 0 <= view_angle <= 360:
+                        player.face_direction = position.angle_to_position(
+                            player.face_direction.get_angle() + view_angle)
+                    # end this command
+                    continue
                 rest = player.bag.get(item_type, 0)
                 item_data = item.Item.all_data.get(item_type, None)
                 if item_data is None:
@@ -485,13 +494,6 @@ class GameMain:
                     self.print_debug(5, 'player', player_id, 'try to shoot but not in right status')
                 elif player.shoot_cd:
                     self.print_debug(4, 'player', player_id, 'try to shoot with', player.shoot_cd, ' shoot cd')
-                elif item_type == -1:
-                    # abandon current scope
-                    player.equip_scope(1)
-                    self.print_debug(18, 'player', player_id, "abandoned current scope(if he's wearing one)")
-                    if 0 <= view_angle <= 360:
-                        player.face_direction = position.angle_to_position(
-                            player.face_direction.get_angle() + view_angle)
                 elif not rest:
                     self.print_debug(4, 'player', player_id, 'try to use weapon without durability')
                 elif item_data['type'] != 'WEAPON' and item_data['mode'] != 'SPENDABLE':
@@ -1050,7 +1052,7 @@ class GameMain:
     def over_process(self):
         # deal with the winner
         win_team = [player.number for player in (self.last_alive_teams[0] if len(self.last_alive_teams) else [])]
-        self.print_debug(0, 'in turn', self.__turn, 'game over with alive teams:', win_team)
+        self.print_debug(0, 'in turn', self.__turn, 'game over with alive team:', win_team)
         for player in win_team:
             self.die_list.append(player)
 
