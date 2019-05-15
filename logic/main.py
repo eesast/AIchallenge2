@@ -44,7 +44,7 @@ def main():
     # for debug
     game.number_to_player[0].get_damage(70)
     commands = {}
-    for i in range(2):
+    '''for i in range(2):
         commands[i] = [
             {
                 'command_type': character.RADIO,
@@ -53,7 +53,21 @@ def main():
                 "other": 0,
                 "target": 2
             }
-        ]
+        ]'''
+    commands[0] = [{
+        'command_type': character.SHOOT,
+        "move_angle": 0,
+        "view_angle": 0,
+        "other": 0,
+        "target": 0
+    },
+        {
+            'command_type': character.RADIO,
+            "move_angle": 0,
+            "view_angle": 0,
+            "other": 0,
+            "target": 3
+        }]
     '''commands[0] = [
         {
             'command_type': 1,
