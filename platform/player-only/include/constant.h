@@ -81,6 +81,7 @@ enum ITEM_MODE
 
 enum ITEM
 {
+	EYE = -1,
     FIST = 0,
     HAND_GUN = 1,
     SUBMACHINE_GUN = 2,
@@ -243,11 +244,11 @@ const std::vector<block> AREA_DATA[AREA_SZ] =
     {
         { RECTANGLE,                WALL,    5,    6,    0,   35,    5},
         { RECTANGLE,                WALL,    5,   35,    0,    6,    6},
-        { RECTANGLE,                WALL,   65,    6,    0,   95,    5},
-        { RECTANGLE,                WALL,   95,   35,    0,   96,    6},
-        { RECTANGLE,                WALL,    4,   95,    0,    5,   65},
-        { RECTANGLE,                WALL,    5,   96,    0,   35,   95},
-        { RECTANGLE,                WALL,   95,   95,    0,   96,   65},
+        { RECTANGLE,                WALL,   65,    6,    0,   94,    5},
+        { RECTANGLE,                WALL,   94,   35,    0,   95,    5},
+        { RECTANGLE,                WALL,    5,   95,    0,    6,   65},
+        { RECTANGLE,                WALL,    6,   95,    0,   35,   94},
+        { RECTANGLE,                WALL,   94,   94,    0,   95,   65},
         { RECTANGLE,                WALL,   65,   95,    0,   95,   94},
         { RECTANGLE,  RECTANGLE_BUILDING,   10,   30,    0,   30,   10},
         { RECTANGLE,  RECTANGLE_BUILDING,   40,   30,    0,   60,   10},

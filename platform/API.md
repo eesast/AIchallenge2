@@ -3,6 +3,23 @@
 版本长期发布链接[清华云盘](https://cloud.tsinghua.edu.cn/d/513cdc8459f742e0980a/)
 #### 版本 v1.1
 ------
+### 提示
+1. 倍镜为消耗品，使用新倍镜时将摧毁原装备倍镜，如需摧毁当前倍镜，在shoot这一API调用时item_type选择EYE(-1)即可。
+
+------
+### Update v1.1 Patch 7
+1. 正确实现了摧毁倍镜的功能
+
+### Update v1.1 Patch 6
+1. 修正通信bug与地形判断bug
+
+### Update v1.1 Patch 5
+1. constant.h加入了用于摧毁倍镜的EYE
+
+### Update v1.1 Patch4
+1. 调整了地图中City部分地形
+2. 修复了视野bug
+
 ### Update v1.1 Patch3
 1. 将沙滩部分石头的半径进行调整
 2. 修复了移动第一步和第三步距离倒置的bug
