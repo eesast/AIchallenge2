@@ -15,7 +15,7 @@ import struct
 #   here define a debug level variable to debug print-oriented
 #   remember: here is just a initial level for logic
 #   platform may give another number in game_init
-PRINT_DEBUG = 0
+PRINT_DEBUG = 25
 
 
 #   !!set PRINT_DEBUG to -1 to close the debug system!!
@@ -500,10 +500,11 @@ class GameMain:
                     self.print_debug(4, 'player', player_id, 'try to use not weapon-like item to shoot')
                 elif item_data['param'] < 0:
                     if player.vocation == character.Character.MEDIC and other >= 0:
+                        other = self.number_to_player[other]
                         if other in self.number_to_team[player.team]:
-                            if self.number_to_player[other].pick_accessible(player.position):
-                                if self.number_to_player[other].can_be_healed():
-                                    self.all_drugs.append((item_type, other, player_id))
+                            if other.pick_accessible(player.position):
+                                if other.can_be_healed():
+                                    self.all_drugs.append((item_type, other.number, player_id))
                                     player.bag[item_type] -= 1
                                     player.shoot_cd = item_data['cd']
                                     player.last_weapon = item_type
@@ -744,7 +745,7 @@ class GameMain:
                     value *= character.Character.all_data[character.Character.MEDIC]['skill']
                     real_damage = self.number_to_player[receiver].get_damage(value)
                     self.print_debug(13, 'player', emitter, drug['name'], value, 'head points to player', receiver)
-                    self.number_to_player[emitter] = receiver, drug_index, real_damage
+                    self.number_to_player[emitter].fire = receiver, drug_index, real_damage
             return
 
         def die():
@@ -1112,6 +1113,10 @@ class GameMain:
         # print debug log if current debug level is higher than message debug level
         if self.__debug_level >= level:
             print(*args, sep=sep, end=end, file=file)
+
+    @property
+    def turn(self):
+        return self.__turn
 
 
 if __name__ == '__main__':
